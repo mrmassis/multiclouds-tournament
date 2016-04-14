@@ -1,1 +1,1 @@
-# multiclouds-tournament
+# MultiClouds Tournament
