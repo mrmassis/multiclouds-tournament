@@ -1,5 +1,5 @@
 # MultiClouds Tournament (MCT)
-It is a solution for formation of an association Inter-Clouds. The MCT is based on the properties of clouds Federations and has the main goal to be a framework for adding cloud providers in a tournament where the prize is access to resources (quantity and specialty).
+It is a solution for formation of an association Inter-Clouds. The MCT is based on the properties of Cloud Federations and has the main goal to be a framework for adding cloud providers in a tournament where the prize is access to resources (quantity and specialty).
 
 Setting the MCT is:
 
