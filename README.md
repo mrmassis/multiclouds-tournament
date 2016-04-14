@@ -1,1 +1,1 @@
-# MultiClouds Tournament
+# MultiClouds Tournament (MCT)
