@@ -21,6 +21,7 @@ from lib.amqp         import RabbitMQ_Publish, RabbitMQ_Consume;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
+CONFIG_FILE = '/etc/mct/mct_referee.ini';
 
 
 
@@ -147,25 +148,29 @@ class MCT_Referee(RabbitMQ_Consume):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __threadsId = None;
-    __allQueues = None;
+    __threadsId     = None;
+    __allQueues     = None;
+    __routeDispatch = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self, fileName='../mct_referee.ini'):
+    def __init__(self):
 
         ## Get the configurations related to the execution of the divisions de-
         ## fined by the User.
-        config = self.__get_configs(fileName);
+        configs = self.__get_configs(CONFIG_FILE);
+
+        ## Get which route is used to deliver the message to the MCT_Dispatch.
+        self.__routeDispatch = configs['amqp_publish']['route'];
 
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
         ## defined in the configuration file.
-        RabbitMQ_Consume.__init__(self, config['amqp_consume']);
+        RabbitMQ_Consume.__init__(self, configs['amqp_consume']);
 
         ## Instantiates an object to perform the publication of AMQP messages.
-        self.__publish=RabbitMQ_Publish(config['amqp_publish']);
+        self.__publish=RabbitMQ_Publish(configs['amqp_publish']);
 
         ## This list store the thread IDs that represet each division started.
         #self.__threadsId = [];
@@ -201,7 +206,7 @@ class MCT_Referee(RabbitMQ_Consume):
             thread.terminate();
             thread.join();
 
-        print '[LOG] Gracefull stop ...';
+        print '[LOG]: Gracefull stop ...';
 
 
     ##
@@ -213,13 +218,16 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM str                       message    = message received.
     ##
     def callback(self, channel, method, properties, message):
+        ## LOG:
+        print '[LOG]: AMQP APP ID : ' + str(properties.app_id);
+
+        ## Send to source an ack msg to ensuring that the message was received.
         self.chn.basic_ack(method.delivery_tag);
 
         ## The json.loads translate a string containing JSON data into a Python
         ## value.
         message = json.loads(message);
 
-        print message
         ## Check if the message received is valid. Verify all fields in the mes
         ## sage.
         #valRet = self.__inspect_request(messageDict);
@@ -230,7 +238,7 @@ class MCT_Referee(RabbitMQ_Consume):
         #if properties.app_id == 'MCT_Dispatch' and valRet == 0:
         #    self.__allQueues[divId-1].put(messageDict);
 
-        self.__publish.publish(message, 'mct_dispatch')
+        self.__publish.publish(message, self.__routeDispatch);
         return 0;
 
 
@@ -295,13 +303,18 @@ class MCT_Referee(RabbitMQ_Consume):
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
+
     try:
+        ## LOG:
+        print '[LOG]: EXECUTION STARTED....';
         mctReferee = MCT_Referee();
         mctReferee.consume();
 
     ## Caso Ctrl-C seja precionado realiza os procedimentos p/ finalizar o ambi
     ## ente.
     except KeyboardInterrupt, error:
+        ## LOG:
+        print '[LOG]: EXECUTION FINISHED...';
         mctReferee.gracefull_stop();
 
     sys.exit(0);

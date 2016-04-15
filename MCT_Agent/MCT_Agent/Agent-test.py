@@ -50,7 +50,7 @@ class MCT_Agent:
     ###########################################################################
     ## SPECIAL METHODS                                                       ## 
     ###########################################################################
-    def __init__(self, cfgFile = '../../agent.ini'):
+    def __init__(self, cfgFile = '/etc/mct/agent.ini'):
 
 
         ## Setup our ssl options

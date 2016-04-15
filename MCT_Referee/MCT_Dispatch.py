@@ -17,8 +17,7 @@ from lib.amqp import RabbitMQ_Publish, RabbitMQ_Consume;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE = '../mct_dispatch.ini';
-PLAYER_FILE = '../players.ini';
+CONFIG_FILE = '/etc/mct/mct_dispatch.ini';
 
 
 
@@ -34,59 +33,42 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ---------------------------------------------------------------------------
     callback == method invoked when the pika receive a message.
     
-    
-    __recv_message_divisions == receive message from divisions.
-    __send_message_divisions == sends the message to the appropriate divisions.
-    __append_query           == stores the request identifier.
-    __valid_request_send     == check if all necessary fields are in the reque
-                                st from players.
-    __valid_request_recv     == check if all necessary fields are in the reque
-                                st from divisions.
-    __get_divisions          == return the division than player belong.
-    __get_configs            == obtain all configuration from conffiles.
+    __recv_message_referee == receive message from referee.
+    __send_message_referee == send message to referee.
+    __append_query         == store the request identifier.
+    __remove_query         == store the request identifier.
+    __valid_request        == check if all necessary fields are in request.
+    __get_configs          == obtain all configuration from conffiles.
 
     """
 
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __queueName       = None;
-    __identifier      = None;
-    __route           = None;
-    __address         = None;
-    __exchange        = None;
-    __requestsPending = None;
-    __divisions       = None;
-
+    __publish         = None;
+    __requestsPending = {};
+    __divisions       = [];
     __configs         = None;
-    __players         = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self, cfgFile = 'mct_dispatch.ini'):
-        self.__requestsPending = {};
+    def __init__(self):
 
-        ## Obtain all configs parameters presents in the file and the players
-        ## presente in the organizations:
+        ## Get all configs parameters presents in the config file localized in
+        ## CONFIG_FILE path.
         configs = self.__get_config(CONFIG_FILE);
-        self.__players = self.__get_config(PLAYER_FILE);
 
-        ##
+        ## Get which 'route' is used to deliver the message to the MCT_Referee.
         self.__routeReferee = configs['amqp_publish']['route'];
-
-        ## Obtain all divisions defined in "MCT_Dispatch.ini" configure file .
-        self.__divisions = [];
-        for div in range(1, int(configs['main']['num_divisions']) + 1):
-            self.__divisions.append(div);
 
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
         ## defined in the configuration file.
         RabbitMQ_Consume.__init__(self, configs['amqp_consume']);
 
         ## Instantiates an object to perform the publication of AMQP messages.
-        self.__publisher = RabbitMQ_Publish(configs['amqp_publish']);
+        self.__publish=RabbitMQ_Publish(configs['amqp_publish']);
 
 
 
@@ -102,21 +84,22 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## @PARAM str                       message    = message received.
     ##
     def callback(self, channel, method, properties, message):
-        self.chn.basic_ack(method.delivery_tag);
-
         ## LOG:
         print '[LOG]: AMQP APP ID : ' + str(properties.app_id);
+
+        ## Send to source an ack msg to ensuring that the message was received.
+        self.chn.basic_ack(method.delivery_tag);
 
         message = json.loads(message);
 
         ## Check if is a request received from players or a return from a divi-
         ## sions. The identifier is the properties.app_id.
         if properties.app_id == 'MCT_Referee':
-            #if self.__valid_request_recv(message) == 0:
-                self.__recv_message_divisions(message, properties.app_id);
+            if self.__valid_request(message) == 0:
+                self.__recv_message_referee(message, properties.app_id);
         else:
-            #if self.__valid_request_send(message) == 0:
-                self.__send_message_divisions(message, properties.app_id);
+            if self.__valid_request(message) == 0:
+                self.__send_message_referee(message, properties.app_id);
 
         return 0;
 
@@ -126,55 +109,43 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
     ##
-    ## BRIEF: receive message from divisions.
+    ## BRIEF: receive message from refereee.
     ## ------------------------------------------------------------------------
     ## @PARAM dict message == received message.
     ## @PARAM str  appId   == source app id.
     ##
-    def __recv_message_divisions(self, message, appId):
+    def __recv_message_referee(self, message, appId):
+        ## LOG:
+        print '[LOG]: RETURN OF REFEERE: ' + str(message);
 
-        ## Remove the message (put previous) in the pending requests dictionary
+        ## Remove the message (put previous) in the pending requests dictionary.
         valRet = self.__remove_query(message['msg_id']);
 
-        ## LOG:
-        print '[LOG] RETURN OF REFEERE: ' + str(message);
-
+        ## TODO: obter info do player.
         ## Send to player the request confirmation:
-        #self.__publisher.publish(message, appId);
+        #self.__publish.publish(message, appId);
 
         return 0;
 
 
-
     ##
-    ## BRIEF: sends the message to the appropriate divisions.
+    ## BRIEF: send message to the refereee.
     ## ------------------------------------------------------------------------
     ## @PARAM dict request == received request.
     ## @PARAM str  appId   == source app id.
     ##
-    def __send_message_divisions(self, request, appId):
-
+    def __send_message_referee(self, request, appId):
        ## LOG:
-       print '[LOG] REQUEST RECEIVED: ' + str(request);
+       print '[LOG]: REQUEST RECEIVED: ' + str(request);
 
        ## Adds the message in the pending requests dictionary. If it is already
        ## inserted does not perform the action.
        valRet = self.__append_query(request['msg_id'], appId);
 
        if valRet == 0:
-
-           ## It obtained the division that the player is classified.It is also
-           ## performed to validate the player. 
-           numDivision = self.__get_division(request);
-
-           if numDivision != 0:
-               print self.__routeReferee
-               self.__publisher.publish(request, self.__routeReferee);
-           else:
-               print 'LOG: Invalid Division ...';
+           self.__publish.publish(request, self.__routeReferee);
 
        return 0;
-
 
 
     ##
@@ -205,82 +176,25 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## @PARAM str msgId == identifier of the request.
     ##
     def __remove_query(self, msgId):
-
-        ## LOG:
-        print '[LOG] removida a message com ID: '+ str(msgId) +' do pending!';
-
         ## Delete msgId element from a dictionary __requestsPending.
         self.__requestsPending.pop(msgId);
-        return 0;
-
-
-    ##
-    ## BRIEF: check if all necessary fields are in the request from divisions.
-    ## ------------------------------------------------------------------------
-    ## @PARAM dict request == received request.
-    ##
-    def __valid_request_recv(self, request):
-        ## Verify other aspect from request.
-
-        keywords = [
-            'action',
-            'player',
-            'msg_id',
-            'status'
-        ];
-
-        for key in keywords:
-             if not request.has_key(key):
-                print "LOG: missed field " + key;
-                return 1;
-
-        return 0;
-
-
-    ##
-    ## BRIEF: check if all necessary fields are in the request from players.
-    ## ------------------------------------------------------------------------
-    ## @PARAM dict request == received request.
-    ##
-    def __valid_request_send(self, request):
 
         ## LOG:
-        print '[LOG] Message: ' + str(request);
-
-        ## Verifica os campos da mensagem:
-        
-
-
-
-
-        ## Verify other aspect from request.
-
-        keywords = [
-            'action',
-            'player',
-            'vmt_id',
-            'msg_id',
-            'div_id',
-        ];
-
-        for key in keywords:
-             if not request.has_key(key):
-                print "LOG: missed field " + key;
-                return 1;
+        print '[LOG]: MESSAGE ID: '+ str(msgId) +' REMOVED FROM PENDING!';
 
         return 0;
 
 
     ##
-    ## BRIEF: return the division than player belong.
+    ## BRIEF: check if all necessary fields are in the request.
     ## ------------------------------------------------------------------------
-    ## @PARAM player == player to analyze.
+    ## @PARAM dict request == received request.
     ##
-    def __get_division(self, request):
+    def __valid_request(self, request):
+        ## TODO: DEFINR FORMATO!
 
-        if int(request['div_id']) in self.__divisions:
-            return int(request['div_id']);
-
+        ## LOG:
+        print '[LOG]: DEFINIR FORMATO!';
         return 0;
 
 
@@ -290,7 +204,6 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## @PARAM str cfgFile == conffile name.
     ##
     def __get_config(self, cfgFile):
-
        cfg = {};
 
        config = ConfigParser.ConfigParser();
@@ -315,7 +228,16 @@ class MCT_Dispatch(RabbitMQ_Consume):
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
-    daemon = MCT_Dispatch();
-    daemon.consume();
+    try:
+        ## LOG:
+        print '[LOG]: EXECUTION STARTED....';
 
+        daemon = MCT_Dispatch();
+        daemon.consume();
+
+    except KeyboardInterrupt, error:
+        ## LOG:
+        print '[LOG]: EXECUTION FINISHED...';
+
+    sys.exit(0);
 ## EOF.
