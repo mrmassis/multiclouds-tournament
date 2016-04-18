@@ -4,6 +4,10 @@ It is a solution for formation of an association Inter-Clouds. The MCT is based 
 Setting the MCT is:
 
   *An Inter-Clouds organization arranged in tournament format where volunteer cloud providers named player are distributed into divisions governed by a set of rules tha determines the behavior of the players within the environment. Depending on the progress monitoring in regular periods of time, a player can be raised to higher divisions, obtaining access to specialized resources and advantages as more resources or conducted to a lower division, decreasing the advantages.*
+
+<img src="documentation/architecture.png"  alt="450" width="450" height="450"  style="text-align: center">
+
+  
 # Sumary
 
 * [MCT Agent   ](documentation/chapter1.md)
