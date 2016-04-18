@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS `mct`.`REQUEST` (
   `player_id` INT NOT NULL,
   `request_id` INT NOT NULL,
   `type` INT NOT NULL,
+  `status` BOOL NOT NULL,
   `timestamp_received` TIMESTAMP NULL,
   `timestamp_finished` TIMESTAMP NULL,
   PRIMARY KEY (`id`),

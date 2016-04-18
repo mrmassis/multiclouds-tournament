@@ -155,6 +155,18 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ##
     def __append_query(self, msgId, appId):
 
+        #+--------------------+------------+------+-----+----------------+
+        #| Field              | Type       | Null | Key | Extra          |
+        #+--------------------+------------+------+-----+----------------+
+        #| id                 | int(11)    | NO   | PRI | auto_increment |
+        #| player_id          | int(11)    | NO   | MUL |                |
+        #| request_id         | int(11)    | NO   |     |                |
+        #| type               | int(11)    | NO   |     |                |
+        #| status             | tinyint(1) | NO   |     |                |
+        #| timestamp_received | timestamp  | YES  |     |                |
+        #| timestamp_finished | timestamp  | YES  |     |                |
+        #+--------------------+------------+------+-----+----------------+
+
         ## Verifies that the request already present in the requests dictionary
         ## if not insert it.
         if not self.__requestsPending.has_key(msgId):
