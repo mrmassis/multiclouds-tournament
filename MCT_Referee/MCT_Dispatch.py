@@ -4,8 +4,10 @@
 import ConfigParser;
 import sys;
 import json;
+import datetime;
 
-from lib.amqp import RabbitMQ_Publish, RabbitMQ_Consume;
+from lib.database import Database;
+from lib.amqp     import RabbitMQ_Publish, RabbitMQ_Consume;
 
 
 
@@ -46,9 +48,9 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## ATTRIBUTES                                                            ##
     ###########################################################################
     __publish         = None;
-    __requestsPending = {};
     __divisions       = [];
     __configs         = None;
+    __dbConnection    = None;
 
 
     ###########################################################################
@@ -67,9 +69,11 @@ class MCT_Dispatch(RabbitMQ_Consume):
         ## defined in the configuration file.
         RabbitMQ_Consume.__init__(self, configs['amqp_consume']);
 
-        ## Instantiates an object to perform the publication of AMQP messages.
+        ## Instance a new object to perform the publication of 'AMQP' messages.
         self.__publish=RabbitMQ_Publish(configs['amqp_publish']);
 
+        ## Intance a new object to handler all operation in the local database.
+        self.__dbConnection = Database(configs['database']);
 
 
     ###########################################################################
@@ -153,26 +157,37 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## ------------------------------------------------------------------------
     ## @PARAM str msgId == identifier of the request.
     ##
-    def __append_query(self, msgId, appId):
+    def __append_query(self, msgId, appId, action=001):
+        ## TODO: colocar o TYPE motivo de auditoria. (type eh palavra reservada)
 
-        #+--------------------+------------+------+-----+----------------+
-        #| Field              | Type       | Null | Key | Extra          |
-        #+--------------------+------------+------+-----+----------------+
-        #| id                 | int(11)    | NO   | PRI | auto_increment |
-        #| player_id          | int(11)    | NO   | MUL |                |
-        #| request_id         | int(11)    | NO   |     |                |
-        #| type               | int(11)    | NO   |     |                |
-        #| status             | tinyint(1) | NO   |     |                |
-        #| timestamp_received | timestamp  | YES  |     |                |
-        #| timestamp_finished | timestamp  | YES  |     |                |
-        #+--------------------+------------+------+-----+----------------+
+        ## 
+        timeStamp = timeStamp = str(datetime.datetime.now());
 
-        ## Verifies that the request already present in the requests dictionary
+        ## Check if the line that represent the request already in db. Perform
+        ## a select.
+        query  = "SELECT status FROM REQUEST WHERE ";
+        query += "request_id='"    + str(msgId) + "' "
+        query += "and player_id='" + str(appId) + "'";
+        valRet = [] or self.__dbConnection.select_query(query)
+
+        ## Verifies that the request already present in the requests 'database'
         ## if not insert it.
-        if not self.__requestsPending.has_key(msgId):
+        if valRet == [] or valRet[0][0] != 0:
             ## LOG:
             print '[LOG]: MESSAGE PENDING: ' + str(msgId);
-            self.__requestsPending[msgId] = appId;
+
+            ## Insert a line in table REQUEST from database mct. Each line mean
+            ## a request finished or in execution.
+            query  = "INSERT INTO REQUEST (";
+            query += "player_id, ";
+            query += "request_id, ";
+            query += "action, ";
+            query += "status, ";
+            query += "timestamp_received";
+            query += ") VALUES (%s, %s, %s, %s, %s)";
+            value  = (appId, msgId, action, 0, timeStamp);
+            valRet = self.__dbConnection.insert_query(query, value)
+
             return 0;
 
         ## LOG:
@@ -188,8 +203,22 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## @PARAM str msgId == identifier of the request.
     ##
     def __remove_query(self, msgId):
-        ## Delete msgId element from a dictionary __requestsPending.
-        self.__requestsPending.pop(msgId);
+        ## 
+        timeStamp = timeStamp = str(datetime.datetime.now());
+
+        ## Check if the line that represent the request already in db. Perform
+        ## a select.
+        query  = "SELECT player_id FROM REQUEST WHERE ";
+        query += "request_id='" + str(msgId) + "' "
+        valRet = [] or self.__dbConnection.select_query(query);
+
+        query  = "UPDATE REQUEST SET ";
+        query += "status=1, ";
+        query += "timestamp_finished='" + str(timeStamp) + "' ";
+        query += "WHERE ";
+        query += "player_id='"  + str(valRet[0][0]) + "' and ";
+        query += "request_id='" + str(msgId) + "'";
+        valRet = self.__dbConnection.update_query(query);
 
         ## LOG:
         print '[LOG]: MESSAGE ID: '+ str(msgId) +' REMOVED FROM PENDING!';
