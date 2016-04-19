@@ -6,8 +6,8 @@
 ###############################################################################
 ## IMPORT                                                                    ##
 ###############################################################################
-import mysql;
 import mysql.connector;
+import mysql;
 
 
 
@@ -45,7 +45,13 @@ class Database(object):
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self, dhost, duser, dpass, dname):
+    def __init__(self, dbDictionary):
+
+        dhost = dbDictionary['host'];
+        duser = dbDictionary['user'];
+        dpass = dbDictionary['pass'];
+        dname = dbDictionary['base'];
+
         self.__dbConnection = self.__db_connect(dhost, duser, dpass, dname);
 
 

@@ -6,6 +6,24 @@ CREATE SCHEMA IF NOT EXISTS `mct` DEFAULT CHARACTER SET utf8 COLLATE utf8_genera
 USE `mct` ;
 
 -- -----------------------------------------------------
+-- Table `mct`.`REQUEST`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mct`.`REQUEST` ;
+
+CREATE TABLE IF NOT EXISTS `mct`.`REQUEST` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `player_id` VARCHAR(45) NOT NULL,
+  `request_id` INT NOT NULL,
+  `action` INT NOT NULL,
+  `timestamp_received` TIMESTAMP NULL,
+  `timestamp_finished` TIMESTAMP NULL,
+  `status` TINYINT(1) NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+PACK_KEYS = DEFAULT;
+
+
+-- -----------------------------------------------------
 -- Table `mct`.`PLAYER`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `mct`.`PLAYER` ;
@@ -20,30 +38,6 @@ CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
   `division` INT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `mct`.`REQUEST`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `mct`.`REQUEST` ;
-
-CREATE TABLE IF NOT EXISTS `mct`.`REQUEST` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `player_id` INT NOT NULL,
-  `request_id` INT NOT NULL,
-  `type` INT NOT NULL,
-  `status` BOOL NOT NULL,
-  `timestamp_received` TIMESTAMP NULL,
-  `timestamp_finished` TIMESTAMP NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_REQUEST_1_idx` (`player_id` ASC),
-  CONSTRAINT `fk_REQUEST_1`
-    FOREIGN KEY (`player_id`)
-    REFERENCES `mct`.`PLAYER` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-PACK_KEYS = DEFAULT;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
