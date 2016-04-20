@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS `mct`.`REQUEST` ;
 CREATE TABLE IF NOT EXISTS `mct`.`REQUEST` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `player_id` VARCHAR(45) NOT NULL,
-  `request_id` INT NOT NULL,
+  `request_id` VARCHAR(45) NOT NULL,
   `action` INT NOT NULL,
   `timestamp_received` TIMESTAMP NULL,
   `timestamp_finished` TIMESTAMP NULL,

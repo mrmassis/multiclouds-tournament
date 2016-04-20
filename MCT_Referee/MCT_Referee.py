@@ -230,14 +230,33 @@ class MCT_Referee(RabbitMQ_Consume):
 
         ## Check if the message received is valid. Verify all fields in the mes
         ## sage.
-        #valRet = self.__inspect_request(messageDict);
+        valRet = self.__inspect_request(message);
 
-        ##
-        #divId = int(messageDict['div_id']);
+        ## Check if is a request or a response received from the apropriate pla
+        ## yer. When message['retId'] equal a '' the message is a request.
+        if message['retId'] == '':
+
+            ## 
+            message['retId'] = message['reqId'];
+  
+            ## TEM QUE CHECAR QUAL A ACAO A SER REALIZADA.
+            if int(message['code']) == 1:
+                ## Get which division than player belong.It is necessary to get
+                ## the player list able to meet the request.
+                ## division = self.__get_division(message['playerId']);
+
+                ## Choise the best player ablet to meet the request to instance
+                ## creation.
+                ## playerChoiseAddress = self.__get_player(division);
+                playerChoiseAddress = '20.0.0.30';
+
+                ##
+                message['destAdd'] = playerChoiseAddress;
+        else:
+            message['retId'  ] = '';
 
         #if properties.app_id == 'MCT_Dispatch' and valRet == 0:
         #    self.__allQueues[divId-1].put(messageDict);
-
         self.__publish.publish(message, self.__routeDispatch);
         return 0;
 
@@ -253,19 +272,21 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     def __inspect_request(self, request):
         ## Verify other aspect from request.
+        print '[LOG]: INSPECT REQUEST.';
 
-        keywords = [
-            'action',
-            'player',
-            'msg_id',
-            'vmt_id',
-            'div_id'
-        ];
 
-        for key in keywords:
-             if not request.has_key(key):
-                print "LOG: missed field " + key;
-                return 1;
+        #keywords = [
+        #    'action',
+        #    'player',
+        #    'msg_id',
+        #    'vmt_id',
+        #    'div_id'
+        #];
+
+        #for key in keywords:
+        #     if not request.has_key(key):
+        #        print "LOG: missed field " + key;
+        #        return 1;
 
         return 0;
 

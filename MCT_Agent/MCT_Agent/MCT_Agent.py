@@ -137,32 +137,53 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     ## BRIEF: send message to MCT_Dispatch.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict request == received request.
+    ## @PARAM dict message == received message.
     ##
-    def __send_message_dispatch(self, request, appId):
+    def __send_message_dispatch(self, message, appId):
 
         ## LOG:
-        print '[LOG]: REQUEST RECEIVED: ' + str(request);
-        print '[LOG]: SEND MESSAGE!'
-
+        print '[LOG]: MESSAGE RECEIVED: ' + str(message);
+        
         ##
-        self.__publish.publish(request, self.__route);
+        self.__publish.publish(message, self.__route);
         return 0;
 
 
     ##
     ## BRIEF: receive message from MCT_Dispatch.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict request == received request.
+    ## @PARAM dict message == received message.
     ##
-    def __recv_message_dispatch(self, request, appId):
+    def __recv_message_dispatch(self, message, appId):
 
         ## LOG:
-        print '[LOG]: REQUEST RECEIVED FROM: ' + str(appId);
-        print '[LOG]: MESSAGE RECEIVED!'
+        print '[LOG]: REQUEST MESSAGE FROM: ' + str(appId);
 
+        #print self.__route
         ##
-        ##self.__publish.publish(request, self.__route);
+        #self.__publish.publish(message, self.__route);
+
+        ## TODO: TEMP:
+        if message['retId'] != '':
+            print "[LOG]: PROCESSING REQUEST"
+            ## aqui vai para o drive depois.
+            message['status'] = '1';
+ 
+            config = {
+               'identifier':'Agent_Player1',
+               'address'   :'10.0.0.33',
+               'route'     :'mct_dispatch',
+               'exchange'  :'mct_exchange',
+               'queue_name':'dispatch'
+            }
+
+            targetPublish = RabbitMQ_Publish(config);
+            targetPublish.publish(message, 'mct_dispatch');
+
+            del targetPublish;
+        else:
+            print '[LOG]: REQUEST PROCESSED';        
+
         return 0;
 
 

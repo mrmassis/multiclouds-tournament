@@ -19,7 +19,11 @@ from lib.amqp     import RabbitMQ_Publish, RabbitMQ_Consume;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE = '/etc/mct/mct_dispatch.ini';
+CONFIG_FILE      = '/etc/mct/mct_dispatch.ini';
+AGENT_ROUTE      = 'mct_agent';
+AGENT_IDENTIFIER = 'MCT_Dispatch';
+AGENT_EXCHANGE   = 'mct_agent_exchange';
+AGENT_QUEUE      = 'agent';
 
 
 
@@ -113,7 +117,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
     ##
-    ## BRIEF: receive message from refereee.
+    ## BRIEF: receive message from referee.
     ## ------------------------------------------------------------------------
     ## @PARAM dict message == received message.
     ## @PARAM str  appId   == source app id.
@@ -122,12 +126,30 @@ class MCT_Dispatch(RabbitMQ_Consume):
         ## LOG:
         print '[LOG]: RETURN OF REFEERE: ' + str(message);
 
-        ## Remove the message (put previous) in the pending requests dictionary.
-        valRet = self.__remove_query(message['msg_id']);
 
-        ## TODO: obter info do player.
-        ## Send to player the request confirmation:
-        #self.__publish.publish(message, appId);
+        if message['retId'] == '':
+            ## Remove the message (put previous) in the pending requests dicti-
+            ## onary.
+            valRet = self.__remove_query(message['reqId']);
+
+            playerAddress = message['origAdd'];
+        else:
+            playerAddress = message['destAdd'];
+
+        ## Create the configuration about the return message.This configuration
+        ## will be used to send the messagem to apropriate player.
+        config = {
+            'identifier': AGENT_IDENTIFIER,
+            'route'     : AGENT_ROUTE,
+            'exchange'  : AGENT_EXCHANGE,
+            'queue_name': AGENT_QUEUE,
+            'address'   : playerAddress 
+        };
+
+        targetPublish = RabbitMQ_Publish(config); 
+        targetPublish.publish(message, AGENT_ROUTE);
+
+        del targetPublish;
 
         return 0;
 
@@ -135,19 +157,23 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ##
     ## BRIEF: send message to the refereee.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict request == received request.
+    ## @PARAM dict message == received message.
     ## @PARAM str  appId   == source app id.
     ##
-    def __send_message_referee(self, request, appId):
+    def __send_message_referee(self, message, appId):
        ## LOG:
-       print '[LOG]: REQUEST RECEIVED: ' + str(request);
+       print '[LOG]: REQUEST RECEIVED: ' + str(message);
 
-       ## Adds the message in the pending requests dictionary. If it is already
-       ## inserted does not perform the action.
-       valRet = self.__append_query(request['msg_id'], appId);
+       ## The message can be a request for action or a response for action per-
+       ## formed. Check the message type, if respId == '' is a request.
+       if message['retId'] == '':
 
-       if valRet == 0:
-           self.__publish.publish(request, self.__routeReferee);
+           ## Adds the message in the pending requests dictionary. If it is al-
+           ## readyinserted does not perform the action.
+           valRet=self.__append_query(appId, message['reqId'], message['code']);
+
+       ## Send the message to MCT_Referee.
+       self.__publish.publish(message, self.__routeReferee);
 
        return 0;
 
@@ -155,26 +181,26 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ##
     ## BRIEF: stores the request identifier.
     ## ------------------------------------------------------------------------
-    ## @PARAM str msgId == identifier of the request.
+    ## @PARAM str playerId  == identifier of the player.
+    ## @PARAM str requestId == identifier of the request.
+    ## @PARAM str actionId  == identifier of the action.
     ##
-    def __append_query(self, msgId, appId, action=001):
-        ## TODO: colocar o TYPE motivo de auditoria. (type eh palavra reservada)
-
+    def __append_query(self, playerId, requestId, actionId):
         ## 
         timeStamp = timeStamp = str(datetime.datetime.now());
 
         ## Check if the line that represent the request already in db. Perform
         ## a select.
         query  = "SELECT status FROM REQUEST WHERE ";
-        query += "request_id='"    + str(msgId) + "' "
-        query += "and player_id='" + str(appId) + "'";
+        query += "request_id='"    + str(requestId) + "' "
+        query += "and player_id='" + str(playerId) + "'";
         valRet = [] or self.__dbConnection.select_query(query)
 
         ## Verifies that the request already present in the requests 'database'
         ## if not insert it.
         if valRet == [] or valRet[0][0] != 0:
             ## LOG:
-            print '[LOG]: MESSAGE PENDING: ' + str(msgId);
+            print '[LOG]: MESSAGE PENDING: ' + str(requestId);
 
             ## Insert a line in table REQUEST from database mct. Each line mean
             ## a request finished or in execution.
@@ -185,7 +211,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
             query += "status, ";
             query += "timestamp_received";
             query += ") VALUES (%s, %s, %s, %s, %s)";
-            value  = (appId, msgId, action, 0, timeStamp);
+            value  = (playerId, requestId, actionId, 0, timeStamp);
             valRet = self.__dbConnection.insert_query(query, value)
 
             return 0;
@@ -202,14 +228,14 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## ------------------------------------------------------------------------
     ## @PARAM str msgId == identifier of the request.
     ##
-    def __remove_query(self, msgId):
+    def __remove_query(self, requestId):
         ## 
         timeStamp = timeStamp = str(datetime.datetime.now());
 
         ## Check if the line that represent the request already in db. Perform
         ## a select.
         query  = "SELECT player_id FROM REQUEST WHERE ";
-        query += "request_id='" + str(msgId) + "' "
+        query += "request_id='" + str(requestId) + "' "
         valRet = [] or self.__dbConnection.select_query(query);
 
         query  = "UPDATE REQUEST SET ";
@@ -217,11 +243,11 @@ class MCT_Dispatch(RabbitMQ_Consume):
         query += "timestamp_finished='" + str(timeStamp) + "' ";
         query += "WHERE ";
         query += "player_id='"  + str(valRet[0][0]) + "' and ";
-        query += "request_id='" + str(msgId) + "'";
+        query += "request_id='" + str(requestId) + "'";
         valRet = self.__dbConnection.update_query(query);
 
         ## LOG:
-        print '[LOG]: MESSAGE ID: '+ str(msgId) +' REMOVED FROM PENDING!';
+        print '[LOG]: MESSAGE ID: '+ str(requestId) +' REMOVED FROM PENDING!';
 
         return 0;
 

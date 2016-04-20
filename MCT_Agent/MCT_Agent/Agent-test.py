@@ -87,8 +87,20 @@ class MCT_Agent:
         ## ken de autenticacao.
         #idata = self.__cfg['properties'];
 
+        msg = {
+            'code'   : 0001,
+            'playerId': 'player1',
+            'status' : 0,
+            'retId'  : '',
+            'reqId'  : 'kjfklsajdlkajdlakjdal',
+            'origAdd': '10.0.0.30',
+            'destAdd': '',
+            'data'   : {
+             }
+        };
+
         data = {'action': 'create', 'player':'1', 'vmt_id':'B', 'msg_id':'00000001', 'div_id':'1'};
-        self.__publisher.publish(data, self.__cfg['amqp']['route']);
+        self.__publisher.publish(msg, self.__cfg['amqp']['route']);
 
         return 0;
 
