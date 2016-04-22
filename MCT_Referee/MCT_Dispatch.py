@@ -5,6 +5,7 @@ import ConfigParser;
 import sys;
 import json;
 import datetime;
+import logging;
 
 from lib.database import Database;
 from lib.amqp     import RabbitMQ_Publish, RabbitMQ_Consume;
@@ -24,6 +25,35 @@ AGENT_ROUTE      = 'mct_agent';
 AGENT_IDENTIFIER = 'MCT_Dispatch';
 AGENT_EXCHANGE   = 'mct_agent_exchange';
 AGENT_QUEUE      = 'agent';
+LOG_NAME         = 'MCT_Dispatch';
+LOG_FORMAT       = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
+LOG_FILENAME     = '/var/log/mct/mct_dispatch.log';
+
+
+
+
+
+
+###############################################################################
+## LOG                                                                       ##
+###############################################################################
+## Create a handler and define the output filename and the max size and max nun
+## ber of the files (1 mega = 1048576 bytes).
+handler= logging.handlers.RotatingFileHandler(LOG_FILENAME, 
+                                              maxBytes=1048576, 
+                                              backupCount=10);
+
+## Create a foramatter that specific the format of log and insert it in the log
+## handler. 
+formatter = logging.Formatter(LOG_FORMAT);
+handler.setFormatter(formatter);
+
+## Set up a specific logger with our desired output level (in this case DEBUG).
+## Before, insert the handler in the logger object.
+logger = logging.getLogger(LOG_NAME);
+logger.setLevel(logging.DEBUG);
+logger.addHandler(handler);
+
 
 
 
@@ -93,7 +123,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ##
     def callback(self, channel, method, properties, message):
         ## LOG:
-        print '[LOG]: AMQP APP ID : ' + str(properties.app_id);
+        logger.info('MESSAGE RECEIVED FROM: %s', properties.app_id);
 
         ## Send to source an ack msg to ensuring that the message was received.
         self.chn.basic_ack(method.delivery_tag);
@@ -124,8 +154,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ##
     def __recv_message_referee(self, message, appId):
         ## LOG:
-        print '[LOG]: RETURN OF REFEERE: ' + str(message);
-
+        logger.info('MESSAGE RETURNED OF REFEREE: %s', message);
 
         if message['retId'] == '':
             ## Remove the message (put previous) in the pending requests dicti-
