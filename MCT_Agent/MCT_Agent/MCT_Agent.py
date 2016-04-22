@@ -5,6 +5,8 @@ import ConfigParser;
 import sys;
 import json;
 import time;
+import logging;
+import logging.handlers;
 
 
 from lib.amqp         import RabbitMQ_Publish, RabbitMQ_Consume;
@@ -20,7 +22,37 @@ from multiprocessing  import Process;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CFG_FILE = '/etc/mct/mct_agent.ini';
+CONFIG_FILE  = '/etc/mct/mct_agent.ini';
+LOG_NAME     = 'MCT_Agent';
+LOG_FORMAT   = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
+LOG_FILENAME = '/var/log/mct/mct_agent.log';
+
+
+
+
+
+
+
+
+###############################################################################
+## LOG                                                                       ##
+###############################################################################
+## Create a handler and define the output filename and the max size and max nun
+## ber of the files (1 mega = 1048576 bytes).
+handler= logging.handlers.RotatingFileHandler(LOG_FILENAME,
+                                              maxBytes=1048576,
+                                              backupCount=10);
+
+## Create a foramatter that specific the format of log and insert it in the log
+## handler. 
+formatter = logging.Formatter(LOG_FORMAT);
+handler.setFormatter(formatter);
+
+## Set up a specific logger with our desired output level (in this case DEBUG).
+## Before, insert the handler in the logger object.
+logger = logging.getLogger(LOG_NAME);
+logger.setLevel(logging.DEBUG);
+logger.addHandler(handler);
 
 
 
@@ -71,7 +103,7 @@ class MCT_Agent(RabbitMQ_Consume):
     
     __recv_message_referee == receive message from referee.
     __send_message_referee == send message to referee.
-    __valid_request        == check if all necessary fields are in request.
+    __inspect_request      == check if all necessary fields are in request.
 
     """
 
@@ -110,8 +142,6 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM str                       message    = message received.
     ##
     def callback(self, channel, method, properties, message):
-        ## LOG:
-        print '[LOG]: FROM ' + str(properties.app_id);
 
         ## Send to source an ack msg to ensuring that the message was received.
         self.chn.basic_ack(method.delivery_tag);
@@ -122,10 +152,10 @@ class MCT_Agent(RabbitMQ_Consume):
         ## Check if is a request received from players or a return from a divi-
         ## sions. The identifier is the properties.app_id.
         if properties.app_id == 'MCT_Dispatch':
-            if self.__valid_request(message) == 0:
+            if self.__inspect_request(message) == 0:
                 self.__recv_message_dispatch(message, properties.app_id);
         else:
-            if self.__valid_request(message) == 0:
+            if self.__inspect_request(message) == 0:
                 self.__send_message_dispatch(message, properties.app_id);
 
         return 0;
@@ -142,7 +172,7 @@ class MCT_Agent(RabbitMQ_Consume):
     def __send_message_dispatch(self, message, appId):
 
         ## LOG:
-        print '[LOG]: MESSAGE RECEIVED: ' + str(message);
+        logger.info('MESSAGE SEND TO DISPATCH: %s', message);
         
         ##
         self.__publish.publish(message, self.__route);
@@ -155,9 +185,8 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict message == received message.
     ##
     def __recv_message_dispatch(self, message, appId):
-
         ## LOG:
-        print '[LOG]: REQUEST MESSAGE FROM: ' + str(appId);
+        logger.info('MESSAGE RETURNED OF %s REFEREE: %s', appId, message);
 
         #print self.__route
         ##
@@ -165,7 +194,10 @@ class MCT_Agent(RabbitMQ_Consume):
 
         ## TODO: TEMP:
         if message['retId'] != '':
-            print "[LOG]: PROCESSING REQUEST"
+
+            ## LOG:
+            logger.info('PROCESSING REQUEST!');
+
             ## aqui vai para o drive depois.
             message['status'] = '1';
  
@@ -182,7 +214,8 @@ class MCT_Agent(RabbitMQ_Consume):
 
             del targetPublish;
         else:
-            print '[LOG]: REQUEST PROCESSED';        
+            ## LOG:
+            logger.info('RESQUEST PROCESSED!');
 
         return 0;
 
@@ -192,11 +225,11 @@ class MCT_Agent(RabbitMQ_Consume):
     ## ------------------------------------------------------------------------
     ## @PARAM dict request == received request.
     ##
-    def __valid_request(self, request):
+    def __inspect_request(self, request):
         ## TODO: DEFINR FORMATO!
 
         ## LOG:
-        print '[LOG]: DEFINIR FORMATO!';
+        logger.info('INSPECT REQUEST!');
         return 0;
 
 ## END.
@@ -228,7 +261,7 @@ class Main(Process):
 
         ## Get all configs parameters presents in the config file localized in
         ## CONFIG_FILE path.
-        config = get_config(CFG_FILE);
+        config = get_config(CONFIG_FILE);
 
         if   typeConsume == 'EXTERNAL':
             self.__amq = MCT_Agent(config['amqp_internal_consume'],
@@ -262,11 +295,11 @@ class Main(Process):
 ###############################################################################
 if __name__ == "__main__":
     ## LOG:
-    print '[LOG]: EXECUTION STARTED...';
+    logger.info('EXECUTION STARTED...');
 
     ## Get all configs parameters presents in the config file localized in CFG_
     ## FILE path.
-    config = get_config(CFG_FILE);
+    config = get_config(CONFIG_FILE);
    
     try:
         processes = [];
@@ -279,15 +312,12 @@ if __name__ == "__main__":
         while True:
             time.sleep(float(config['main']['pooling_time_interval']));
 
-    ## Caso Ctrl-C seja precionado realiza os procedimentos p/ finalizar o ambi
-    ## ente.
     except KeyboardInterrupt, error:
-        ## LOG:
-        print '[LOG]: EXECUTION FINISHED...';
-
         for process in processes:
             process.terminate();
             process.join();
 
+    ## LOG:
+    logger.info('EXECUTION FINISHED...');
     sys.exit(0);
 ## EOF

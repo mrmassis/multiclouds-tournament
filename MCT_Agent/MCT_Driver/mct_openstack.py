@@ -1,27 +1,35 @@
-##
-
-import contextlib
-
-from oslo.config import cfg
-
-from nova.compute import power_state
-from nova.compute import task_states
-from nova.console import type as ctype
-from nova import db
-from nova import exception
-from nova.i18n import _
-from nova.openstack.common import jsonutils
-from nova.openstack.common import log as logging
-from nova import utils
-from nova.virt import diagnostics
-from nova.virt import driver
-from nova.virt import virtapi
-
+import contextlib;
 import socket;
 import json;
+import hashlib;
+import time;
 
-CONF = cfg.CONF
-CONF.import_opt('host', 'nova.netconf')
+from oslo.config           import cfg
+from nova.compute          import power_state
+from nova.compute          import task_states
+from nova.console          import type as ctype
+from nova                  import db
+from nova                  import exception
+from nova.i18n             import _
+from nova.openstack.common import jsonutils
+from nova.openstack.common import log as logging
+from nova                  import utils
+from nova.virt             import diagnostics
+from nova.virt             import driver
+from nova.virt             import virtapi
+
+
+
+
+
+
+
+###############################################################################
+## DEFINITIONS                                                               ##
+###############################################################################
+REQUEST_PENDING_TIMEOUT = 5;
+CONF = cfg.CONF;
+CONF.import_opt('host', 'nova.netconf');
 
 LOG = logging.getLogger(__name__)
 
@@ -53,11 +61,6 @@ def restore_nodes():
 
 
 
-
-###############################################################################
-## DEFINTIONS                                                                ##
-###############################################################################
-REQUEST_PENDING_TIMEOUT = 5;
 
 
 
@@ -99,24 +102,20 @@ class Instance(object):
 class MCT_Agent(object):
 
     """
-    
     ---------------------------------------------------------------------------
     """
+
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
     state = None;
     data  = None;
 
+
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    ##
-    ## BRIEF:
-    ## ------------------------------------------------------------------------
-    ##
     def __init__(self):
-
         
         ## Power state is the state we get by calling virt driver on a particu-
         ## lar domain. The hypervisor is always considered the authority on the
@@ -250,41 +249,72 @@ class MCT_Agent(object):
     ##
     def get_resource_inf(self):
 
-        ## Protocol: [002] get player status!
+        ## Protocol: [000] get player status!
         dataToSend = {
-                          "opercode": '000',
-                          "data"    : {}
-                     };
+            'code'    : 0,
+            'playerId': '',
+            'status'  : 0,
+            'retId'   : '',
+            'reqId'   : '',
+            'origAdd' : '',
+            'destAdd' : '',
+            'data'    : {}
+        };
 
-        ## Send the request to MCT_Agent and stay waiting for an ansewer.
-        dataReceived = self.__send_to_agent(dataToSend);
+        ## Create an idx to identify the request for the resources information.
+        idx = self.__create_index();
 
-        return dataReceived['data'];
+        ## Insert the current request in the structure that represents the req-
+        ## uests who are waiting for response.
+        self.__insert_request_pending(idx);
+
+        ## Send the request to the MCT_Agent via asynchronous protocol (AMPQP).
+        self.__send_to_agent(dataToSend);
+
+        ## Waiting for the answer arrive. When the status change from 'waiting'
+        ## to 'ready' retrieves the return.
+        while self.__requestPeding[idx]['status_request'] == 'waiting':
+            time.sleep(REQUEST_PENDING_TIMEOUT);
+
+        ## Obtain the data received from request.
+        dataReceived = self.__requestPeding[idx]['data'];
+
+        ## Remove the entry from the list of requests that waintig for return.
+        self.__remove_request_pending(idx);
+
+        ## Return the all datas about resouces avaliable in player's division.
+        return dataReceived;
 
 
     ###########################################################################
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
     ##
-    ## BRIEF:
+    ## BRIEF: send the message to MCT_Agent.
     ## ------------------------------------------------------------------------
-    ## @PARAM data ==
+    ## @PARAM message == message to send.
     ##
-    def __send_to_agent(self, data):
+    def __send_to_agent(self, message):
+
+        ## TODO:
+        ## AQUI NESSE MOMENTO, REALIZA O ENVIO VIA AMQP DO OBJECTO AMQP.
+        ## mctCommunication.publish(message);
+
+
         ## 
-        jsonData = json.dumps(data, sort_keys=True);
+        #jsonData = json.dumps(data, sort_keys=True);
 
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
-        s.connect(('localhost', 9998));
-        s.sendall(jsonData);
+        #s = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
+        #s.connect(('localhost', 9998));
+        #s.sendall(jsonData);
 
-        dataJsonReceived = s.recv(1024);
-        s.close();
+        #dataJsonReceived = s.recv(1024);
+        #s.close();
 
         ## The data received are in json format, covert (load) to python dicti-
         ## onary format.
-        dataReceived = json.loads(dataJsonReceived);
-        return dataReceived;
+        #dataReceived = json.loads(dataJsonReceived);
+        return 0;
 
 
     ##
@@ -310,6 +340,22 @@ class MCT_Agent(object):
     def __remove_request_pending(self, idx):
         del self.__requestPending[idx];
         return 0;
+
+
+    ##
+    ## BRIEF: create a new index based in a hash.
+    ## ------------------------------------------------------------------------
+    ##
+    def __create_index(self):
+        ## Use FIPS SHA security algotirh sha512() to create a SHA hash object.
+        newHash = hashlib.sha512();
+
+        ## Update the hash object with the string arg. Repeated calls are equi-
+        ## valent to a single call with the concatenation of all the arguments:
+        newHash.update(str(time.time()));
+
+        ## Return a hash with ten position:
+        return newHash.hexdigest()[:10];
 ## EOF.
 
 

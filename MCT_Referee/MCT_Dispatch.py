@@ -6,6 +6,7 @@ import sys;
 import json;
 import datetime;
 import logging;
+import logging.handlers;
 
 from lib.database import Database;
 from lib.amqp     import RabbitMQ_Publish, RabbitMQ_Consume;
@@ -58,6 +59,9 @@ logger.addHandler(handler);
 
 
 
+
+
+
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
@@ -73,7 +77,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
     __send_message_referee == send message to referee.
     __append_query         == store the request identifier.
     __remove_query         == store the request identifier.
-    __valid_request        == check if all necessary fields are in request.
+    __inspect_request      == check if all necessary fields are in request.
     __get_configs          == obtain all configuration from conffiles.
 
     """
@@ -122,9 +126,6 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## @PARAM str                       message    = message received.
     ##
     def callback(self, channel, method, properties, message):
-        ## LOG:
-        logger.info('MESSAGE RECEIVED FROM: %s', properties.app_id);
-
         ## Send to source an ack msg to ensuring that the message was received.
         self.chn.basic_ack(method.delivery_tag);
 
@@ -133,10 +134,10 @@ class MCT_Dispatch(RabbitMQ_Consume):
         ## Check if is a request received from players or a return from a divi-
         ## sions. The identifier is the properties.app_id.
         if properties.app_id == 'MCT_Referee':
-            if self.__valid_request(message) == 0:
+            if self.__inspect_request(message) == 0:
                 self.__recv_message_referee(message, properties.app_id);
         else:
-            if self.__valid_request(message) == 0:
+            if self.__inspect_request(message) == 0:
                 self.__send_message_referee(message, properties.app_id);
 
         return 0;
@@ -191,7 +192,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ##
     def __send_message_referee(self, message, appId):
        ## LOG:
-       print '[LOG]: REQUEST RECEIVED: ' + str(message);
+       logger.info('MESSAGE SEND TO REFEREE: %s BY APP: %s', message, appId);
 
        ## The message can be a request for action or a response for action per-
        ## formed. Check the message type, if respId == '' is a request.
@@ -229,7 +230,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
         ## if not insert it.
         if valRet == [] or valRet[0][0] != 0:
             ## LOG:
-            print '[LOG]: MESSAGE PENDING: ' + str(requestId);
+            logger.info('MESSAGE PENDING: %s', requestId);
 
             ## Insert a line in table REQUEST from database mct. Each line mean
             ## a request finished or in execution.
@@ -246,7 +247,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
             return 0;
 
         ## LOG:
-        print '[LOG]: MESSAGE JAH PRESENTE: NAO INSERIDA!'
+        logger.info('MESSAGE ALREADY PENDING: %s (NOT INSERTED)', requestId);
 
         ## 
         return 1;
@@ -276,8 +277,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
         valRet = self.__dbConnection.update_query(query);
 
         ## LOG:
-        print '[LOG]: MESSAGE ID: '+ str(requestId) +' REMOVED FROM PENDING!';
-
+        logger.info('MESSAGE %s REMOVED FROM PENDING!', requestId);
         return 0;
 
 
@@ -286,11 +286,11 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## ------------------------------------------------------------------------
     ## @PARAM dict request == received request.
     ##
-    def __valid_request(self, request):
+    def __inspect_request(self, request):
         ## TODO: DEFINR FORMATO!
 
         ## LOG:
-        print '[LOG]: DEFINIR FORMATO!';
+        logger.info('INSPECT REQUEST!');
         return 0;
 
 
@@ -324,16 +324,17 @@ class MCT_Dispatch(RabbitMQ_Consume):
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
-    try:
-        ## LOG:
-        print '[LOG]: EXECUTION STARTED....';
+    ## LOG:
+    logger.info('EXECUTION STARTED...');
 
+    try:
         daemon = MCT_Dispatch();
         daemon.consume();
 
     except KeyboardInterrupt, error:
-        ## LOG:
-        print '[LOG]: EXECUTION FINISHED...';
+        pass;
 
+    ## LOG:
+    logger.info('EXECUTION FINISHED...');
     sys.exit(0);
 ## EOF.

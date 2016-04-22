@@ -8,9 +8,10 @@ import os;
 import datetime;
 import ConfigParser;
 import json;
+import logging;
+import logging.handlers;
 
 from multiprocessing  import Process, Queue, Lock;
-
 from lib.scheduller   import Roundrobin;
 from lib.amqp         import RabbitMQ_Publish, RabbitMQ_Consume;
 
@@ -21,7 +22,41 @@ from lib.amqp         import RabbitMQ_Publish, RabbitMQ_Consume;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE = '/etc/mct/mct_referee.ini';
+CONFIG_FILE   = '/etc/mct/mct_referee.ini';
+LOG_NAME      = 'MCT_Referee';
+LOG_FORMAT    = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
+LOG_FILENAME  = '/var/log/mct/mct_referee.log';
+
+
+
+
+
+
+
+
+###############################################################################
+## LOG                                                                       ##
+###############################################################################
+## Create a handler and define the output filename and the max size and max nun
+## ber of the files (1 mega = 1048576 bytes).
+handler= logging.handlers.RotatingFileHandler(LOG_FILENAME,
+                                              maxBytes=1048576,
+                                              backupCount=10);
+
+## Create a foramatter that specific the format of log and insert it in the log
+## handler. 
+formatter = logging.Formatter(LOG_FORMAT);
+handler.setFormatter(formatter);
+
+## Set up a specific logger with our desired output level (in this case DEBUG).
+## Before, insert the handler in the logger object.
+logger = logging.getLogger(LOG_NAME);
+logger.setLevel(logging.DEBUG);
+logger.addHandler(handler);
+
+
+
+
 
 
 
@@ -75,19 +110,19 @@ class Division(Process):
 
         while True:
             try:
-                request = self.__queue.get(True, 5);
+                message = self.__queue.get(True, 5);
             except:
-                request = '';
+                message = '';
                 pass;
 
-            print "MESSAGE: " + str(request);
+            if message:
 
-            if request:
-                print('[LOG] Divisao %s recebeu a msg %s.',self.__div,request);
+                ## LOG:
+                logger.info('DIV: %s RECEIVED THE MSG: %s',self.__div,message);
 
                 ## When the div. receiving the message performs all tasks rela-
                 ## ted to the action described in the message.
-                self.__exec_action(request);
+                self.__exec_action(message);
 
                 ## Obtain the current time . The value is used to calculate the
                 ## time difference .
@@ -113,20 +148,20 @@ class Division(Process):
     ## ------------------------------------------------------------------------
     ## @PARAM dict request == request receveid from MCT_Divisions. 
     ## 
-    def __exec_action(self, request):
+    def __exec_action(self, message):
 
         response = {
-            'action': request['action'],
-            'player': request['player'],
-            'msg_id': request['msg_id'],
+            'action': message['action'],
+            'player': message['player'],
+            'msg_id': message['msg_id'],
             'status': 'ok'
         }
 
-        self.__publisher.publish(response, 'mct_dispatch');
-        print '[LOG] enviado!';
+        self.__publisher.publish(message, 'mct_dispatch');
+        
+        ## LOG:
+        logger.info('RESPONSE SENT: %s', response);
         return 0;
-
-
 ## END.
 
 
@@ -206,7 +241,9 @@ class MCT_Referee(RabbitMQ_Consume):
             thread.terminate();
             thread.join();
 
-        print '[LOG]: Gracefull stop ...';
+        ## LOG:
+        logger.info('GRACEFULL STOP...');
+        return 0;
 
 
     ##
@@ -219,7 +256,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     def callback(self, channel, method, properties, message):
         ## LOG:
-        print '[LOG]: AMQP APP ID : ' + str(properties.app_id);
+        logger.info('MESSAGE %s RECEIVED FROM: %s.',message,properties.app_id);
 
         ## Send to source an ack msg to ensuring that the message was received.
         self.chn.basic_ack(method.delivery_tag);
@@ -271,9 +308,10 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM dict request == received request.
     ##
     def __inspect_request(self, request):
-        ## Verify other aspect from request.
-        print '[LOG]: INSPECT REQUEST.';
+        ## LOG:
+        logger.info('INSPECT REQUEST!');
 
+        ## Verify other aspect from request.
 
         #keywords = [
         #    'action',
@@ -324,20 +362,18 @@ class MCT_Referee(RabbitMQ_Consume):
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
+    ## LOG:
+    logger.info('EXECUTION STARTED...');
 
     try:
-        ## LOG:
-        print '[LOG]: EXECUTION STARTED....';
         mctReferee = MCT_Referee();
         mctReferee.consume();
 
-    ## Caso Ctrl-C seja precionado realiza os procedimentos p/ finalizar o ambi
-    ## ente.
     except KeyboardInterrupt, error:
-        ## LOG:
-        print '[LOG]: EXECUTION FINISHED...';
         mctReferee.gracefull_stop();
 
+    ## LOG:
+    logger.info('EXECUTION FINISHED...');
     sys.exit(0);
 ## EOF.
 
