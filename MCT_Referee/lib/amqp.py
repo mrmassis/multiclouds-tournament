@@ -158,6 +158,7 @@ class RabbitMQ_Consume(object):
         result       = self.chn.queue_declare(queue=qName, durable=True);
         self.__qName = result.method.queue;
 
+
         ## Bind the queue to the specified exchange:
         self.chn.queue_bind(exchange=exchange,queue=qName,routing_key=rKey);
 

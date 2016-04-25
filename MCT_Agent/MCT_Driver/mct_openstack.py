@@ -3,6 +3,8 @@ import socket;
 import json;
 import hashlib;
 import time;
+import json;
+import pika;
 
 from oslo.config           import cfg
 from nova.compute          import power_state
@@ -17,6 +19,7 @@ from nova                  import utils
 from nova.virt             import diagnostics
 from nova.virt             import driver
 from nova.virt             import virtapi
+from multiprocessing       import Process
 
 
 
@@ -27,7 +30,11 @@ from nova.virt             import virtapi
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
+## This is a dictionary of dictionary.Each position is a dictionary that repre-
+## sent a request pendind to MCT_Agent via AMQP.
 REQUEST_PENDING_TIMEOUT = 5;
+REQUEST_PENDING = {};
+
 CONF = cfg.CONF;
 CONF.import_opt('host', 'nova.netconf');
 
@@ -68,6 +75,271 @@ def restore_nodes():
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
+class MCT_Communication(Process):
+
+    """
+    --------------------------------------------------------------------------
+    PUBLIC METHODS:
+    run      == main loop.
+    callback == method invoked when the pika receive a message.
+    publish  == publish a message by the AMQP to MCT_Agent.
+    pooling  == check if the request pending was received.
+
+    PRIVATE METHODS.
+    __init_consume           == initialize the consume.
+    __init_publish           == instialize the publish.
+    __insert_request_pending == insert an entry into the pending dictionary.
+    __delete_request_pending == remove an entry from the pending dictionary.
+    __update_request_pending == update an entry in pending dictionary.
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __pending = {};
+    __chnP    = None;
+    __chnC    = None;
+
+
+    ###########################################################################
+    ## SPECIAL METHODS                                                       ##
+    ###########################################################################
+    def __init__(self):
+        super(MCT_Communication, self).__init__(name=name);
+
+        ## Initialize the inherited class RabbitMQ_Consume with the parameters
+        ## defined in the configuration file.
+        self.__init_consume();
+
+        ## Instantiates an object to perform the publication of AMQP messages.
+        self.__init_publish();
+
+
+    ###########################################################################
+    ## PUBLIC METHODS                                                        ##
+    ###########################################################################
+    ##
+    ## Brief: main loop.
+    ## ------------------------------------------------------------------------
+    ##
+    def run(self):
+        ## Consume to the broker and binds messages for the consumer_tag to the
+        ## consumer callback. 
+        self.chnC.basic_consume(self.callback,
+                                'agent_snd', 
+                                'Drive', 
+                                no_ack=False);
+
+        ## Processes I/O events and dispatches timers and basic_consume callba-
+        ## cks until all consumers are cancelled.
+        self.chnC.start_consuming();
+
+
+    ##
+    ## BRIEF: method invoked when the pika receive a message.
+    ## ------------------------------------------------------------------------
+    ## @PARAM pika.Channel              channel    = the communication channel.
+    ## @PARAM pika.spec.Basic.Deliver   method     = 
+    ## @PARAM pika.spec.BasicProperties properties = 
+    ## @PARAM str                       message    = message received.
+    ##
+    def callback(self, channel, method, properties, message):
+
+        ## Send to source an ack msg to ensuring that the message was received.
+        self.chnC.basic_ack(method.delivery_tag);
+
+        ## LOG:
+ 
+
+        ## Convert the json format to a structure than can handle by the python
+        message = json.loads(message);
+
+        ##
+        self.__update_request_pending(message['reqId'], message['data']);        
+       
+
+    ##
+    ## BRIEF: publish a message by the AMQP to MCT_Agent.
+    ## ------------------------------------------------------------------------
+    ## @PARAM message = data to publish.
+    ##
+    def publish(self, message):
+
+        propertiesData = {
+            'delivey_mode': 2,
+            'app_id'      : 'Agent',
+            'content_type': 'application/json',
+            'headers'     : message
+        }
+
+        ##
+        properties = pika.BasicProperties(**propertiesData);
+
+        ## Serialize object to a JSON formatted str using this conversion table
+        ## If ensure_ascii is False, the result may contain non-ASCII characte-
+        ## rs and the return value may be a unicode instance.
+        jData = json.dumps(message, ensure_ascii=False);
+
+        ## Insert the current request in the structure that represents the req-
+        ## uests who are waiting for response.
+        self.__insert_request_pending(message['reqId']);
+
+        ## Publish to the channel with the given exchange,routing key and body.
+        ## Returns a boolean value indicating the success of the operation.
+        ack = self.chnP.basic_publish('mct_agent_exchange', 
+                                      'agent_rcv', 
+                                      jData, 
+                                      properties);
+
+        return ack;
+
+
+    ##
+    ## BRIEF: check if the request pending was received.
+    ## ------------------------------------------------------------------------
+    ## @PARAM idx == request index.
+    ##
+    def pooling(self, idx):
+        request = {
+            'status_request': 'waiting',
+            'data'          : {}
+        }
+
+        if idx in self.__pending:
+            if self.__pending[idx] == 'ready':
+                ## Copy the status and put in response. This value will be used
+                ## by the method that invoking the pooling.
+                request['status_request'] = 'ready';
+
+                ## Get from list the all returned data from 'MCT_Agent'. The re
+                ## turn is a dictionary. 
+                request['data'] = self.__pending[idx]['data'];
+
+                ## Remove the entry from the list of requests that wainting for
+                ## return.
+                self.__remove_request_pending(idx);
+
+        return request;
+    
+
+    ###########################################################################
+    ## PRIVATE METHODS                                                       ##
+    ###########################################################################
+    ##
+    ## BRIEF: Initialize the inherited class RabbitMQ_Consume with the paramete
+    ##        rs defined in the configuration file.
+    ## ------------------------------------------------------------------------
+    ##
+    def __init_consume(self):
+
+        ## Connection parameters object that is passed into the connection ada-
+        ## pter upon construction. 
+        parameters = pika.ConnectionParameters(host='localhost');
+
+        ## The BlockingConnection creates a layer on top of Pika's asynchronous
+        ## core providing methods that will block until their expected response
+        ## has returned. 
+        connection = pika.BlockingConnection(parameters);
+
+        ## Create a new channel with the next available channel number or pass
+        ## in a channel number to use. 
+        self.chnC = connection.channel();
+
+        ## This method creates an exchange if it does not already exist, and if
+        ## the exchange exists, verifies that it is of the correct and expected
+        ## class.
+        self.chnC.exchange_declare(exchange='mct_agent_exchange',type='direct');
+
+        ## Declare queue, create if needed. This method creates or checks a qu-
+        ## eue.
+        result = self.chnC.queue_declare(queue='agent_snd', durable=True);
+
+        ## Bind the queue to the specified exchange:
+        self.chnC.queue_bind(exchange   = 'mct_agent_exchange', 
+                             queue      = 'agent_snd',
+                             routing_key= 'mct_agent_snd');
+
+        ## Specify quality of service. This method requests a specific quality
+        ## of service. 
+        self.chnC.basic_qos(prefetch_count=1);
+
+
+    ##
+    ## BRIEF: instantiates an object to perform the publication of AMQP msgs.
+    ## ------------------------------------------------------------------------
+    ##
+    def __init_publish(self):
+
+        ## Connection parameters object that is passed into the connection ada-
+        ## pter upon construction. 
+        parameters = pika.ConnectionParameters(host='localhost');
+
+        ## The BlockingConnection creates a layer on top of Pika's asynchronous
+        ## core providing methods that will block until their expected response
+        ## has returned. 
+        connection = pika.BlockingConnection(parameters);
+
+        ## Create a new channel with the next available channel number or pass
+        ## in a channel number to use. 
+        self.chnP = connection.channel();
+
+        ## This method creates an exchange if it does not already exist, and if
+        ## the exchange exists, verifies that it is of the correct and expected
+        ## class.
+        self.chnP.exchange_declare(exchange='mct_agent_exchange',type='direct');
+
+        ## Confirme delivery.
+        self.chnP.confirm_delivery;
+
+
+    ##
+    ## BRIEF: insert a request into the pending data structure.
+    ## ------------------------------------------------------------------------
+    ## @PARAM idx == request index.
+    ##
+    def __insert_request_pending(self, idx):
+
+        request = {
+            'status_request': 'waiting',
+            'data'          : {}
+        }
+
+        self.__pending[idx] = request;
+        return 0;
+
+
+    ##
+    ## BRIEF: remove a request from the pending data structure.
+    ## ------------------------------------------------------------------------
+    ## @PARAM idx == request index.
+    ##
+    def __remove_request_pending(self, idx):
+
+        del self.__pending[idx];
+        return 0;
+
+
+    ##
+    ## BRIEF: update a entry in pending dictionary.
+    ## ------------------------------------------------------------------------
+    ## @PARAM idx   == request index.
+    ## @PARAM data == data to update in request entry.
+    ##
+    def __update_request_pending(self, idx, data):
+
+        self.__pending[idx]['status_request'] = 'ready';
+        self.__pending[idx]['data']           = data;
+
+        return 0;
+## EOF.
+
+
+
+
+
+
+
+
 class Instance(object):
 
     """
@@ -99,6 +371,9 @@ class Instance(object):
 
 
 
+
+
+
 class MCT_Agent(object):
 
     """
@@ -108,8 +383,9 @@ class MCT_Agent(object):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    state = None;
-    data  = None;
+    state           = None;
+    data            = None;
+    __communication = None;
 
 
     ###########################################################################
@@ -141,9 +417,11 @@ class MCT_Agent(object):
             '7' : power_state.SUSPENDED
         };
 
-        ## This is a dictionary of dictionary.Each position is a dictionary that
-        ## represent a request pendind to MCT_Agent via AMQP.
-        self.__requestPending = {};
+        ## Instance the object that will communicate with MCT_Agent. Running in
+        ## thread.
+        self.__communication = MCT_Communication();
+        self.__communication.daemon = True;
+        self.__communication.start();
 
 
     ##
@@ -248,39 +526,35 @@ class MCT_Agent(object):
     ## ------------------------------------------------------------------------
     ##
     def get_resource_inf(self):
+        ## Create an idx to identify the request for the resources information.
+        idx = self.__create_index();
 
         ## Protocol: [000] get player status!
         dataToSend = {
             'code'    : 0,
             'playerId': '',
             'status'  : 0,
+            'reqId'   : str(idx),
             'retId'   : '',
-            'reqId'   : '',
             'origAdd' : '',
             'destAdd' : '',
             'data'    : {}
         };
 
-        ## Create an idx to identify the request for the resources information.
-        idx = self.__create_index();
-
-        ## Insert the current request in the structure that represents the req-
-        ## uests who are waiting for response.
-        self.__insert_request_pending(idx);
-
         ## Send the request to the MCT_Agent via asynchronous protocol (AMPQP).
         self.__send_to_agent(dataToSend);
 
-        ## Waiting for the answer arrive. When the status change from 'waiting'
-        ## to 'ready' retrieves the return.
-        while self.__requestPeding[idx]['status_request'] == 'waiting':
+        ## Waiting for the answer arrive. When the status change status get it.
+        while True:
+
+            ## Check if the data received from MCT_Agent is ready in the list.
+            dataReceived = self.__comunication.pooling(idx);
+
+            if dataReceived['status_request'] == 'ready':
+                 break;
+
+            ## Wating for a predefined time to check (pooling) the list again.
             time.sleep(REQUEST_PENDING_TIMEOUT);
-
-        ## Obtain the data received from request.
-        dataReceived = self.__requestPeding[idx]['data'];
-
-        ## Remove the entry from the list of requests that waintig for return.
-        self.__remove_request_pending(idx);
 
         ## Return the all datas about resouces avaliable in player's division.
         return dataReceived;
@@ -296,49 +570,7 @@ class MCT_Agent(object):
     ##
     def __send_to_agent(self, message):
 
-        ## TODO:
-        ## AQUI NESSE MOMENTO, REALIZA O ENVIO VIA AMQP DO OBJECTO AMQP.
-        ## mctCommunication.publish(message);
-
-
-        ## 
-        #jsonData = json.dumps(data, sort_keys=True);
-
-        #s = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
-        #s.connect(('localhost', 9998));
-        #s.sendall(jsonData);
-
-        #dataJsonReceived = s.recv(1024);
-        #s.close();
-
-        ## The data received are in json format, covert (load) to python dicti-
-        ## onary format.
-        #dataReceived = json.loads(dataJsonReceived);
-        return 0;
-
-
-    ##
-    ## BRIEF:
-    ## ------------------------------------------------------------------------
-    ## @PARAM idx ==
-    ##
-    def __insert_request_pending(self, idx):
-        request = {
-            'status_request': 'waiting',
-            'data'          : {}
-        }
-
-        self.__requestPending[idx] = request;
-        return 0;
-
-
-    ##
-    ## BRIEF:
-    ## ------------------------------------------------------------------------
-    ## @PARAM idx ==
-    ##
-    def __remove_request_pending(self, idx):
-        del self.__requestPending[idx];
+        self.__communication.publish(message);
         return 0;
 
 
