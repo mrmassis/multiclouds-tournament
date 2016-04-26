@@ -78,19 +78,13 @@ def restore_nodes():
 class MCT_Communication(Process):
 
     """
+    Class MCT_Communication:perform the communication to the MCT_Agent service.
     --------------------------------------------------------------------------
     PUBLIC METHODS:
-    run      == main loop.
-    callback == method invoked when the pika receive a message.
-    publish  == publish a message by the AMQP to MCT_Agent.
-    pooling  == check if the request pending was received.
-
-    PRIVATE METHODS.
-    __init_consume           == initialize the consume.
-    __init_publish           == instialize the publish.
-    __insert_request_pending == insert an entry into the pending dictionary.
-    __delete_request_pending == remove an entry from the pending dictionary.
-    __update_request_pending == update an entry in pending dictionary.
+    ** run      == main loop.
+    ** callback == method invoked when the pika receive a message.
+    ** publish  == publish a message by the AMQP to MCT_Agent.
+    ** pooling  == check if the request pending was received.
     """
 
     ###########################################################################
@@ -106,6 +100,9 @@ class MCT_Communication(Process):
     ###########################################################################
     def __init__(self):
         super(MCT_Communication, self).__init__(name=name);
+
+        ## LOG:
+        LOG.info('[MCT_COMMUNICATION] INITIALIZE COMMUNICATION OBJECT!');
 
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
         ## defined in the configuration file.
@@ -123,12 +120,10 @@ class MCT_Communication(Process):
     ## ------------------------------------------------------------------------
     ##
     def run(self):
+
         ## Consume to the broker and binds messages for the consumer_tag to the
         ## consumer callback. 
-        self.chnC.basic_consume(self.callback,
-                                'agent_snd', 
-                                'Drive', 
-                                no_ack=False);
+        self.chnC.basic_consume(self.callback,'agent_snd','Drive',no_ack=False);
 
         ## Processes I/O events and dispatches timers and basic_consume callba-
         ## cks until all consumers are cancelled.
@@ -149,7 +144,7 @@ class MCT_Communication(Process):
         self.chnC.basic_ack(method.delivery_tag);
 
         ## LOG:
- 
+        LOG.info('[MCT_COMMUNICATION] MESSAGE RECEIVED: %s', message);
 
         ## Convert the json format to a structure than can handle by the python
         message = json.loads(message);
@@ -164,6 +159,9 @@ class MCT_Communication(Process):
     ## @PARAM message = data to publish.
     ##
     def publish(self, message):
+
+        ## LOG:
+        LOG.info('[MCT_COMMUNICATION] PUBLISH MESSAGE: %s', message);
 
         propertiesData = {
             'delivey_mode': 2,
@@ -200,6 +198,10 @@ class MCT_Communication(Process):
     ## @PARAM idx == request index.
     ##
     def pooling(self, idx):
+
+        ## LOG:
+        LOG.info('[MCT_COMMUNICATION] POOLING!');
+
         request = {
             'status_request': 'waiting',
             'data'          : {}
@@ -299,6 +301,9 @@ class MCT_Communication(Process):
     ##
     def __insert_request_pending(self, idx):
 
+        ## LOG:
+        LOG.info('[MCT_COMMUNICATION] PENDING INDEX: %s', idx);
+
         request = {
             'status_request': 'waiting',
             'data'          : {}
@@ -315,6 +320,9 @@ class MCT_Communication(Process):
     ##
     def __remove_request_pending(self, idx):
 
+        ## LOG:
+        LOG.info('[MCT_COMMUNICATION] UNPENDING INDEX: %s', idx);
+
         del self.__pending[idx];
         return 0;
 
@@ -326,6 +334,9 @@ class MCT_Communication(Process):
     ## @PARAM data == data to update in request entry.
     ##
     def __update_request_pending(self, idx, data):
+
+        ## LOG:
+        LOG.info('[MCT_COMMUNICATION] UPDATE ENTRY: %s', idx);
 
         self.__pending[idx]['status_request'] = 'ready';
         self.__pending[idx]['data']           = data;
@@ -376,8 +387,12 @@ class Instance(object):
 
 class MCT_Agent(object):
 
+
     """
+    Class MCT_Agent: interface layer between MCT_Agent service and MCT_Drive.
     ---------------------------------------------------------------------------
+    PUBLIC METHODS:
+    ** get_resources_inf == get MCT resouces information.
     """
 
     ###########################################################################
@@ -526,6 +541,10 @@ class MCT_Agent(object):
     ## ------------------------------------------------------------------------
     ##
     def get_resource_inf(self):
+
+        ## LOG:
+        LOG.info('[MCT_AGENT] GETTING MCT RESOURCE INFORMATION!');
+
         ## Create an idx to identify the request for the resources information.
         idx = self.__create_index();
 
@@ -555,6 +574,9 @@ class MCT_Agent(object):
 
             ## Wating for a predefined time to check (pooling) the list again.
             time.sleep(REQUEST_PENDING_TIMEOUT);
+
+        ## LOG:
+        LOG.info('[MCT_AGENT] DATA RECEIVED: %s', dataReceived);
 
         ## Return the all datas about resouces avaliable in player's division.
         return dataReceived;
@@ -1129,18 +1151,19 @@ class MCT_Driver(driver.ComputeDriver):
     ## @RETURN (dict) dictionary describing resources.
     ##
     def get_available_resource(self, nodename):
-        LOG.info("[MCT_Drive] get_avaliable_resource!");
-        LOG.info(CONF.host)
-        LOG.info(nodename)
 
-        ##
+        ## LOG:
+        LOG.info("[MCT_Drive] GET AVALIBLE RESOURCES!");
+
+        ## Request to MCT_Agent to get the MCT resources information.
         hostResourcesStatus = self.mct.get_resource_inf();
         return hostResourcesStatus;
 
 
-
-
-
+    ##
+    ## BRIEF:
+    ## ------------------------------------------------------------------------
+    ##
     def ensure_filtering_rules_for_instance(self, instance_ref, network_info):
         return
 

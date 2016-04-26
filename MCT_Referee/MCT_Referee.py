@@ -172,12 +172,11 @@ class Division(Process):
 class MCT_Referee(RabbitMQ_Consume):
 
     """
-    CLASS: start and mantain the MCT referee.
+    Class MCT_Referee: start and mantain the MCT referee.
     ---------------------------------------------------------------------------
-    run            == create the divisions and wait in loop.
-    gracefull_stop == grecefull finish the divisions.
-
-    __get_configs  == get config options.
+    PUBLIC METHODS:
+    ** run            == create the divisions and wait in loop.
+    ** gracefull_stop == grecefull finish the divisions.
     """
 
     ###########################################################################
@@ -242,7 +241,7 @@ class MCT_Referee(RabbitMQ_Consume):
             thread.join();
 
         ## LOG:
-        logger.info('GRACEFULL STOP...');
+        logger.info('GRACEFULL STOP ...');
         return 0;
 
 
@@ -255,6 +254,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM str                       message    = message received.
     ##
     def callback(self, channel, method, properties, message):
+
         ## LOG:
         logger.info('MESSAGE %s RECEIVED FROM: %s.',message,properties.app_id);
 
@@ -262,41 +262,52 @@ class MCT_Referee(RabbitMQ_Consume):
         self.chn.basic_ack(method.delivery_tag);
 
         ## The json.loads translate a string containing JSON data into a Python
-        ## value.
+        ## dictionary format.
         message = json.loads(message);
 
-        ## Check if the message received is valid. Verify all fields in the mes
-        ## sage.
+        ## Check the messsge received.Verify if all fields are presents and are
+        ## in correct form.
         valRet = self.__inspect_request(message);
 
         ## Check if is a request or a response received from the apropriate pla
         ## yer. When message['retId'] equal a '' the message is a request.
         if message['retId'] == '':
 
-            ## 
-            message['retId'] = message['reqId'];
-  
-            ## TEM QUE CHECAR QUAL A ACAO A SER REALIZADA.
-            if int(message['code']) == 1:
-                ## Get which division than player belong.It is necessary to get
-                ## the player list able to meet the request.
-                ## division = self.__get_division(message['playerId']);
+            ## Get which division than player belong.It is necessary to get the
+            ## player list able to meet the request.
+            division = self.__get_division(message['playerId']);
 
-                ## Choise the best player ablet to meet the request to instance
-                ## creation.
-                ## playerChoiseAddress = self.__get_player(division);
-                playerChoiseAddress = '20.0.0.30';
+            ## [0] == GET RESOUCES INF.
+            ## ----------------------------------------------------------------
+            if   int(message['code']) == 0:
+ 
+                ## Get all resources available to a division.Check in database.
+                message['data'] = self.__get_resources_inf(division);
 
-                ##
-                message['destAdd'] = playerChoiseAddress;
+                ## TODO: create the database.
+
+
+            ## [1] CREATE A NEW INSTANCE.
+            ## ----------------------------------------------------------------
+            elif int(message['code']) == 1:
+
+                ##.
+                message['retId'] = message['reqId'];
+
+                ## Select one player able to comply a request to create new VM.
+                message['destAdd'] = self.__get_player(division);
+
+            ## [2] DELETE AN INSTANCE.
+            ## ----------------------------------------------------------------
+            elif int(message['code']) == 2:
+                pass;
+    
         else:
-            message['retId'  ] = '';
+            ## Set the field to forward value:
+            message['retId'] = '';
 
-        #if properties.app_id == 'MCT_Dispatch' and valRet == 0:
-        #    self.__allQueues[divId-1].put(messageDict);
         self.__publish.publish(message, self.__routeDispatch);
         return 0;
-
 
 
     ###########################################################################
@@ -327,6 +338,26 @@ class MCT_Referee(RabbitMQ_Consume):
         #        return 1;
 
         return 0;
+
+
+    ##
+    ## BRIEF: .
+    ## ------------------------------------------------------------------------
+    ## @PARAM int division.
+    ##
+    def __get_resources_inf(self, division):
+        ## TODO: check in bd.
+        return {};
+
+
+    ##
+    ## BRIEF: .
+    ## ------------------------------------------------------------------------
+    ## @PARAM int division.
+    ##
+    def __get_choice_player(self, division):
+        ## TODO: check in bd.
+        return '20.0.0.30';
 
 
     ##
