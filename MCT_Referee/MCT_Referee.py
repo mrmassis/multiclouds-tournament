@@ -11,6 +11,7 @@ import json;
 import logging;
 import logging.handlers;
 
+from lib.database     import Database;
 from multiprocessing  import Process, Queue, Lock;
 from lib.scheduller   import Roundrobin;
 from lib.amqp         import RabbitMQ_Publish, RabbitMQ_Consume;
@@ -185,6 +186,7 @@ class MCT_Referee(RabbitMQ_Consume):
     __threadsId     = None;
     __allQueues     = None;
     __routeDispatch = None;
+    __dbConnection  = None;
 
 
     ###########################################################################
@@ -192,7 +194,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ###########################################################################
     def __init__(self):
 
-        ## Get the configurations related to the execution of the divisions de-
+        ## Get the configurations related to the execution of the divisions de
         ## fined by the User.
         configs = self.__get_configs(CONFIG_FILE);
 
@@ -205,6 +207,9 @@ class MCT_Referee(RabbitMQ_Consume):
 
         ## Instantiates an object to perform the publication of AMQP messages.
         self.__publish=RabbitMQ_Publish(configs['amqp_publish']);
+
+        ## Intance a new object to handler all operation in the local database
+        self.__dbConnection = Database(configs['database']);
 
         ## This list store the thread IDs that represet each division started.
         #self.__threadsId = [];
@@ -277,18 +282,19 @@ class MCT_Referee(RabbitMQ_Consume):
             ## player list able to meet the request.
             division = self.__get_division(message['playerId']);
 
-            ## [0] == GET RESOUCES INF.
-            ## ----------------------------------------------------------------
+            ## ------------------------------------------------------------- ##
+            ## [0] == GET RESOUCES INF.                                      ##
+            ## ------------------------------------------------------------- ##
             if   int(message['code']) == 0:
- 
+
                 ## Get all resources available to a division.Check in database.
                 message['data'] = self.__get_resources_inf(division);
+                print message
 
-                ## TODO: create the database.
 
-
-            ## [1] CREATE A NEW INSTANCE.
-            ## ----------------------------------------------------------------
+            ## ------------------------------------------------------------- ##
+            ## [1] CREATE A NEW INSTANCE.                                    ##
+            ## ------------------------------------------------------------- ##
             elif int(message['code']) == 1:
 
                 ##.
@@ -297,10 +303,13 @@ class MCT_Referee(RabbitMQ_Consume):
                 ## Select one player able to comply a request to create new VM.
                 message['destAdd'] = self.__get_player(division);
 
-            ## [2] DELETE AN INSTANCE.
-            ## ----------------------------------------------------------------
+
+            ## ------------------------------------------------------------- ##
+            ## [2] DELETE AN INSTANCE.                                       ##
+            ## ------------------------------------------------------------- ##
             elif int(message['code']) == 2:
                 pass;
+
     
         else:
             ## Set the field to forward value:
@@ -341,13 +350,41 @@ class MCT_Referee(RabbitMQ_Consume):
 
 
     ##
-    ## BRIEF: .
+    ## BRIEF: get the player's division.
+    ## ------------------------------------------------------------------------
+    ## @PARAM str playerId.
+    ##
+    def __get_division(self, playerId):
+        return 3;
+
+    ##
+    ## BRIEF: get the resources info to specfic division.
     ## ------------------------------------------------------------------------
     ## @PARAM int division.
     ##
     def __get_resources_inf(self, division):
-        ## TODO: check in bd.
-        return {};
+        resouces = {};
+
+        ## Mount the database query: 
+        query  = "SELECT ";
+        query += "vcpu, memory, disk, vcpu_used, memory_used, disk_used ";
+        query += "FROM RESOURCE WHERE ";
+        query += "division='" + str(division) + "'";
+
+        valRet = [] or self.__dbConnection.select_query(query);
+
+        if valRet != []:
+
+            resources = {
+                'vcpu'          : valRet[0][0],
+                'memory_mb'     : valRet[0][1],
+                'disk_mb'       : valRet[0][2],
+                'vcpu_used'     : valRet[0][3],
+                'memory_mb_used': valRet[0][4],
+                'disk_mb_used'  : valRet[0][5]
+            }
+
+        return resources;
 
 
     ##

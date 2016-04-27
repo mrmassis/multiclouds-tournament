@@ -194,6 +194,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
        ## LOG:
        logger.info('MESSAGE SEND TO REFEREE: %s BY APP: %s', message, appId);
 
+       print message
        ## The message can be a request for action or a response for action per-
        ## formed. Check the message type, if respId == '' is a request.
        if message['retId'] == '':

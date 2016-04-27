@@ -91,6 +91,7 @@ class RabbitMQ_Publish(object):
                                           app_id       = self.__identifier,
                                           content_type = 'application/json',
                                           headers      = body);
+
         ## Serialize object to a JSON formatted str using this conversion table
         ## If ensure_ascii is False, the result may contain non-ASCII characte-
         ## rs and the return value may be a unicode instance.

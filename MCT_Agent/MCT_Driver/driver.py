@@ -1,3 +1,4 @@
+import ConfigParser;
 import contextlib;
 import socket;
 import json;
@@ -5,6 +6,7 @@ import hashlib;
 import time;
 import json;
 import pika;
+
 
 from oslo.config           import cfg
 from nova.compute          import power_state
@@ -19,9 +21,8 @@ from nova                  import utils
 from nova.virt             import diagnostics
 from nova.virt             import driver
 from nova.virt             import virtapi
-from multiprocessing       import Process
-
-
+from multiprocessing            import Process, Queue
+from nova.virt.mct.lib.database import Database
 
 
 
@@ -30,10 +31,18 @@ from multiprocessing       import Process
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
+CONFIG_FILE = '/etc/mct/mct_drive.ini';
+
 ## This is a dictionary of dictionary.Each position is a dictionary that repre-
 ## sent a request pendind to MCT_Agent via AMQP.
 REQUEST_PENDING_TIMEOUT = 5;
 REQUEST_PENDING = {};
+
+ORIG_ADDR = '10.0.0.30';
+PLAYER_ID = 'Player1';
+
+TESTE = {'b':'1'}
+
 
 CONF = cfg.CONF;
 CONF.import_opt('host', 'nova.netconf');
@@ -68,7 +77,68 @@ def restore_nodes():
 
 
 
+PENDING = {};
 
+##
+## BRIEF: insert a request into the pending data structure.
+## ------------------------------------------------------------------------
+## @PARAM idx == request index.
+##
+def insert_request_pending(idx):
+        global PENDING;
+
+        ## LOG:
+        LOG.info('[FUNCTION INSERT] PENDING INDEX: %s', idx);
+
+        request = {
+            'status_request': 'waiting',
+            'data'          : {}
+        }
+
+        PENDING[idx] = request;
+        LOG.info(PENDING)
+
+        return 0;
+
+
+
+
+##
+## BRIEF: update a entry in pending dictionary.
+## ------------------------------------------------------------------------
+## @PARAM idx   == request index.
+## @PARAM data == data to update in request entry.
+##
+def update_request_pending(idx, data):
+        global PENDING
+
+        ## LOG:
+        LOG.info('[FUNCTION UPDATE] UPDATE ENTRY: %s', idx);
+
+        if idx in PENDING:
+            PENDING[idx]['status_request'] = 'ready';
+            PENDING[idx]['data']           = data;
+
+        LOG.info(PENDING)
+        return 0;
+
+
+
+
+##
+## BRIEF: remove a request from the pending data structure.
+## ------------------------------------------------------------------------
+## @PARAM idx == request index.
+##
+def remove_request_pending(idx):
+        global PENDING;
+
+        ## LOG:
+        LOG.info('[FUNCTION REMOVE] UNPENDING INDEX: %s', idx);
+
+        del PENDING[idx];
+        return 0;
+##
 
 
 
@@ -90,26 +160,36 @@ class MCT_Communication(Process):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __pending = {};
-    __chnP    = None;
-    __chnC    = None;
+    __pending      = {};
+    __chnP         = None;
+    __chnC         = None;
+    __config       = None;
+    __dbConnection = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self):
-        super(MCT_Communication, self).__init__(name=name);
+    def __init__(self, dbConnection):
+        super(MCT_Communication, self).__init__();
 
         ## LOG:
         LOG.info('[MCT_COMMUNICATION] INITIALIZE COMMUNICATION OBJECT!');
 
+        ## Get all configs parameters presents in the config file localized in
+        ## CONFIG_FILE path.
+        self.__config = self.__get_config(CONFIG_FILE);
+
+        ## Intance a new object to handler all operation in the local database
+        #self.__dbConnection = Database(self.__config['database']);
+        self.__dbConnection = dbConnection;
+
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
         ## defined in the configuration file.
-        self.__init_consume();
+        self.__init_consume(self.__config['amqp_consume']);
 
         ## Instantiates an object to perform the publication of AMQP messages.
-        self.__init_publish();
+        self.__init_publish(self.__config['amqp_publish']);
 
 
     ###########################################################################
@@ -121,9 +201,11 @@ class MCT_Communication(Process):
     ##
     def run(self):
 
+        queue = self.__config['amqp_consume']['queue_name'];
+
         ## Consume to the broker and binds messages for the consumer_tag to the
         ## consumer callback. 
-        self.chnC.basic_consume(self.callback,'agent_snd','Drive',no_ack=False);
+        self.chnC.basic_consume(self.callback, queue, no_ack=False);
 
         ## Processes I/O events and dispatches timers and basic_consume callba-
         ## cks until all consumers are cancelled.
@@ -149,9 +231,13 @@ class MCT_Communication(Process):
         ## Convert the json format to a structure than can handle by the python
         message = json.loads(message);
 
-        ##
-        self.__update_request_pending(message['reqId'], message['data']);        
+        ## Insert the message received into the database.
+        dbQuery = "INSERT INTO REQUEST (request_id, message) VALUES (%s, %s)";
+        dbValue = (message['reqId'], str(message['data']));
        
+        self.__dbConnection.insert_query(dbQuery, dbValue);
+
+
 
     ##
     ## BRIEF: publish a message by the AMQP to MCT_Agent.
@@ -164,10 +250,10 @@ class MCT_Communication(Process):
         LOG.info('[MCT_COMMUNICATION] PUBLISH MESSAGE: %s', message);
 
         propertiesData = {
-            'delivey_mode': 2,
-            'app_id'      : 'Agent',
-            'content_type': 'application/json',
-            'headers'     : message
+            'delivery_mode': 2,
+            'app_id'       : 'Agent_Drive',
+            'content_type' : 'application/json',
+            'headers'      : message
         }
 
         ##
@@ -180,15 +266,17 @@ class MCT_Communication(Process):
 
         ## Insert the current request in the structure that represents the req-
         ## uests who are waiting for response.
-        self.__insert_request_pending(message['reqId']);
+        #self.__insert_request_pending(message['reqId']);
+        #insert_request_pending(message['reqId']);
 
         ## Publish to the channel with the given exchange,routing key and body.
         ## Returns a boolean value indicating the success of the operation.
-        ack = self.chnP.basic_publish('mct_agent_exchange', 
-                                      'agent_rcv', 
+        ack = self.chnP.basic_publish(self.__config['amqp_publish']['exchange'], 
+                                      self.__config['amqp_publish']['route'], 
                                       jData, 
                                       properties);
 
+        self.a = 'False'
         return ack;
 
 
@@ -208,6 +296,8 @@ class MCT_Communication(Process):
         }
 
         if idx in self.__pending:
+            LOG.info('[MCT_COMMUNICATION] %s', self.__pending); 
+
             if self.__pending[idx] == 'ready':
                 ## Copy the status and put in response. This value will be used
                 ## by the method that invoking the pooling.
@@ -219,7 +309,8 @@ class MCT_Communication(Process):
 
                 ## Remove the entry from the list of requests that wainting for
                 ## return.
-                self.__remove_request_pending(idx);
+                #self.__remove_request_pending(idx);
+                remove_request_pending(idx);
 
         return request;
     
@@ -231,12 +322,13 @@ class MCT_Communication(Process):
     ## BRIEF: Initialize the inherited class RabbitMQ_Consume with the paramete
     ##        rs defined in the configuration file.
     ## ------------------------------------------------------------------------
+    ## @PARAM dict cfg == amqp consume parameters.
     ##
-    def __init_consume(self):
+    def __init_consume(self, cfg):
 
         ## Connection parameters object that is passed into the connection ada-
         ## pter upon construction. 
-        parameters = pika.ConnectionParameters(host='localhost');
+        parameters = pika.ConnectionParameters(host=cfg['address']);
 
         ## The BlockingConnection creates a layer on top of Pika's asynchronous
         ## core providing methods that will block until their expected response
@@ -250,16 +342,16 @@ class MCT_Communication(Process):
         ## This method creates an exchange if it does not already exist, and if
         ## the exchange exists, verifies that it is of the correct and expected
         ## class.
-        self.chnC.exchange_declare(exchange='mct_agent_exchange',type='direct');
+        self.chnC.exchange_declare(exchange=cfg['exchange'],type='direct');
 
         ## Declare queue, create if needed. This method creates or checks a qu-
         ## eue.
-        result = self.chnC.queue_declare(queue='agent_snd', durable=True);
+        result = self.chnC.queue_declare(queue=cfg['queue_name'],durable=True);
 
         ## Bind the queue to the specified exchange:
-        self.chnC.queue_bind(exchange   = 'mct_agent_exchange', 
-                             queue      = 'agent_snd',
-                             routing_key= 'mct_agent_snd');
+        self.chnC.queue_bind(exchange    = cfg['exchange'], 
+                             queue       = cfg['queue_name'],
+                             routing_key = cfg['route']);
 
         ## Specify quality of service. This method requests a specific quality
         ## of service. 
@@ -269,12 +361,13 @@ class MCT_Communication(Process):
     ##
     ## BRIEF: instantiates an object to perform the publication of AMQP msgs.
     ## ------------------------------------------------------------------------
+    ## @PARAM dict cfg == amqp publish parameters.
     ##
-    def __init_publish(self):
+    def __init_publish(self, cfg):
 
         ## Connection parameters object that is passed into the connection ada-
         ## pter upon construction. 
-        parameters = pika.ConnectionParameters(host='localhost');
+        parameters = pika.ConnectionParameters(host=cfg['address']);
 
         ## The BlockingConnection creates a layer on top of Pika's asynchronous
         ## core providing methods that will block until their expected response
@@ -288,7 +381,7 @@ class MCT_Communication(Process):
         ## This method creates an exchange if it does not already exist, and if
         ## the exchange exists, verifies that it is of the correct and expected
         ## class.
-        self.chnP.exchange_declare(exchange='mct_agent_exchange',type='direct');
+        self.chnP.exchange_declare(exchange=cfg['exchange'], type='direct');
 
         ## Confirme delivery.
         self.chnP.confirm_delivery;
@@ -310,6 +403,8 @@ class MCT_Communication(Process):
         }
 
         self.__pending[idx] = request;
+        LOG.info(self.__pending)
+        
         return 0;
 
 
@@ -334,14 +429,36 @@ class MCT_Communication(Process):
     ## @PARAM data == data to update in request entry.
     ##
     def __update_request_pending(self, idx, data):
-
+        LOG.info(self.__pending)
         ## LOG:
         LOG.info('[MCT_COMMUNICATION] UPDATE ENTRY: %s', idx);
 
-        self.__pending[idx]['status_request'] = 'ready';
-        self.__pending[idx]['data']           = data;
+        if idx in self.__pending:
+            self.__pending[idx]['status_request'] = 'ready';
+            self.__pending[idx]['data']           = data;
+
 
         return 0;
+
+
+    ##
+    ## BRIEF: obtain all configuration from conffiles.
+    ## ------------------------------------------------------------------------
+    ## @PARAM str cfgFile == conffile name.
+    ##
+    def __get_config(self, cfgFile):
+       cfg = {};
+
+       config = ConfigParser.ConfigParser();
+       config.readfp(open(cfgFile));
+
+       for section in config.sections():
+           cfg[section] = {};
+
+           for option in config.options(section):
+               cfg[section][option] = config.get(section, option);
+
+       return cfg;
 ## EOF.
 
 
@@ -401,6 +518,8 @@ class MCT_Agent(object):
     state           = None;
     data            = None;
     __communication = None;
+    __pending       = {};
+    __dbConnection  = None;
 
 
     ###########################################################################
@@ -432,9 +551,16 @@ class MCT_Agent(object):
             '7' : power_state.SUSPENDED
         };
 
+        ## Get all configs parameters presents in the config file localized in
+        ## CONFIG_FILE path.
+        config = self.__get_config(CONFIG_FILE);
+
+        ## Intance a new object to handler all operation in the local database
+        self.__dbConnection = Database(config['database']); 
+
         ## Instance the object that will communicate with MCT_Agent. Running in
         ## thread.
-        self.__communication = MCT_Communication();
+        self.__communication = MCT_Communication(self.__dbConnection);
         self.__communication.daemon = True;
         self.__communication.start();
 
@@ -539,6 +665,9 @@ class MCT_Agent(object):
     ##
     ## BRIEF: Get the resources from player's division.
     ## ------------------------------------------------------------------------
+    ## TODO: verificar um numero de tentativas e caso nao consiga apos ele eh
+    ##       porque nao conseguiu comunicar. Gerar erro e retornar dictionario
+    ##       vazio.
     ##
     def get_resource_inf(self):
 
@@ -551,11 +680,11 @@ class MCT_Agent(object):
         ## Protocol: [000] get player status!
         dataToSend = {
             'code'    : 0,
-            'playerId': '',
+            'playerId': PLAYER_ID,
             'status'  : 0,
-            'reqId'   : str(idx),
+            'reqId'   : idx,
             'retId'   : '',
-            'origAdd' : '',
+            'origAdd' : ORIG_ADDR,
             'destAdd' : '',
             'data'    : {}
         };
@@ -566,20 +695,24 @@ class MCT_Agent(object):
         ## Waiting for the answer arrive. When the status change status get it.
         while True:
 
-            ## Check if the data received from MCT_Agent is ready in the list.
-            dataReceived = self.__comunication.pooling(idx);
+            ## Mount the select query: 
+            dbQuery  = "SELECT message FROM REQUEST WHERE ";
+            dbQuery += "request_id='" + idx + "'";
 
-            if dataReceived['status_request'] == 'ready':
-                 break;
+            dataReceived = [] or self.__dbConnection.select_query(dbQuery);
+
+            if dataReceived != []:
+                ## TODO:
+                LOG.info(dataReceived);
 
             ## Wating for a predefined time to check (pooling) the list again.
             time.sleep(REQUEST_PENDING_TIMEOUT);
 
         ## LOG:
-        LOG.info('[MCT_AGENT] DATA RECEIVED: %s', dataReceived);
+        LOG.info('[MCT_AGENT] DATA RECEIVED: %s', dataReceived['data']);
 
         ## Return the all datas about resouces avaliable in player's division.
-        return dataReceived;
+        return dataReceived['data'];
 
 
     ###########################################################################
@@ -610,6 +743,26 @@ class MCT_Agent(object):
 
         ## Return a hash with ten position:
         return newHash.hexdigest()[:10];
+
+
+    ##
+    ## BRIEF: obtain all configuration from conffiles.
+    ## ------------------------------------------------------------------------
+    ## @PARAM str cfgFile == conffile name.
+    ##
+    def __get_config(self, cfgFile):
+       cfg = {};
+
+       config = ConfigParser.ConfigParser();
+       config.readfp(open(cfgFile));
+
+       for section in config.sections():
+           cfg[section] = {};
+
+           for option in config.options(section):
+               cfg[section][option] = config.get(section, option);
+
+       return cfg;
 ## EOF.
 
 
@@ -629,14 +782,15 @@ class MCT_Driver(driver.ComputeDriver):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    instances    = None;
     capabilities = None;
-    __mounts     = None;
-    __interfaces = None;
+    instances    = {};
+    __mounts     = {};
+    __interfaces = {};
     mct          = None;
     vcpus        = None;
     memory_mb    = None;
     local_gb     = None;
+    __resourcesStatusBase = None;
 
 
     ###########################################################################
@@ -657,19 +811,22 @@ class MCT_Driver(driver.ComputeDriver):
             "supports_recreate": True,
         };
 
-        ## Quantidade de instancias que estao em execucao em um dado momento de
-        ## execucao.
-        self.instances    = {};
-        self.__interfaces = {};
-        self.__mounts     = {};
-
         if not _FAKE_NODES:
             set_nodes([CONF.host])
 
-        ## Send the request to MCT_Agent. MCT_Agent dispatch the instance crea-
-        ## te request to MCT_Dispatch. Return VM object:
+        ## 
         self.mct = MCT_Agent();
 
+        ## TODO: Check all fields:
+        self.__resourcesStatusBase = {
+            'hypervisor_type'     : 'mct',
+            'hypervisor_version'  : 1000000,
+            'hypervisor_hostname' : 'mct_agent',
+            'cpu_info'            : {},
+            'disk_available_least': 0,
+            #'supported_instances' : [[null, "fake", null]],
+            'numa_topology'       : None,
+        };
 
 
     ###########################################################################
@@ -1155,9 +1312,22 @@ class MCT_Driver(driver.ComputeDriver):
         ## LOG:
         LOG.info("[MCT_Drive] GET AVALIBLE RESOURCES!");
 
-        ## Request to MCT_Agent to get the MCT resources information.
-        hostResourcesStatus = self.mct.get_resource_inf();
-        return hostResourcesStatus;
+        ## Request to MCT Agent informations about MCT resources. The return is
+        ## a dictionary of information resources. These values depend on the di
+        ## vision of the player belongs.
+        valRet = self.mct.get_resource_inf();
+
+        ## Convert the units to compreensive format. The original forma is "MB".
+        if valRet != {}:
+            valRet['local_gb_used'] = valRet['local_gb_used'] / 1024;
+            valRet['local_gb']      = valRet['local_gb'     ] / 1024;
+
+        ## Copy the status base (fixed values) and concatenate with actual reso
+        ## urce informations obtained from MCT.
+        actualResourcesStatus = self.__resourcesStatusBase.copy();
+        actualResourcesStatus.update(valRet);
+
+        return actualResourcesStatus;
 
 
     ##

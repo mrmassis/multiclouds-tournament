@@ -7,10 +7,10 @@ import json;
 import time;
 import logging;
 import logging.handlers;
+import pika;
 
 
-from lib.amqp         import RabbitMQ_Publish, RabbitMQ_Consume;
-from multiprocessing  import Process;
+from lib.amqp import RabbitMQ_Publish, RabbitMQ_Consume;
 
 
 
@@ -26,7 +26,8 @@ CONFIG_FILE  = '/etc/mct/mct_agent.ini';
 LOG_NAME     = 'MCT_Agent';
 LOG_FORMAT   = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
 LOG_FILENAME = '/var/log/mct/mct_agent.log';
-
+ORIG_ADDR    = '10.0.0.30';
+PLAYER_ID    = 'Player1';
 
 
 
@@ -62,36 +63,6 @@ logger.addHandler(handler);
 
 
 ###############################################################################
-## PROCEDURES                                                                ##
-###############################################################################
-##
-## BRIEF: obtain all configuration from conffiles.
-## ---------------------------------------------------------------------------
-## @PARAM str cfgFile == conffile name.
-##
-def get_config(cfgFile):
-   cfg = {};
-
-   config = ConfigParser.ConfigParser();
-   config.readfp(open(cfgFile));
-
-   for section in config.sections():
-       cfg[section] = {};
-
-       for option in config.options(section):
-           cfg[section][option] = config.get(section, option);
-
-   return cfg;
-## END.
-
-
-
-
-
-
-
-
-###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
 class MCT_Agent(RabbitMQ_Consume):
@@ -110,24 +81,32 @@ class MCT_Agent(RabbitMQ_Consume):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __route   = None;
-    __publish = None;
+    __routeInt   = None;
+    __routeExt   = None;
+    __publishInt = None;
+    __publishExt = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self, cfgConsume, cfgPublish):
+    def __init__(self):
+
+        ## Get all configs parameters presents in the config file localized in
+        ## CONFIG_FILE path.
+        config = self.__get_config(CONFIG_FILE);
 
         ## Get which route is used to deliver the msg to the 'correct destine'.
-        self.__route = cfgPublish['route'];
+        self.__routeInt = config['amqp_internal_publish']['route'];
+        self.__routeExt = config['amqp_external_publish']['route'];
 
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
         ## defined in the configuration file.
-        RabbitMQ_Consume.__init__(self, cfgConsume);
+        RabbitMQ_Consume.__init__(self, config['amqp_consume']);
 
         ## Instantiates an object to perform the publication of AMQP messages.
-        self.__publish=RabbitMQ_Publish(cfgPublish);
+        self.__publishInt = RabbitMQ_Publish(config['amqp_internal_publish']);
+        self.__publishExt = RabbitMQ_Publish(config['amqp_external_publish']);
         
 
     ###########################################################################
@@ -173,9 +152,9 @@ class MCT_Agent(RabbitMQ_Consume):
 
         ## LOG:
         logger.info('MESSAGE SEND TO DISPATCH: %s', message);
-        
-        ##
-        self.__publish.publish(message, self.__route);
+
+        ## Publish the message to MCT_Dispatch via AMQP. 
+        self.__publishExt.publish(message, self.__routeExt);
         return 0;
 
 
@@ -185,37 +164,49 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict message == received message.
     ##
     def __recv_message_dispatch(self, message, appId):
+
         ## LOG:
         logger.info('MESSAGE RETURNED OF %s REFEREE: %s', appId, message);
+
+        ##
+        #if   message['origAdd'] == ORIG_ADDR and message['destAdd'] == '':
+        self.__publishInt.publish(message, self.__routeInt);
+
+        #elif message['origAdd'] != ORIG_ADDR and message['destAdd'] != '': 
+            ## check code!
+        #    pass;
+
+
+
 
         #print self.__route
         ##
         #self.__publish.publish(message, self.__route);
 
         ## TODO: TEMP:
-        if message['retId'] != '':
+        #if message['retId'] != '':
 
             ## LOG:
-            logger.info('PROCESSING REQUEST!');
+        #    logger.info('PROCESSING REQUEST!');
 
             ## aqui vai para o drive depois.
-            message['status'] = '1';
+        #    message['status'] = '1';
  
-            config = {
-               'identifier':'Agent_Player1',
-               'address'   :'10.0.0.33',
-               'route'     :'mct_dispatch',
-               'exchange'  :'mct_exchange',
-               'queue_name':'dispatch'
-            }
+        #    config = {
+        #       'identifier':'Agent_Player1',
+        #       'address'   :'10.0.0.33',
+        #       'route'     :'mct_dispatch',
+        #       'exchange'  :'mct_exchange',
+        #       'queue_name':'dispatch'
+        #    }
 
-            targetPublish = RabbitMQ_Publish(config);
-            targetPublish.publish(message, 'mct_dispatch');
-
-            del targetPublish;
-        else:
+        #    targetPublish = RabbitMQ_Publish(config);
+        #    targetPublish.publish(message, 'mct_dispatch');
+#
+        #    del targetPublish;
+        #else:
             ## LOG:
-            logger.info('RESQUEST PROCESSED!');
+        #    logger.info('RESQUEST PROCESSED!');
 
         return 0;
 
@@ -232,57 +223,25 @@ class MCT_Agent(RabbitMQ_Consume):
         logger.info('INSPECT REQUEST!');
         return 0;
 
-## END.
-
-
-
-
-
-
-class Main(Process):
-
-    """
-    ---------------------------------------------------------------------------
-    run == execute the process.
-    """
-
-
-    ###########################################################################
-    ## ATTRIBUTES                                                            ##
-    ###########################################################################
-    __amq = None;
-
-
-    ###########################################################################
-    ## SPECIAL METHODS                                                       ##
-    ###########################################################################
-    def __init__(self, typeConsume):
-        super(Main, self).__init__();
-
-        ## Get all configs parameters presents in the config file localized in
-        ## CONFIG_FILE path.
-        config = get_config(CONFIG_FILE);
-
-        if   typeConsume == 'EXTERNAL':
-            self.__amq = MCT_Agent(config['amqp_internal_consume'],
-                                   config['amqp_external_publish']);
-
-        elif typeConsume == 'INTERNAL':
-            self.__amq = MCT_Agent(config['amqp_external_consume'],
-                                   config['amqp_internal_publish']);
-
-
-    ###########################################################################
-    ## PUBLIC METHODS                                                        ##
-    ###########################################################################
     ##
-    ## BRIEF: execute the process.
+    ## BRIEF: obtain all configuration from conffiles.
     ## ------------------------------------------------------------------------
+    ## @PARAM str cfgFile == conffile name.
     ##
-    def run(self):
-        self.__amq.consume();
-## END.
+    def __get_config(self, cfgFile):
+       cfg = {};
 
+       config = ConfigParser.ConfigParser();
+       config.readfp(open(cfgFile));
+
+       for section in config.sections():
+           cfg[section] = {};
+
+           for option in config.options(section):
+               cfg[section][option] = config.get(section, option);
+
+       return cfg;
+## END.
 
 
 
@@ -297,25 +256,8 @@ if __name__ == "__main__":
     ## LOG:
     logger.info('EXECUTION STARTED...');
 
-    ## Get all configs parameters presents in the config file localized in CFG_
-    ## FILE path.
-    config = get_config(CONFIG_FILE);
-   
-    try:
-        processes = [];
-        for pType in ['EXTERNAL', 'INTERNAL']:
-            process = Main(pType);
-            process.daemon = True;
-            process.start();
-            processes.append(process);
-
-        while True:
-            time.sleep(float(config['main']['pooling_time_interval']));
-
-    except KeyboardInterrupt, error:
-        for process in processes:
-            process.terminate();
-            process.join();
+    mct = MCT_Agent();
+    mct.consume();
 
     ## LOG:
     logger.info('EXECUTION FINISHED...');

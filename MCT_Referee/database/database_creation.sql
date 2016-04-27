@@ -40,6 +40,35 @@ CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
 ENGINE = InnoDB;
 
 
+-- -----------------------------------------------------
+-- Table `mct`.`RESOURCE`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mct`.`RESOURCE` ;
+
+CREATE  TABLE IF NOT EXISTS `mct`.`RESOURCE` (
+  `division` INT NOT NULL ,
+  `vcpu` INT NOT NULL ,
+  `memory` BIGINT NOT NULL ,
+  `disk` BIGINT NOT NULL ,
+  `vcpu_used` BIGINT NOT NULL ,
+  `memory_used` BIGINT NOT NULL ,
+  `disk_used` BIGINT NOT NULL ,
+  PRIMARY KEY (`division`) )
+ENGINE = InnoDB;
+
+
+--
+--
+--
+-- DIVISAO 1: 300vcpus, 1 terabytes de memoria e 1 terabytes de disco;
+-- DIVISAO 2: 200vcpus, 500 gigabytes de memoria e 500 gigabytes de disco;
+-- DIVISAO 3: 100vcpus, 100 gigabytes de memoria e 100 gigabytes de disco;
+INSERT INTO RESOURCE (division, vcpu, memory, disk, vcpu_used, memory_used, disk_used) VALUES (1, 300, 1048576, 1048576, 0, 0, 0);
+INSERT INTO RESOURCE (division, vcpu, memory, disk, vcpu_used, memory_used, disk_used) VALUES (2, 200,  512000,  512000, 0, 0, 0);
+INSERT INTO RESOURCE (division, vcpu, memory, disk, vcpu_used, memory_used, disk_used) VALUES (3, 100,  102400,  102400, 0, 0, 0);
+
+
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

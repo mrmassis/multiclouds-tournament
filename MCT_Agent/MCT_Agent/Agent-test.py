@@ -88,8 +88,8 @@ class MCT_Agent:
         #idata = self.__cfg['properties'];
 
         msg = {
-            'code'   : 0001,
-            'playerId': 'player1',
+            'code'   : 0000,
+            'playerId':'player1',
             'status' : 0,
             'retId'  : '',
             'reqId'  : 'kjfklsajdlkajdlakjdal',
@@ -99,7 +99,7 @@ class MCT_Agent:
              }
         };
 
-        data = {'action': 'create', 'player':'1', 'vmt_id':'B', 'msg_id':'00000001', 'div_id':'1'};
+        #data = {'action': 'create', 'player':'1', 'vmt_id':'B', 'msg_id':'00000001', 'div_id':'1'};
         self.__publisher.publish(msg, self.__cfg['amqp']['route']);
 
         return 0;
