@@ -24,7 +24,7 @@ from lib.amqp     import RabbitMQ_Publish, RabbitMQ_Consume;
 CONFIG_FILE      = '/etc/mct/mct_dispatch.ini';
 AGENT_ROUTE      = 'mct_agent';
 AGENT_IDENTIFIER = 'MCT_Dispatch';
-AGENT_EXCHANGE   = 'mct_agent_exchange';
+AGENT_EXCHANGE   = 'mct_exchange';
 AGENT_QUEUE      = 'agent';
 LOG_NAME         = 'MCT_Dispatch';
 LOG_FORMAT       = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
@@ -126,6 +126,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## @PARAM str                       message    = message received.
     ##
     def callback(self, channel, method, properties, message):
+
         ## Send to source an ack msg to ensuring that the message was received.
         self.chn.basic_ack(method.delivery_tag);
 
@@ -194,7 +195,6 @@ class MCT_Dispatch(RabbitMQ_Consume):
        ## LOG:
        logger.info('MESSAGE SEND TO REFEREE: %s BY APP: %s', message, appId);
 
-       print message
        ## The message can be a request for action or a response for action per-
        ## formed. Check the message type, if respId == '' is a request.
        if message['retId'] == '':

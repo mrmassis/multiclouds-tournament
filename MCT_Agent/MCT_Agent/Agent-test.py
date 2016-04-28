@@ -89,11 +89,11 @@ class MCT_Agent:
 
         msg = {
             'code'   : 0000,
-            'playerId':'player1',
+            'playerId':'player2',
             'status' : 0,
             'retId'  : '',
             'reqId'  : 'kjfklsajdlkajdlakjdal',
-            'origAdd': '10.0.0.30',
+            'origAdd': '20.0.0.30',
             'destAdd': '',
             'data'   : {
              }

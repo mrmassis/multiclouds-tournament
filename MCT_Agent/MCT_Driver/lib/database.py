@@ -23,7 +23,7 @@ import mysql;
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
-class Database(object):
+class MCT_Database(object):
 
     """
     Class that handle the mysql database.

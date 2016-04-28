@@ -26,8 +26,6 @@ CONFIG_FILE  = '/etc/mct/mct_agent.ini';
 LOG_NAME     = 'MCT_Agent';
 LOG_FORMAT   = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
 LOG_FILENAME = '/var/log/mct/mct_agent.log';
-ORIG_ADDR    = '10.0.0.30';
-PLAYER_ID    = 'Player1';
 
 
 

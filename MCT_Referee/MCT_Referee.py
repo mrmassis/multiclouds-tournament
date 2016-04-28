@@ -289,7 +289,6 @@ class MCT_Referee(RabbitMQ_Consume):
 
                 ## Get all resources available to a division.Check in database.
                 message['data'] = self.__get_resources_inf(division);
-                print message
 
 
             ## ------------------------------------------------------------- ##
