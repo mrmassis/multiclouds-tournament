@@ -148,11 +148,6 @@ class MCT_Communication(Process):
         ## rs and the return value may be a unicode instance.
         jData = json.dumps(message, ensure_ascii=False);
 
-        ## Insert the current request in the structure that represents the req-
-        ## uests who are waiting for response.
-        #self.__insert_request_pending(message['reqId']);
-        #insert_request_pending(message['reqId']);
-
         ## Publish to the channel with the given exchange,routing key and body.
         ## Returns a boolean value indicating the success of the operation.
         ack = self.chnP.basic_publish(self.__config['amqp_publish']['exchange'], 
@@ -160,7 +155,6 @@ class MCT_Communication(Process):
                                       jData, 
                                       properties);
 
-        self.a = 'False'
         return ack;
 
 

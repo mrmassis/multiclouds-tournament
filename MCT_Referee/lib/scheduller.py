@@ -16,39 +16,33 @@ import os;
 ## CLASSES                                                                   ##
 ###############################################################################
 class Roundrobin:
+
     """
     Classe que um metodos de scheduller -- Round Robin.
     ---------------------------------------------------------------------------
+    * run == execute the scheduller.
     """
-    ###########################################################################
-    ## ATTRIBUTES                                                            ##
-    ###########################################################################
-    playersOrdenedList = None; 
-    __division         = None;
-
-
-    ###########################################################################
-    ## SPECIAL METHODS                                                       ##
-    ###########################################################################
-    def __init__(self, division):
-        self.__division = division;
-
 
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
     ###########################################################################
     ##
-    ## Brief:
+    ## Brief: choice the best player.
     ## ------------------------------------------------------------------------
+    ## @PARAM list playerList ==
     ##
-    def run(self):
-        print "Executing the Round Robin schduller...";
-        player = { 'name' : 'america',
-                   'addr' : 'locahost',
-                   'token': 'dsfskdgjdsgsdjgslkjslk'
-                  };
+    def run(self, playerList, playerRequest):
+        print playerList;
 
-        self.playersOrdenedList = [player, player, player];
-        return 0;
+        ## TODO: o endereco do player escolhido nao pode ser o do requisitante.
+
+        #print "Executing the Round Robin schduller...";
+        #player = { 'name' : 'america',
+        #           'addr' : 'locahost',
+        #           'token': 'dsfskdgjdsgsdjgslkjslk'
+        #          };
+
+        #self.playersOrdenedList = [player, player, player];
+        return "20.0.0.30";
 
 ## EOF.

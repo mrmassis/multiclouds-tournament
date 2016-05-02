@@ -187,6 +187,7 @@ class MCT_Referee(RabbitMQ_Consume):
     __allQueues     = None;
     __routeDispatch = None;
     __dbConnection  = None;
+    __scheduller    = None;
 
 
     ###########################################################################
@@ -210,6 +211,11 @@ class MCT_Referee(RabbitMQ_Consume):
 
         ## Intance a new object to handler all operation in the local database
         self.__dbConnection = Database(configs['database']);
+
+        ##
+        if configs['main']['scheduller'] == 'roundrobin':
+            self.__scheduller = Roundrobin();
+
 
         ## This list store the thread IDs that represet each division started.
         #self.__threadsId = [];
@@ -274,47 +280,41 @@ class MCT_Referee(RabbitMQ_Consume):
         ## in correct form.
         valRet = self.__inspect_request(message);
 
-        ## Check if is a request or a response received from the apropriate pla
-        ## yer. When message['retId'] equal a '' the message is a request.
-        if message['retId'] == '':
+        if valRet == 0:
 
-            ## Get which division than player belong.It is necessary to get the
-            ## player list able to meet the request.
-            division = self.__get_division(message['playerId']);
+            ## Check if is a request or a response received from the apropriate
+            ## player. When message['retId'] equal a '' the msg is a request.
+            if message['retId'] == '':
 
-            ## ------------------------------------------------------------- ##
-            ## [0] == GET RESOUCES INF.                                      ##
-            ## ------------------------------------------------------------- ##
-            if   int(message['code']) == 0:
+                ## Get which division than player belong.It is necessary to get
+                ## the player list able to meet the request.
+                division = self.__get_division(message['playerId']);
 
-                ## Get all resources available to a division.Check in database.
-                message['data'] = self.__get_resources_inf(division);
+                ## --------------------------------------------------------- ##
+                ## [0] == GET RESOUCES INF.                                  ##
+                ## --------------------------------------------------------- ##
+                if   int(message['code']) == 0:
 
+                    ## Get all resources available to a division. Check in db.
+                    message['data'] = self.__get_resources_inf(division);
 
-            ## ------------------------------------------------------------- ##
-            ## [1] CREATE A NEW INSTANCE.                                    ##
-            ## ------------------------------------------------------------- ##
-            elif int(message['code']) == 1:
+                ## --------------------------------------------------------- ##
+                ## [1] CREATE A NEW INSTANCE.                                ##
+                ## --------------------------------------------------------- ##
+                elif int(message['code']) == 1:
+                    message = self.__add_instance(division, message);
 
-                ##.
-                message['retId'] = message['reqId'];
-
-                ## Select one player able to comply a request to create new VM.
-                message['destAdd'] = self.__get_player(division);
-
-
-            ## ------------------------------------------------------------- ##
-            ## [2] DELETE AN INSTANCE.                                       ##
-            ## ------------------------------------------------------------- ##
-            elif int(message['code']) == 2:
-                pass;
-
+                ## --------------------------------------------------------- ##
+                ## [2] DELETE AN INSTANCE.                                   ##
+                ## --------------------------------------------------------- ##
+                elif int(message['code']) == 2:
+                    message = self.__del_instance(division, message);
     
-        else:
-            ## Set the field to forward value:
-            message['retId'] = '';
+            else:
+                ## Set the field to forward value:
+                message['retId'] = '';
 
-        self.__publish.publish(message, self.__routeDispatch);
+            self.__publish.publish(message, self.__routeDispatch);
         return 0;
 
 
@@ -330,20 +330,21 @@ class MCT_Referee(RabbitMQ_Consume):
         ## LOG:
         logger.info('INSPECT REQUEST!');
 
-        ## Verify other aspect from request.
+        key = request['code'];
 
-        #keywords = [
-        #    'action',
-        #    'player',
-        #    'msg_id',
-        #    'vmt_id',
-        #    'div_id'
-        #];
+        query = "SELECT fields FROM FIELDS WHERE operation='" + str(key) + "'";
 
-        #for key in keywords:
-        #     if not request.has_key(key):
-        #        print "LOG: missed field " + key;
-        #        return 1;
+        #valRet = [] or self.__dbConnection.select_query(query);
+
+        #if valRet != []:
+        #    fields = valRet[0][0];
+
+        #     for field in fields:
+        #         if not request.has_key(field):
+        #             print "LOG: missed field " + key;
+        #             return 1;
+
+        #    return 0;
 
         return 0;
 
@@ -351,10 +352,54 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     ## BRIEF: get the player's division.
     ## ------------------------------------------------------------------------
-    ## @PARAM str playerId.
+    ## @PARAM str playerId == player identifier.
+    ## TODO: testar.
     ##
     def __get_division(self, playerId):
-        return 3;
+        ## LOG:
+        logger.info('INSPECT REQUEST!');
+
+        ## Setting 
+        division = -1;
+
+        query = "SELECT division FROM PLAYER WHERE name='" + playerId + "'";
+
+        valRet = [] or self.__dbConnection.select_query(query);
+
+        if valRet != []:
+            division = valRet[0][0];
+
+        return division;
+
+
+    ##
+    ## BRIEF: create a new instance.
+    ## ------------------------------------------------------------------------
+    ## @PARAM int division ==.
+    ## @PARAM dict message ==.
+    ##
+    def __add_instance_inf(self, division, message):
+        ##.
+        message['retId'] = message['reqId'];
+
+        ## Select one player able to comply a request to create VM.
+        message['destAdd'] = self.__get_player(division, message['playerId']);
+
+        ## TODO: se for vazio o message entao retorna erro e retorna para o re-
+        ##       quisitante.
+
+        return message;
+ 
+
+    ##
+    ## BRIEF: delete an instance.
+    ## ------------------------------------------------------------------------
+    ## @PARAM int division ==.
+    ## @PARAM dict message ==.
+    ##
+    def __del_instance_inf(self, division, message):
+        return {};
+
 
     ##
     ## BRIEF: get the resources info to specfic division.
@@ -387,13 +432,28 @@ class MCT_Referee(RabbitMQ_Consume):
 
 
     ##
-    ## BRIEF: .
+    ## BRIEF: choice the best player to perform the request.
     ## ------------------------------------------------------------------------
     ## @PARAM int division.
+    ## TODO: implementar o scheduler, entrada uma lista de players.
     ##
-    def __get_choice_player(self, division):
-        ## TODO: check in bd.
-        return '20.0.0.30';
+    ##
+    def __get_choice_player(self, division, playerIdRequest):
+
+       ##
+       query = "SELECT * FROM PLAYER WHERE division='" + division + "'";
+       
+       ## Choice player address:
+       playerAddress = '20.0.0.30';
+
+       valRet = [] or self.__dbConnection.select_query(query);
+
+       if valRet != []:
+           ## Perform the player selection.
+           playerAddress = self.__scheduller.run(valRet[0], playerIdRequest);
+
+       ## 
+       return playerAddress;
 
 
     ##

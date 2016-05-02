@@ -32,10 +32,12 @@ CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45) NULL,
   `address` VARCHAR(45) NULL,
-  `queue` VARCHAR(45) NULL,
-  `exchange` VARCHAR(45) NULL,
-  `route` VARCHAR(45) NULL,
+--  `queue` VARCHAR(45) NULL,
+--  `exchange` VARCHAR(45) NULL,
+--  `route` VARCHAR(45) NULL,
   `division` INT NULL,
+  `score` FLOAT NULL,
+  `historic` INT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
