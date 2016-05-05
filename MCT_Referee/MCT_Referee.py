@@ -68,33 +68,34 @@ logger.addHandler(handler);
 class Division(Process):
 
     """
+    Class Division:
     ---------------------------------------------------------------------------
+    PUBLIC METHODS:
+    * run == division main loop.
     """
 
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __div        = None;
-    __cfg        = None;
-    __queue      = None;
-    __scheduller = None;
+    __dNumb;
+    __dName;
+    __dConf;
+    __dBase;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self, division, name, config, amqp, queue):
-        super(Division, self).__init__(name=name);
+    def __init__(self, dNumb, dName, dConf, dbase):
+        super(Division, self).__init__(name=dName);
 
-        if config['scheduller'] == 'roundrobin':
-            self.__scheduller = Roundrobin(division);
+        self.__dNumb = dNumb;
+        self.__dName = dName;
+        self.__dConf = dConf;
+        self.__dBase = dBase;
 
-        self.__div   = division;
-        self.__cfg   = config;
-        self.__queue = queue;
-
-        ## Instantiates an object to perform the publication of AMQP messages.
-        self.__publisher = RabbitMQ_Publish(amqp);
+        ## LOG:
+        logger.info('STARTED DIVISION %s', dName);
 
 
     ###########################################################################
@@ -110,33 +111,26 @@ class Division(Process):
         timeOld = datetime.datetime.now();
 
         while True:
-            try:
-                message = self.__queue.get(True, 5);
-            except:
-                message = '';
-                pass;
 
-            if message:
+            ## Obtain the current time. The value is used to calculate the time
+            ## difference.
+            timeNow = datetime.datetime.now();
 
-                ## LOG:
-                logger.info('DIV: %s RECEIVED THE MSG: %s',self.__div,message);
+            ## Elapsed time of the last round until now. Used to check the next
+            ## round.
+            elapsedT = timeNow - timeOld;
 
-                ## When the div. receiving the message performs all tasks rela-
-                ## ted to the action described in the message.
-                self.__exec_action(message);
+            if divmod(elapsedT.total_seconds(),60)[0] >= self.__dConf['round']:
+                 ## LOG:
+                 logger.info('ROUND FINISHED!');
 
-                ## Obtain the current time . The value is used to calculate the
-                ## time difference .
-                timeNow = datetime.datetime.now();
+                 ## Calculates attributes (score and history) of each player in
+                 ## the division.
+                 self.__calculate_attributes();
 
-                ## Elapsed time of the last round until now. Used to check the
-                ## next round.
-                elapsedTime = timeNow - timeOld;
+                 timeOld = datetime.datetime.now();
 
-                if divmod(elapsedTime.total_seconds(), 60)[0] >= 5:
-                    #self.__scheduller.run();
-
-                   timeOld = datetime.datetime.now();
+            time.sleep(self.__dConf['time_step']);
 
         return 0;
 
@@ -145,23 +139,31 @@ class Division(Process):
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
     ##
-    ## BRIEF: execute the appropriate action in response to the request.
+    ## BRIEF: Calculate attributes of each player in the  division.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict request == request receveid from MCT_Divisions. 
     ## 
-    def __exec_action(self, message):
+    def __calculate_attributes(self):
 
-        response = {
-            'action': message['action'],
-            'player': message['player'],
-            'msg_id': message['msg_id'],
-            'status': 'ok'
-        }
+        query = 'SELECT';
 
-        self.__publisher.publish(message, 'mct_dispatch');
-        
-        ## LOG:
-        logger.info('RESPONSE SENT: %s', response);
+        #valRet = [];
+
+        #attributesPlayers = [];
+        #for player in valRet:
+
+        #     attributesPlayers = {
+        #         'name'     : player[0], 
+        #         'score'    : player[1],
+        #         'historic' : player[2]
+        #     }
+
+
+        ## Cria uma lista com os players presentes e os scores atuais deles.
+        ## Obtain o historico de acao desde o ultimo round (Tabela de requests).
+        ## Atualiza os scores e os historicos.
+        ## grava novamente na base.
+
+        query = 'UPDATE';
         return 0;
 ## END.
 
@@ -212,31 +214,24 @@ class MCT_Referee(RabbitMQ_Consume):
         ## Intance a new object to handler all operation in the local database
         self.__dbConnection = Database(configs['database']);
 
-        ##
-        if configs['main']['scheduller'] == 'roundrobin':
-            self.__scheduller = Roundrobin();
-
+        ## Select the scheduller algorithm responsible for selection of the be-
+        ## st player in a division.
+        if configs['scheduller']['approach'] == 'roundrobin':
+            self.__scheduller = Roundrobin(configs['scheduller']['restrict']);
 
         ## This list store the thread IDs that represet each division started.
-        #self.__threadsId = [];
+        self.__threadsId = [];
 
-        ## Create a list of Queues to comunicate with divisions run in thread.
-        #self.__allQueues = [];
+        ## Instance the divisions that will be used in MCT:
+        for divNumb in range(1, int(configs['main']['num_divisions']) + 1):
+             divName = 'division' + str(divNumb);
+             divConf = configs[divName];
 
-        ## Instance the divisions that will be used in MultiClouds Tournament.
-        #for divNumb in range(1, int(cfg['main']['num_divisions']) + 1):
-        #     newQueue = Queue();
+             division=Division(divNumb, divName, divConf, self.__dbConnection);
+             division.daemon = True;
+             division.start();
 
-        #     divName = 'division' + str(divNumb);
-        #     divConf = cfg[divName];
-        #     divAmqp = cfg['amqp' ];
-
-        #     division = Division(divNumb, divName, divConf, divAmqp, newQueue);
-        #     division.daemon = True;
-        #     division.start();
-
-        #     self.__threadsId.append(division);
-        #     self.__allQueues.append(newQueue);
+             self.__threadsId.append(division);
 
 
     ###########################################################################
