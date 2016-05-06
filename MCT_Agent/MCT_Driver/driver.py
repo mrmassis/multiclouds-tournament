@@ -264,14 +264,10 @@ class MCT_Driver(driver.ComputeDriver):
         valRet = self.mct.create_instance(data);
 
         ##
-        uuid = instance['uuid'];
-        name = instance['name'];
-
-        ##
-        mctInstance = Instance(name, valRet, uuid);
+        mctInstance = Instance(instance['name'], valRet, instance['uuid']);
 
         ## 
-        self.instances[name] = mctInstance;
+        self.instances[instance['name']] = mctInstance;
 
         ## LOG:
         LOG.info("[MCT_DRIVE] INSTANCE SPAWN! STATE: %s", str(valRet));

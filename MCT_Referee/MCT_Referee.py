@@ -77,22 +77,24 @@ class Division(Process):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __dNumb;
-    __dName;
-    __dConf;
-    __dBase;
+    __dNumb = None;
+    __dName = None;
+    __dConf = None;
+    __dBase = None;
+    __dLock = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self, dNumb, dName, dConf, dbase):
+    def __init__(self, dNumb, dName, dConf, dBase, dLock):
         super(Division, self).__init__(name=dName);
 
         self.__dNumb = dNumb;
         self.__dName = dName;
         self.__dConf = dConf;
         self.__dBase = dBase;
+        self.__dLock = dLock;
 
         ## LOG:
         logger.info('STARTED DIVISION %s', dName);
@@ -118,9 +120,9 @@ class Division(Process):
 
             ## Elapsed time of the last round until now. Used to check the next
             ## round.
-            elapsedT = timeNow - timeOld;
+            eT = timeNow - timeOld;
 
-            if divmod(elapsedT.total_seconds(),60)[0] >= self.__dConf['round']:
+            if divmod(eT.total_seconds(),60)[0] >= int(self.__dConf['round']):
                  ## LOG:
                  logger.info('ROUND FINISHED!');
 
@@ -130,7 +132,7 @@ class Division(Process):
 
                  timeOld = datetime.datetime.now();
 
-            time.sleep(self.__dConf['time_step']);
+            time.sleep(float(self.__dConf['steep']));
 
         return 0;
 
@@ -143,28 +145,98 @@ class Division(Process):
     ## ------------------------------------------------------------------------
     ## 
     def __calculate_attributes(self):
+        ## LOG:
+        logger.info("CALC ATTRBS TO PLAYER FROM DIVISION: %s", self.__dName);
 
-        query = 'SELECT';
+        ## Generate the query to get all players belong to division of interest.
+        query  = 'SELECT name, score, historic FROM PLAYER ';
+        query += "WHERE division='"+ str(self.__dNumb) + "'";
 
-        #valRet = [];
+        self.__dLock.acquire();
+        valRet = [] or self.__dBase.select_query(query);
+        self.__dLock.release();
 
-        #attributesPlayers = [];
-        #for player in valRet:
+        ## Convert the query's result (string) to the python dictionary format.
+        attributesPlayers = [];
+        for player in valRet:
 
-        #     attributesPlayers = {
-        #         'name'     : player[0], 
-        #         'score'    : player[1],
-        #         'historic' : player[2]
-        #     }
+            ## Get the last idx from REQUEST table that will be considerated to
+            ## get request results.
+            query  = "SELECT idx FROM LAST_IDX ";
+            query += "WHERE division='" + str(self.__dNumb) + "'";
 
+            self.__dLock.acquire();
+            index = self.__dBase.select_query(query)[0][0];
+            self.__dLock.release();
 
-        ## Cria uma lista com os players presentes e os scores atuais deles.
-        ## Obtain o historico de acao desde o ultimo round (Tabela de requests).
-        ## Atualiza os scores e os historicos.
-        ## grava novamente na base.
+            ## Get all request from a player. The result considers all requests
+            ## before the idx.
+            query  = "SELECT * FROM REQUEST ";
+            query += "WHERE ";
+            query += "player_id='"+ player[0] +"' and id >='"+ str(index)+"' ";
 
-        query = 'UPDATE';
+            self.__dLock.acquire();
+            valRet = [] or self.__dBase.select_query(query);
+            self.__dLock.release();
+
+            if valRet == []:
+                ## Get the last ID obtained from query:
+                nIndex = 0 
+
+                nScore = self.__calculate_score(player[1]);
+                nHistc = self.__calculate_histc(player[2]);
+                nDivis = 1;
+                
+                query  = "UPDATE PLAYER SET ";
+                query += "score='"      + str(nScore)    + "', ";
+                query += "historic='"   + str(nHistc)    + "', ";
+                query += "division='"   + str(nDivis)    + "', ";
+                query += "WHERE name='" + str(player[0]) + "'  ";
+                
+                print query
+
+                #self.__dLock.acquire();
+                #valRet = self.__dBase.update_query(query);
+                #self.__dLock.release();
+                #
+                query  = "UPDATE LAST_IDX SET "
+                query += "idx='"            +str(nIndex)       + "' ";
+                query += "WHERE divison='" + str(self.__dNumb) + "' "; 
+
+                print query
+                #
+                #self.__dLock.acquire();
+                #valRet = self.__dBase.update_query(query);
+                #self.__dLock.release();
+
         return 0;
+
+
+    ##
+    ## BRIEF: 
+    ## ------------------------------------------------------------------------
+    ## 
+    def __calculate_score(self, oldScore):
+        ## TODO:
+        ## para cada player deve-se obter as acoes de interesse (aceitar) a
+        ## requisicao de instancias. 
+        ## deve ser considerada a divisao atual, e o ultimo  checkpoint de
+        ## round.
+        ## LOG:
+        logger.info("CALCULATE SCORE");
+        return oldScore;
+
+
+    ##
+    ## BRIEF: 
+    ## ------------------------------------------------------------------------
+    ## 
+    def __calculate_histc(self, oldHistc):
+        ## TODO:
+        ## obter a media do score da divisao.
+        ## LOG:
+        logger.info("CALCULATE HISTC");
+        return oldHistc;
 ## END.
 
 
@@ -212,7 +284,7 @@ class MCT_Referee(RabbitMQ_Consume):
         self.__publish=RabbitMQ_Publish(configs['amqp_publish']);
 
         ## Intance a new object to handler all operation in the local database
-        self.__dbConnection = Database(configs['database']);
+        self.__db = Database(configs['database']);
 
         ## Select the scheduller algorithm responsible for selection of the be-
         ## st player in a division.
@@ -222,12 +294,15 @@ class MCT_Referee(RabbitMQ_Consume):
         ## This list store the thread IDs that represet each division started.
         self.__threadsId = [];
 
+        ##
+        self.__lock = Lock();
+
         ## Instance the divisions that will be used in MCT:
         for divNumb in range(1, int(configs['main']['num_divisions']) + 1):
              divName = 'division' + str(divNumb);
              divConf = configs[divName];
 
-             division=Division(divNumb, divName, divConf, self.__dbConnection);
+             division=Division(divNumb,divName,divConf,self.__db,self.__lock);
              division.daemon = True;
              division.start();
 
@@ -329,7 +404,9 @@ class MCT_Referee(RabbitMQ_Consume):
 
         query = "SELECT fields FROM FIELDS WHERE operation='" + str(key) + "'";
 
-        #valRet = [] or self.__dbConnection.select_query(query);
+        ##self.__lock.acquire();
+        #valRet = [] or self.__db.select_query(query);
+        ##self.__lock.release();
 
         #if valRet != []:
         #    fields = valRet[0][0];
@@ -359,7 +436,9 @@ class MCT_Referee(RabbitMQ_Consume):
 
         query = "SELECT division FROM PLAYER WHERE name='" + playerId + "'";
 
-        valRet = [] or self.__dbConnection.select_query(query);
+        self.__lock.acquire();
+        valRet = [] or self.__db.select_query(query);
+        self.__lock.release();
 
         if valRet != []:
             division = valRet[0][0];
@@ -410,7 +489,9 @@ class MCT_Referee(RabbitMQ_Consume):
         query += "FROM RESOURCE WHERE ";
         query += "division='" + str(division) + "'";
 
-        valRet = [] or self.__dbConnection.select_query(query);
+        self.__acquire();
+        valRet = [] or self.__db.select_query(query);
+        self.__release();
 
         if valRet != []:
 
@@ -435,13 +516,14 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     def __get_choice_player(self, division, playerIdRequest):
 
-       ##
+       playerAddress = '';
+
+       ## Genereate the query to select the players from specific division.
        query = "SELECT * FROM PLAYER WHERE division='" + division + "'";
        
-       ## Choice player address:
-       playerAddress = '20.0.0.30';
-
-       valRet = [] or self.__dbConnection.select_query(query);
+       self.__acquire();
+       valRet = [] or self.__db.select_query(query);
+       self.__release();
 
        if valRet != []:
            ## Perform the player selection.

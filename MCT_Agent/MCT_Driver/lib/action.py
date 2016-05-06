@@ -95,92 +95,6 @@ class MCT_Action(object):
     ## PUBLIC METHODS                                                        ##
     ###########################################################################
     ##
-    ## BRIEF: create a new instance via MCT.
-    ## ------------------------------------------------------------------------
-    ## @PARAM data == data received from MCT_Drive (OpenStack).
-    ##
-    def create_instance(self, data):
-        #flavor = data['instance']['instance_type_name'];
-
-        ## Mount the requirement:
-        data = {
-            'vcpus' : data['instance']['vcpus'    ],
-            'mem'   : data['instance']['memory_mb'],
-            'disk'  : data['instance']['root_gb'  ],
-            'name'  : data['instance']['name'     ],
-            'uuid'  : data['instance']['uuid'     ],
-            'image' : data['image'   ]['name'     ],
-            'flavor': 'm1.tiny'
-        };
-
-        ## Protocol: [001] means create a new virtual machine in 'remote site'.
-        dataToSend = {
-            'opercode': '001',
-            'data'    : data
-        };
-
-        ## Obtain the request identifier (use the "UUID" created by OpenStack).
-        idx = data['instance']['uuid'];
-
-        ## Insert the current request in the structure that represents the req-
-        ## uests who are waiting for response.
-        self.__insert_request_pending(idx);
-
-        ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        self.__send_to_agent(dataToSend);
-
-        ## Waiting for the answer arrive. When the status change from 'waiting'
-        ## to 'ready' retrieves the return.
-        while self.__requestPeding[idx]['status_request'] == 'waiting':
-            time.sleep(REQUEST_PENDING_TIMEOUT);
-
-        ## Obtain the data received from request. These data are related to the
-        ## creation of an instance.
-        dataReceived = self.__requestPeding[idx]['data']; 
-
-        ## Remove the request received from the list of requests that are still
-        ## pending.
-        self.__remove_request_pending(idx);
-
-        ## Returns the status of the creation of the instance:
-        return self.__returnState[dataReceived['valret']];
-
- 
-    ##
-    ## BRIEF:
-    ## ------------------------------------------------------------------------
-    ##
-    def delete_instance(self, data):
-
-        self.name  = data['instance']['name'     ];
-        self.uuid  = data['instance']['uuid'     ];
-        self.vcpus = data['instance']['vcpus'    ];
-        self.mem   = data['instance']['memory_mb'];
-        self.disk  = data['instance']['root_gb'  ];
-
-        ##
-        data = {
-                     'vcpus' : self.vcpus,
-                     'mem'   : self.mem,
-                     'disk'  : self.disk,
-                     'name'  : self.name,
-                     'uuid'  : self.uuid,
-               };
-
-        ## Protocol: [002] delete a new virtual machine!
-        dataToSend = {
-                          "opercode": '002',
-                          "data"    : data
-                     };
-
-        ##
-        dataReceived = self.__send_to_agent(dataToSend);
-
-        ##
-        return self.__returnState[dataReceived['valret']];
-
-
-    ##
     ## BRIEF: Get the resources from player's division.
     ## ------------------------------------------------------------------------
     ## TODO: verificar um numero de tentativas e caso nao consiga apos ele eh
@@ -195,20 +109,204 @@ class MCT_Action(object):
         ## Create an idx to identify the request for the resources information.
         idx = self.__create_index();
 
-        ## Protocol: [000] get player status!
-        dataToSend = {
-            'code'    : 0,
-            'playerId': self.__cfg['main']['player'],
-            'status'  : 0,
-            'reqId'   : idx,
-            'retId'   : '',
-            'origAdd' : self.__cfg['main']['address'],
-            'destAdd' : '',
-            'data'    : {}
-        };
+        ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
+        ## to exec de action.
+        msgToSend = self.__create_basic_message(0, idx);
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        self.__send_to_agent(dataToSend);
+        self.__send_to_agent(msgToSend);
+
+        ## Waiting for the answer is ready in database.The answer is ready when
+        ## MCT_Agent send the return.
+        dataReceived = self.__waiting_return(idx);
+
+        ## LOG:
+        LOG.info('[MCT_ACTION] DATA RECEIVED: %s', dataReceived);
+
+        ## Return the all datas about resouces avaliable in player's division.
+        return dataReceived;
+
+
+    ##
+    ## BRIEF: create a new instance via MCT.
+    ## ------------------------------------------------------------------------
+    ## @PARAM data == data received from MCT_Drive (OpenStack).
+    ##
+    def create_instance(self, data):
+
+        ## LOG:
+        LOG.info('[MCT_ACTION] SEND REQUEST TO CREATE A NEW INSTANCE!');
+
+        ## Obtain the request identifier (use the "UUID" created by OpenStack).
+        idx = data['instance']['uuid'];
+
+        ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
+        ## to exec de action.
+        msgToSend = self.__create_basic_message(1, idx);
+
+        ## Mount the requirement:
+        data = {
+            'vcpus' : data['instance']['vcpus'    ],
+            'mem'   : data['instance']['memory_mb'],
+            'disk'  : data['instance']['root_gb'  ],
+            'name'  : data['instance']['name'     ],
+            'uuid'  : data['instance']['uuid'     ],
+            'image' : data['image'   ]['name'     ],
+            'flavor': 'm1.tiny'
+        };
+
+        ##
+        msgToSend['data'] = data;
+
+        ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
+        self.__send_to_agent(msgToSend);
+
+        ## Waiting for the answer is ready in database.The answer is ready when
+        ## MCT_Agent send the return.
+        dataReceived = self.__waiting_return(idx);
+
+        ## LOG:
+        LOG.info('[MCT_ACTION] DATA RECEIVED: %s', dataReceived);
+
+        ## Returns the status of the creation of the instance:
+        return dataReceived;
+
+ 
+    ##
+    ## BRIEF:
+    ## ------------------------------------------------------------------------
+    ##
+    def delete_instance(self, data):
+
+        ## LOG:
+        LOG.info('[MCT_ACTION] SEND REQUEST TO DELETE AN INSTANCE!');
+
+        ## Obtain the request identifier (use the "UUID" created by OpenStack).
+        idx = data['instance']['uuid'];
+
+        ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
+        ## to exec de action.
+        msgToSend = self.__create_basic_message(2, idx);
+
+        ## Mount the requirement:
+        data = {
+            'vcpus' : data['instance']['vcpus'    ],
+            'mem'   : data['instance']['memory_mb'],
+            'disk'  : data['instance']['root_gb'  ],
+            'name'  : data['instance']['name'     ],
+            'uuid'  : data['instance']['uuid'     ],
+        };
+
+        ##
+        msgToSend['data'] = data;
+
+        ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
+        self.__send_to_agent(msgToSend);
+
+        ## Waiting for the answer is ready in database.The answer is ready when
+        ## MCT_Agent send the return.
+        dataReceived = self.__waiting_return(idx);
+
+        ## LOG:
+        LOG.info('[MCT_ACTION] DATA RECEIVED: %s', dataReceived);
+
+        ## Returns the status of the creation of the instance:
+        return dataReceived;
+
+
+    ##
+    ## BRIEF:
+    ## ------------------------------------------------------------------------
+    ## @PARAM data == data received from MCT_Drive (OpenStack).
+    ##
+    def poweroff_instance(self, data):
+
+        ## LOG:
+        LOG.info('[MCT_ACTION] POWER OFF AN REMOTE INSTANCE!');
+
+        ## Obtain the request identifier (use the "UUID" created by OpenStack).
+        idx = data['instance']['uuid'];
+
+        ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
+        ## to exec de action.
+        msgToSend = self.__create_basic_message(3, idx);
+
+
+        msgToSend['data'] = {};
+
+
+        ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
+        self.__send_to_agent(msgToSend);
+
+        ## Waiting for the answer is ready in database.The answer is ready when
+        ## MCT_Agent send the return.
+        dataReceived = self.__waiting_return(idx);
+
+        ## LOG:
+        LOG.info('[MCT_ACTION] DATA RECEIVED: %s', dataReceived);
+
+        ## Return the all datas about resouces avaliable in player's division.
+        return dataReceived;
+
+
+    ##
+    ## BRIEF:
+    ## ------------------------------------------------------------------------
+    ## @PARAM data == data received from MCT_Drive (OpenStack).
+    ##
+    def poweron_instance(self, data):
+        ## LOG:
+        LOG.info('[MCT_ACTION] POWER OFF AN REMOTE INSTANCE!');
+
+
+        ## Obtain the request identifier (use the "UUID" created by OpenStack).
+        idx = data['instance']['uuid'];
+
+        ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
+        ## to exec de action.
+        msgToSend = self.__create_basic_message(4, idx);
+
+
+        msgToSend['data'] = {};
+
+
+        ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
+        self.__send_to_agent(msgToSend);
+
+        ## Waiting for the answer is ready in database.The answer is ready when
+        ## MCT_Agent send the return.
+        dataReceived = self.__waiting_return(idx);
+
+        ## LOG:
+        LOG.info('[MCT_ACTION] DATA RECEIVED: %s', dataReceived);
+
+        ## Return the all datas about resouces avaliable in player's division.
+        return dataReceived;
+
+
+    ##
+    ## BRIEF:
+    ## ------------------------------------------------------------------------
+    ## @PARAM data == data received from MCT_Drive (OpenStack).
+    ##
+    def reset_instance(self, data):
+        ## LOG:
+        LOG.info('[MCT_ACTION] POWER OFF AN REMOTE INSTANCE!');
+
+
+        ## Obtain the request identifier (use the "UUID" created by OpenStack).
+        idx = data['instance']['uuid'];
+
+        ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
+        ## to exec de action.
+        msgToSend = self.__create_basic_message(5, idx);
+
+
+        msgToSend['data'] = {};
+
+
+        ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
+        self.__send_to_agent(msgToSend);
 
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
@@ -282,6 +380,29 @@ class MCT_Action(object):
 
         ## Return a hash with ten position:
         return newHash.hexdigest()[:10];
+
+
+    ##
+    ## BRIEF: create basic message to send.
+    ## ------------------------------------------------------------------------
+    ## @PARAM int action = action code.
+    ## @PARAM str index  = artefact index.
+    ##
+    def __create_basic_message(self, action, index):
+
+        message = {
+            'code'    : action,
+            'playerId': self.__cfg['main']['player'],
+            'status'  : 0,
+            'reqId'   : index,
+            'retId'   : '',
+            'origAdd' : self.__cfg['main']['address'],
+            'destAdd' : '',
+            'data'    : {}
+        };
+
+        return message;
+
 
 
     ##

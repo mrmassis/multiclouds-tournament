@@ -24,6 +24,19 @@ PACK_KEYS = DEFAULT;
 
 
 -- -----------------------------------------------------
+-- Table `mct`.`LAST_IDX`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mct`.`LAST_IDX` ;
+
+CREATE TABLE IF NOT EXISTS `mct`.`LAST_IDX` (
+  `division` INT NOT NULL,
+  `idx`      INT NOT NULL,
+  PRIMARY KEY (`division`))
+ENGINE = InnoDB
+PACK_KEYS = DEFAULT;
+
+
+-- -----------------------------------------------------
 -- Table `mct`.`PLAYER`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `mct`.`PLAYER` ;
@@ -32,9 +45,6 @@ CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45) NULL,
   `address` VARCHAR(45) NULL,
---  `queue` VARCHAR(45) NULL,
---  `exchange` VARCHAR(45) NULL,
---  `route` VARCHAR(45) NULL,
   `division` INT NULL,
   `score` FLOAT NULL,
   `historic` INT NULL,
@@ -69,7 +79,14 @@ INSERT INTO RESOURCE (division, vcpu, memory, disk, vcpu_used, memory_used, disk
 INSERT INTO RESOURCE (division, vcpu, memory, disk, vcpu_used, memory_used, disk_used) VALUES (2, 200,  512000,  512000, 0, 0, 0);
 INSERT INTO RESOURCE (division, vcpu, memory, disk, vcpu_used, memory_used, disk_used) VALUES (3, 100,  102400,  102400, 0, 0, 0);
 
+-- PLAYER;
+INSERT INTO PLAYER (name, address, division, score, historic) VALUES ('Player1', '10.0.0.30',  3,  0.0, 0);
+INSERT INTO PLAYER (name, address, division, score, historic) VALUES ('Player2', '10.0.0.20',  3,  0.0, 0);
 
+-- PLAYER;
+INSERT INTO LAST_IDX (division, idx) VALUES (1, 1);
+INSERT INTO LAST_IDX (division, idx) VALUES (2, 1);
+INSERT INTO LAST_IDX (division, idx) VALUES (3, 1);
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
