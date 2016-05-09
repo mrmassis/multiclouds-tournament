@@ -15,10 +15,10 @@ import os;
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
-class Roundrobin:
+class Bestscores:
 
     """
-    Classe que um metodos de scheduller -- Round Robin.
+    Class Bestscores.
     ---------------------------------------------------------------------------
     * run == execute the scheduller.
     """
@@ -40,22 +40,23 @@ class Roundrobin:
     ## PUBLIC METHODS                                                        ##
     ###########################################################################
     ##
-    ## Brief: choice the best player.
+    ## Brief: choice the best player considered bestscores.
     ## ------------------------------------------------------------------------
-    ## @PARAM list playerList ==
+    ## @PARAM list playerList     == a list of player from a specific division.
+    ## @PARAM str  playerResquest == id from player who made the request.
     ##
-    def run(self, playerList, playerRequest):
-        print playerList;
+    def run(self, playerList):
+        
+        tempList = sorted(playerList, key=lambda field: field[4], reverse=True);
 
-        ## TODO: o endereco do player escolhido nao pode ser o do requisitante.
+        ordenedList = [];
+        for player in tempList:
+            dictPlayer = {
+                'name' : player[1],
+                'addr' : player[2] 
+            }
 
-        #print "Executing the Round Robin schduller...";
-        #player = { 'name' : 'america',
-        #           'addr' : 'locahost',
-        #           'token': 'dsfskdgjdsgsdjgslkjslk'
-        #          };
+            ordenedList.append(dictPlayer);
 
-        #self.playersOrdenedList = [player, player, player];
-        return "20.0.0.30";
-
+        return ordenedList;
 ## EOF.

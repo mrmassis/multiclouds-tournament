@@ -144,15 +144,17 @@ class MCT_Action(object):
         ## to exec de action.
         msgToSend = self.__create_basic_message(1, idx);
 
+        LOG.info(data['instance']['system_metadata']['instance_type_name']);
+
         ## Mount the requirement:
         data = {
+            'flavor': data['instance']['system_metadata']['instance_type_name'],
             'vcpus' : data['instance']['vcpus'    ],
             'mem'   : data['instance']['memory_mb'],
             'disk'  : data['instance']['root_gb'  ],
             'name'  : data['instance']['name'     ],
             'uuid'  : data['instance']['uuid'     ],
-            'image' : data['image'   ]['name'     ],
-            'flavor': 'm1.tiny'
+            'image' : data['image'   ]['name'     ]
         };
 
         ##
@@ -334,23 +336,28 @@ class MCT_Action(object):
         while True or count < REQUEST_PENDING_MAXTRY:
 
             ## Mount the select query: 
-            dbQuery  = "SELECT message FROM REQUEST WHERE ";
+            dbQuery  = "SELECT status, message FROM REQUEST WHERE ";
             dbQuery += "request_id='" + requestId + "'";
 
             dataReceived = [] or self.__dbConnection.select_query(dbQuery);
 
             if dataReceived != []:
                 ## LOG:
-                LOG.info("[MCT_ACTION] DATA RECEIVED %s", dataReceived[0][0]);
+                LOG.info("[MCT_ACTION] DATA RECEIVED %s", dataReceived[0]);
 
-                return ast.literal_eval(dataReceived[0][0]);
+                valRet = {
+                    'status': dataReceived[0][0],
+                    'data'  : ast.literal_eval(dataReceived[0][1])
+                }
+
+                return valRet;
 
             ## Wating for a predefined time to check (pooling) the list again.
             time.sleep(REQUEST_PENDING_TIMEOUT);
             count += 1;
 
             ## LOG:
-            LOG.info("[MCT_ACTION] WAITING FOR RETURN FROM s", dataReceived);
+            LOG.info("[MCT_ACTION] WAITING FOR RETURN FROM %s",dataReceived);
 
         return {};        
 

@@ -116,11 +116,10 @@ class MCT_Communication(Process):
         message = json.loads(message);
 
         ## Insert the message received into the database.
-        dbQuery = "INSERT INTO REQUEST (request_id, message) VALUES (%s, %s)";
-        dbValue = (message['reqId'], str(message['data']));
+        query = "INSERT INTO REQUEST (request_id, status, message) VALUES (%s,%s,%s)";
+        value = (message['reqId'], message['status'], str(message['data']));
        
-        self.__dbConnection.insert_query(dbQuery, dbValue);
-
+        self.__dbConnection.insert_query(query, value);
 
 
     ##

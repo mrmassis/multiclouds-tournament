@@ -167,8 +167,10 @@ class MCT_Agent(RabbitMQ_Consume):
         logger.info('MESSAGE RETURNED OF %s REFEREE: %s', appId, message);
 
         ##
-        #if   message['origAdd'] == ORIG_ADDR and message['destAdd'] == '':
+        #if message['origAdd'] == ORIG_ADDR and message['destAdd'] == '':
         self.__publishInt.publish(message, self.__routeInt);
+
+ 
 
         #elif message['origAdd'] != ORIG_ADDR and message['destAdd'] != '': 
             ## check code!

@@ -69,6 +69,23 @@ CREATE  TABLE IF NOT EXISTS `mct`.`RESOURCE` (
 ENGINE = InnoDB;
 
 
+-- -----------------------------------------------------
+-- Table `mct`.`INSTANCE`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mct`.`INSTANCE` ;
+
+CREATE  TABLE IF NOT EXISTS `mct`.`INSTANCE` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `player_id` VARCHAR(45) NOT NULL,
+  `request_id` VARCHAR(45) NOT NULL,
+  `timestamp_received` TIMESTAMP NULL,
+  `timestamp_finished` TIMESTAMP NULL,
+  `status` TINYINT(1) NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+
 --
 --
 --
@@ -81,7 +98,7 @@ INSERT INTO RESOURCE (division, vcpu, memory, disk, vcpu_used, memory_used, disk
 
 -- PLAYER;
 INSERT INTO PLAYER (name, address, division, score, historic) VALUES ('Player1', '10.0.0.30',  3,  0.0, 0);
-INSERT INTO PLAYER (name, address, division, score, historic) VALUES ('Player2', '10.0.0.20',  3,  0.0, 0);
+INSERT INTO PLAYER (name, address, division, score, historic) VALUES ('Player2', '20.0.0.30',  3,  0.0, 0);
 
 -- PLAYER;
 INSERT INTO LAST_IDX (division, idx) VALUES (1, 1);

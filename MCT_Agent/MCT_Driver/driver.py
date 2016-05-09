@@ -50,7 +50,7 @@ class Instance(object):
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self, name, state, uuid):
+    def __init__(self, name, uuid, state):
         self.name  = name;
         self.state = state;
         self.uuid  = uuid;
@@ -116,12 +116,12 @@ class MCT_Driver(driver.ComputeDriver):
         ## SUSPENDED = 0x07
         ##
         returnState = {
-            '0' : power_state.NOSTATE ,
-            '1' : power_state.RUNNING ,
-            '2' : power_state.PAUSED  ,
-            '3' : power_state.SHUTDOWN,
-            '6' : power_state.CRASHED ,
-            '7' : power_state.SUSPENDED
+            0 : power_state.NOSTATE ,
+            1 : power_state.RUNNING ,
+            2 : power_state.PAUSED  ,
+            3 : power_state.SHUTDOWN,
+            6 : power_state.CRASHED ,
+            7 : power_state.SUSPENDED
         };
 
         ## Instance the classe that will be the interface layer between the MCT
@@ -248,6 +248,8 @@ class MCT_Driver(driver.ComputeDriver):
     def spawn(self, context, instance, image_meta, injected_files,
               admin_password, network_info=None, block_device_info=None):
 
+        status = 0;
+
         ## Create a new dictionary struct with will be contain the parameter to
         ## intance a new VM.
         data = {
@@ -263,8 +265,11 @@ class MCT_Driver(driver.ComputeDriver):
         ## creation.
         valRet = self.mct.create_instance(data);
 
+        if valRet != {}:
+            status = valRet['status'];
+
         ##
-        mctInstance = Instance(instance['name'], valRet, instance['uuid']);
+        mctInstance = Instance(instance['name'], instance['uuid'], status);
 
         ## 
         self.instances[instance['name']] = mctInstance;
@@ -638,12 +643,12 @@ class MCT_Driver(driver.ComputeDriver):
         if valRet != {}:
             resources = {};
 
-            resources['vcpus'         ] = valRet['vcpu'          ]; 
-            resources['vcpus_used'    ] = valRet['vcpu_used'     ]; 
-            resources['memory_mb'     ] = valRet['memory_mb'     ];
-            resources['memory_mb_used'] = valRet['memory_mb_used'];
-            resources['local_gb'      ] = valRet['disk_mb'       ] / 1024;
-            resources['local_gb_used' ] = valRet['disk_mb_used'  ] / 1024;
+            resources['vcpus'         ] = valRet['data']['vcpu'          ]; 
+            resources['vcpus_used'    ] = valRet['data']['vcpu_used'     ]; 
+            resources['memory_mb'     ] = valRet['data']['memory_mb'     ];
+            resources['memory_mb_used'] = valRet['data']['memory_mb_used'];
+            resources['local_gb'      ] = valRet['data']['disk_mb'       ]/1024;
+            resources['local_gb_used' ] = valRet['data']['disk_mb_used'  ]/1024;
 
         ## Copy the status base (fixed values) and concatenate with actual reso
         ## urce informations obtained from MCT.

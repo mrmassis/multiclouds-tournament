@@ -164,6 +164,9 @@ class MCT_Dispatch(RabbitMQ_Consume):
             valRet = self.__remove_query(message['reqId']);
 
             playerAddress = message['origAdd'];
+
+        ## Here is make the request forward to player that will accept the req-
+        ## quest.
         else:
             playerAddress = message['destAdd'];
 
