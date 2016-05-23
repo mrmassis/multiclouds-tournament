@@ -83,6 +83,7 @@ class MCT_Agent(RabbitMQ_Consume):
     __routeExt   = None;
     __publishInt = None;
     __publishExt = None;
+    __my_ip      = None;
 
 
     ###########################################################################
@@ -93,6 +94,9 @@ class MCT_Agent(RabbitMQ_Consume):
         ## Get all configs parameters presents in the config file localized in
         ## CONFIG_FILE path.
         config = self.__get_config(CONFIG_FILE);
+
+        ## Local address:
+        self.__my_ip = config['main']['my_ip'];
 
         ## Get which route is used to deliver the msg to the 'correct destine'.
         self.__routeInt = config['amqp_internal_publish']['route'];
@@ -167,46 +171,29 @@ class MCT_Agent(RabbitMQ_Consume):
         logger.info('MESSAGE RETURNED OF %s REFEREE: %s', appId, message);
 
         ##
-        #if message['origAdd'] == ORIG_ADDR and message['destAdd'] == '':
-        self.__publishInt.publish(message, self.__routeInt);
-
- 
-
-        #elif message['origAdd'] != ORIG_ADDR and message['destAdd'] != '': 
-            ## check code!
-        #    pass;
-
-
-
-
-        #print self.__route
-        ##
-        #self.__publish.publish(message, self.__route);
-
-        ## TODO: TEMP:
-        #if message['retId'] != '':
-
+        if message['origAdd'] != self.__my_ip and message['destAdd'] != '':
             ## LOG:
-        #    logger.info('PROCESSING REQUEST!');
+            logger.info('PROCESSING REQUEST!');
 
-            ## aqui vai para o drive depois.
-        #    message['status'] = '1';
- 
-        #    config = {
-        #       'identifier':'Agent_Player1',
-        #       'address'   :'10.0.0.33',
-        #       'route'     :'mct_dispatch',
-        #       'exchange'  :'mct_exchange',
-        #       'queue_name':'dispatch'
-        #    }
+            ## Select the appropriate action:
+            ## ------------------------------
+            if message['code'] == 1:
 
-        #    targetPublish = RabbitMQ_Publish(config);
-        #    targetPublish.publish(message, 'mct_dispatch');
-#
-        #    del targetPublish;
-        #else:
-            ## LOG:
-        #    logger.info('RESQUEST PROCESSED!');
+#{u'status': 0, u'destAdd': u'20.0.0.30', u'code': 1, u'playerId': u'Player1', u'retId': u'0e1de050-0ba1-4edf-b991-3c5b296b1239', u'reqId': u'0e1de050-0ba1-4edf-b991-3c5b296b1239', u'data': {u'uuid': u'0e1de050-0ba1-4edf-b991-3c5b296b1239', u'mem': 512, u'image': u'cirros-0.3.3-x86_64', u'vcpus': 1, u'flavor': u'm1.tiny', u'disk': 1, u'name': u'instance-00000061'}, u'origAdd': u'10.0.0.30'}
+
+                print message;
+                message['status'] = 1;
+
+            elif message['code'] == 2:
+                pass;
+            elif message['code'] == 3:
+                pass;
+
+            ##
+            self.__publishExt.publish(message, self.__routeExt);
+
+        else:
+            self.__publishInt.publish(message, self.__routeInt);
 
         return 0;
 

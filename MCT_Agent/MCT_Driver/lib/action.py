@@ -135,7 +135,7 @@ class MCT_Action(object):
     def create_instance(self, data):
 
         ## LOG:
-        LOG.info('[MCT_ACTION] SEND REQUEST TO CREATE A NEW INSTANCE!');
+        LOG.info('[MCT_ACTION] CREATE - SEND REQUEST TO CREATE A NEW INSTANCE!');
 
         ## Obtain the request identifier (use the "UUID" created by OpenStack).
         idx = data['instance']['uuid'];
@@ -157,7 +157,6 @@ class MCT_Action(object):
             'image' : data['image'   ]['name'     ]
         };
 
-        ##
         msgToSend['data'] = data;
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
@@ -168,7 +167,7 @@ class MCT_Action(object):
         dataReceived = self.__waiting_return(idx);
 
         ## LOG:
-        LOG.info('[MCT_ACTION] DATA RECEIVED: %s', dataReceived);
+        LOG.info('[MCT_ACTION] CREATE - DATA RECEIVED: %s', dataReceived);
 
         ## Returns the status of the creation of the instance:
         return dataReceived;
@@ -181,7 +180,7 @@ class MCT_Action(object):
     def delete_instance(self, data):
 
         ## LOG:
-        LOG.info('[MCT_ACTION] SEND REQUEST TO DELETE AN INSTANCE!');
+        LOG.info('[MCT_ACTION] DELETE - SEND REQUEST TO DELETE AN INSTANCE!');
 
         ## Obtain the request identifier (use the "UUID" created by OpenStack).
         idx = data['instance']['uuid'];
@@ -199,7 +198,6 @@ class MCT_Action(object):
             'uuid'  : data['instance']['uuid'     ],
         };
 
-        ##
         msgToSend['data'] = data;
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
@@ -210,7 +208,7 @@ class MCT_Action(object):
         dataReceived = self.__waiting_return(idx);
 
         ## LOG:
-        LOG.info('[MCT_ACTION] DATA RECEIVED: %s', dataReceived);
+        LOG.info('[MCT_ACTION] DELETE - DATA RECEIVED: %s', dataReceived);
 
         ## Returns the status of the creation of the instance:
         return dataReceived;

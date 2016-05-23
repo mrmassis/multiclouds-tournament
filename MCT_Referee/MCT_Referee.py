@@ -137,6 +137,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ## ------------------------------------------------------------------------
     ##
     def gracefull_stop(self):
+
         for thread in self.__threadsId:
             thread.terminate();
             thread.join();
@@ -273,45 +274,51 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM dict message ==.
     ##
     def __add_instance(self, division, message):
+        ## 
+        timeStamp = timeStamp = str(datetime.datetime.now());
 
-        ## Select one player able to comply a request to create VM.
-        selectedPlayer = self.__get_player(division, message['playerId']);
+        if message['retId'] != '':
+            print "RETORNO";
 
-        if selectedPlayer != {}:
-            ## 
-            timeStamp = timeStamp = str(datetime.datetime.now());
+            message['destAdd'] = '';
+            message['retId'  ] = '';
 
-            name = selectedPlayer['name'];
-            addr = selectedPlayer['addr'];
+            ## UPDATE DATABASE:
 
-            ## Set the message to be a forward message (perform a map). Send it
-            ## to the destine and waiting the return.
-            ## TODO: colocar.
-            #message['retId'  ] = message['reqId'];
-
-            ## Set the target address. The target address is the player's addrs
-            ## tha will accept the request.
-            message['destAdd'] = addr;
-
-            ## ADD IN DATABASE:
-            #query  = "INSERT INTO INSTANCE (";
-            #query += "player_id, ";
-            #query += "request_id, ";
-            #query += "status, ";
-            #query += "timestamp_received";
-            #query += ") VALUES (%s, %s, %s, %s, %s)";
-            #value  = (playerId, requestId, actionId, 0, timeStamp);
-
-            #self.__lock.acquire();
-            #valRet =self.__db.insert_query(query, value);
-            #self.__lock.release();
-
-            ## TODO: remover!
-            message['status'] = 1; 
         else:
-            ## Case the selected player is empty setting status to error and re
-            ## tur and return the message to origim.
-            message['status'] = 1; 
+
+            ## Select one player able to comply a request to create VM.
+            selectedPlayer = self.__get_player(division, message['playerId']);
+
+            if selectedPlayer != {}:
+                name = selectedPlayer['name'];
+                addr = selectedPlayer['addr'];
+
+                ## Set the message to be a forward message (perform a map). Send
+                ## it to the destine and waiting the return.
+                message['retId'  ] = message['reqId'];
+
+                ## Set the target address. The target addr is the player's addrs
+                ## tha will accept the request.
+                message['destAdd'] = addr;
+
+                ## ADD IN DATABASE:
+                #query  = "INSERT INTO INSTANCE (";
+                #query += "player_id, ";
+                #query += "request_id, ";
+                #query += "status, ";
+                #query += "timestamp_received";
+                #query += ") VALUES (%s, %s, %s, %s, %s)";
+                #value  = (playerId, requestId, actionId, 0, timeStamp);
+
+                #self.__lock.acquire();
+                #valRet = self.__db.insert_query(query, value);
+                #self.__lock.release();
+                print message
+            else:
+                ## Case the selected player is empty setting status to error and
+                ## retur and return the message to origin.
+                message['status'] = 1; 
 
         return message;
  
@@ -323,7 +330,15 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM dict message ==.
     ##
     def __del_instance_inf(self, division, message):
-        return {};
+        #logger.info('DELETE MESSAGE: %s', str(message));
+        print message;
+
+        ## Tem que recuperar quem esta executando a instancia.
+        ## Mandar um destroi.
+        ## E retornar. 
+        message['status'] = 1;
+
+        return message;
 
 
     ##
