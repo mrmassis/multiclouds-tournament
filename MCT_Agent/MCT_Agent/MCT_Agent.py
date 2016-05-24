@@ -80,12 +80,13 @@ class MCT_Agent(RabbitMQ_Consume):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __routeInt       = None;
-    __routeExt       = None;
-    __publishInt     = None;
-    __publishExt     = None;
-    __my_ip          = None;
-    __cloudFramework = None;
+    __routeInt   = None;
+    __routeExt   = None;
+    __publishInt = None;
+    __publishExt = None;
+    __my_ip      = None;
+    __cloud      = None;
+    __cloudType  = None;
 
 
     ###########################################################################
@@ -114,13 +115,15 @@ class MCT_Agent(RabbitMQ_Consume):
 
         ## Check the type of framework utilized to build the cloud.Intance the
         ## correct API.
-        if config['cloud_framework']['type'] == 'openstack';
+        self.__cloudType = config['cloud_framework']['type'];
+
+        if self.__cloudType == 'openstack';
             name = config['cloud_framework']['name'];
             pass = config['cloud_framework']['pass'];
             auth = config['cloud_framework']['auth'];
             proj = config['cloud_framework']['proj'];
 
-            self.__cloudFramework = MCT_Openstack_Nova(name,pass,auth,proj);
+            self.__cloud = MCT_Openstack_Nova(name,pass,auth,proj);
 
 
     ###########################################################################
@@ -182,30 +185,37 @@ class MCT_Agent(RabbitMQ_Consume):
         ## LOG:
         logger.info('MESSAGE RETURNED OF %s REFEREE: %s', appId, message);
 
-        ##
+        ## In this case, the MCT_Agent received actions to be performed locally.
         if message['origAdd'] != self.__my_ip and message['destAdd'] != '':
             ## LOG:
             logger.info('PROCESSING REQUEST!');
 
-            ## Select the appropriate action:
-            ## ------------------------------
+            ## Select the appropriate action (create instance, delete instance,
+            ## suspend instance e resume instance): 
             if message['code'] == 1:
 
-                self.__cloudFramework
+                vmsL = message['data']['name'  ];
+                imgL = message['data']['image' ];
+                fvlL = message['data']['flavor'];
+                netL = 'fake-net';
 
-#{u'status': 0, u'destAdd': u'20.0.0.30', u'code': 1, u'playerId': u'Player1', u'retId': u'0e1de050-0ba1-4edf-b991-3c5b296b1239', u'reqId': u'0e1de050-0ba1-4edf-b991-3c5b296b1239', u'data': {u'uuid': u'0e1de050-0ba1-4edf-b991-3c5b296b1239', u'mem': 512, u'image': u'cirros-0.3.3-x86_64', u'vcpus': 1, u'flavor': u'm1.tiny', u'disk': 1, u'name': u'instance-00000061'}, u'origAdd': u'10.0.0.30'}
-
-                print message;
-                message['status'] = 1;
+                status = self.__cloud.create_instance(vmsL, imgL, flvL, netL):
 
             elif message['code'] == 2:
-                pass;
+                status =  self.__cloud.delete_instance(message['data']['id']);
+
             elif message['code'] == 3:
-                pass;
+                status =  self.__cloud.suspend_instance(message['data']['id']);
 
-            ##
+            elif message['code'] == 4:
+                status =  self.__cloud.resume_instance(message['data']['id']);
+
+            ## --
+            ## The MCT_Agent support more than one cloud framework.So is neces-
+            ## sary prepare the return status to a generic format;
+            message['status'] = self.__convert_status(status, message['code']); 
+
             self.__publishExt.publish(message, self.__routeExt);
-
         else:
             self.__publishInt.publish(message, self.__routeInt);
 
@@ -223,6 +233,27 @@ class MCT_Agent(RabbitMQ_Consume):
         ## LOG:
         logger.info('INSPECT REQUEST!');
         return 0;
+
+
+    ##
+    ## BRIEF: convert de oper status to a generic format.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict status == original status.
+    ## @PARAM dict conde  == operation code.
+    ##
+    def __convert_status(self, status, code):
+
+        if self.__cloudType == 'openstack';
+            ## TODO:
+            genericStatus = {
+                1 : { '' : 0,    },
+                2 : { '' : 0,    },
+                3 : { '' : 0,    },
+                4 : { '' : 0,    }
+            }
+
+        return newStatus = genericStatus[code][status];
+
 
     ##
     ## BRIEF: obtain all configuration from conffiles.

@@ -1,8 +1,15 @@
 #!/usr/bin/python
 
-import keystoneauth1;
-import novaclient;
+
+
+
 import os;
+import time;
+
+from keystoneclient.auth.identity import v2;
+from keystoneclient               import session;
+from novaclient                   import client;
+
 
 
 
@@ -130,11 +137,10 @@ class MCT_Openstack_Nova:
     """
     ---------------------------------------------------------------------------
     PUBLIC METHODS:
-    * create_intance    ==
-    * delete_intance    ==
-    * reset_instance    ==
-    * poweron_instance  ==
-    * poweroff_instance ==
+    * create_intance   == create a new instance.
+    * delete_intance   == delete a existent instance.
+    * suspend_instance == suspend an instance.
+    * resume_instance  == resume an instance.
     """
 
     ###########################################################################
@@ -146,27 +152,24 @@ class MCT_Openstack_Nova:
     ###########################################################################
     ## SPECIAL METHODS                                                       ## 
     ###########################################################################
-    def __init__(self, user, pass, auth, proj):
-        ## Obtem a classe de plugin indicado pelo paramentro name == password.
-        loader = keystoneauth1.loading.get_plugin_loader('password');
+    def __init__(self, user, pswd, auth, proj):
 
         ## If you have PROJECT_NAME instead of a PROJECT_ID, use the string la
         ## bel project_name parameter. Similarly, if your cloud uses keystonv3
         ## and you have a DOMAIN_NAME or DOMAIN_ID, provide it as user_domain_
         ## (name|id) and if you are using a PROJECT_NAME also provide the doma
         ## in information as project_domain_(name|id).
-        ## TODO: automatizar a selecao e escolha.
-        auth = loader.Password(auth_url   = auth,
-                               username   = user,
-                               password   = pass,
-                               project_id = proj);
+        auth = v2.Password(auth_url    = auth,
+                           username    = user,
+                           password    = pswd,
+                           tenant_name = proj);
 
         ## Ponto de contato para os servicos do OpenStack. Armazena as creden-
         ## ciais e informacoes requeridas para comunicacao.  
-        session = keystoneauth1.session.Session(auth=auth);
+        keystoneSession = session.Session(auth=auth);
 
-        self.__nova = novalient.client.Client(VERSION, session=session);
-     
+        self.__nova = client.Client(VERSION, session = keystoneSession);
+
 
     ###########################################################################
     ## PUBLIC METHODS                                                        ## 
@@ -181,20 +184,20 @@ class MCT_Openstack_Nova:
     ## @PARAM key  = keypair injected in instance.
     ##
     def create_instance(self, vmsL, imgL, flvL, netL, key=''):
-        zoneName = '';
+        zoneName = 'nova';
 
         ## The Compute (nova) python bindings enable you to get an artefact obj
         ## by name.
-        img = nova.images.find  (name = imgL);
-        flv = nova.flavors.find (name = flvL);
-        net = nova.networks.find(label= netL);
+        img = self.__nova.images.find  (name = imgL);
+        flv = self.__nova.flavors.find (name = flvL);
+        net = self.__nova.networks.find(label= netL);
 
         ## Create a new server (instance) into the openstack (avoid ...):
-        server = nova.servers.create(name              = vmsL,  
-                                     image             = img.id, 
-                                     flavor            = flv.id, 
-                                     nics              = [{'net-id':net.id}],
-                                     availability_zone = zoneName);
+        server=self.__nova.servers.create(name             =vmsL,  
+                                          image            =img.id, 
+                                          flavor           =flv.id, 
+                                          nics             =[{'net-id':net.id}],
+                                          availability_zone=zoneName);
 
         status = server.status;
 
@@ -202,7 +205,7 @@ class MCT_Openstack_Nova:
             time.sleep(5);
 
             ## Retrieve the server object again so the status field updates:
-            server = nova.servers.get(server.id)
+            server = self.__nova.servers.get(server.id)
             status = server.status;
  
         return status;
@@ -211,61 +214,104 @@ class MCT_Openstack_Nova:
     ##
     ## Brief: delete a existent instance.
     ## ------------------------------------------------------------------------
-    ## @PARAM vmsL = name of instance (virtual machine server - vms).
+    ## @PARAM instanceId = id of instance (virtual machine server - vms).
     ##
-    def delete_instance(self, vmsL):
-        try:
-            server = nova.servers.find(name=vmsL);
+    def delete_instance(self, instanceId):
+
+       ## Get the intance's status:
+       try:
+           server = self.__nova.servers.find(id = instanceId);
+           status = server.status;
+       except novaclient.exceptions.NotFound as error:
+           status = 'NOT_FOUND';
+
+       ## Case the intance (id) status is "active or not_found". Nothing to do!
+       if status == 'ACTIVE':
+
+            ## Procedure to the delete:
             server.delete();
-        except:
-            return 0;
+            server.status;
 
-        return 1;
+            while status == 'ACTIVE':
+                ## Retrieve the server object again so the status field updates:
+                try:
+                    server = self.__nova.servers.get(server.id)
+                    status = server.status;
+                except:
+                    status = 'DELETED';
+                    pass;
+
+                time.sleep(5);
+
+       return status;
 
 
     ##
-    ## Brief: reset a existent instance.
+    ## Brief: suspend an instance.
     ## ------------------------------------------------------------------------
-    ## @PARAM vmsL = name of instance (virtual machine server - vms).
+    ## @PARAM instanceId = id of instance (virtual machine server - vms).
     ##
-    def reset_instance(self):
-        try:
-            server = nova.servers.find(name=vmsL);
-            server.reboot();
-        except:
-            return 0;
+    def suspend_instance(self, instanceId):
 
-        return 1;
+       ## Get the intance's status:
+       try:
+           server = self.__nova.servers.find(id = instanceId);
+           status = server.status;
+       except novaclient.exceptions.NotFound as error:
+           status = 'NOT_FOUND';
 
+       ## Case the intance (id) status is "active or not_found". Nothing to do!
+       if status == 'ACTIVE':
 
-    ##
-    ## Brief: put an instance in power on mode.
-    ## ------------------------------------------------------------------------
-    ## @PARAM vmsL = name of instance (virtual machine server - vms).
-    ##
-    def poweron_instance(self):
-        try:
-            server = nova.servers.find(name=vmsL);
-            server.resume();
-        except:
-            return 0;
-
-        return 1;
-
-
-    ##
-    ## Brief: put an instance in power off mode.
-    ## ------------------------------------------------------------------------
-    ## @PARAM vmsL = name of instance (virtual machine server - vms).
-    ##
-    def poweroff_instance(self):
-        try:
-            server = nova.servers.find(name=vmsL);
+            ## Procedure to the suspend:
             server.suspend();
-        except:
-            return 0;
+            server.status;
 
-        return 1;
+            while status == 'ACTIVE':
+                ## Retrieve the server object again so the status field updates:
+                try:
+                    server = self.__nova.servers.get(server.id)
+                    status = server.status;
+                except:
+                    pass;
+
+                time.sleep(5);
+
+       return status;
+
+
+    ##
+    ## Brief: resume an instance.
+    ## ------------------------------------------------------------------------
+    ## @PARAM instanceId = id of instance (virtual machine server - vms).
+    ##
+    def resume_instance(self, instanceId):
+
+       ## Get the intance's status:
+       try:
+           server = self.__nova.servers.find(id = instanceId);
+           status = server.status;
+       except novaclient.exceptions.NotFound as error:
+           status = 'NOT_FOUND';
+
+       ## Case the intance (id) status is "active or not_found". Nothing to do!
+       if status == 'SUSPENDED':
+
+            ## Procedure to the resume:
+            server.resume();
+            server.status;
+
+            while status == 'SUSPENDED':
+                ## Retrieve the server object again so the status field updates:
+                try:
+                    server = self.__nova.servers.get(server.id)
+                    status = server.status;
+                except:
+                    pass;
+
+                time.sleep(5);
+
+       return status;
 
 
     ##
@@ -294,19 +340,19 @@ class MCT_Openstack_Nova:
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
-
+    
     user = os.environ['OS_USERNAME'   ];
-    pass = os.environ['OS_PASSWORD'   ];
+    pswd = os.environ['OS_PASSWORD'   ];
     auth = os.environ['OS_AUTH_URL'   ];
     proj = os.environ['OS_TENANT_NAME'];
     
-    framework = MCT_Openstack_Nova(user, pass, auth, proj):
+    framework = MCT_Openstack_Nova(user, pswd, auth, proj);
 
-    vmsL = '';
-    imgL = '';
-    flvL = 'm1.tiny';
-    netL = '';
+    #vmsL = 'teste';
+    #imgL = 'cirros-0.3.3-x86_64';
+    #flvL = 'm1.tiny';
+    #netL = 'fake-net';
 
-    framework.create_instance(vmsL, imgL, flvL, netL);
+    #status = framework.create_instance(vmsL, imgL, flvL, netL);
 ## EOF.
 
