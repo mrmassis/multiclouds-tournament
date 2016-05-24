@@ -10,7 +10,8 @@ import logging.handlers;
 import pika;
 
 
-from lib.amqp import RabbitMQ_Publish, RabbitMQ_Consume;
+from lib.openstack_API import MCT_Openstack_Nova;
+from lib.amqp          import RabbitMQ_Publish, RabbitMQ_Consume;
 
 
 
@@ -79,11 +80,12 @@ class MCT_Agent(RabbitMQ_Consume):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __routeInt   = None;
-    __routeExt   = None;
-    __publishInt = None;
-    __publishExt = None;
-    __my_ip      = None;
+    __routeInt       = None;
+    __routeExt       = None;
+    __publishInt     = None;
+    __publishExt     = None;
+    __my_ip          = None;
+    __cloudFramework = None;
 
 
     ###########################################################################
@@ -109,7 +111,17 @@ class MCT_Agent(RabbitMQ_Consume):
         ## Instantiates an object to perform the publication of AMQP messages.
         self.__publishInt = RabbitMQ_Publish(config['amqp_internal_publish']);
         self.__publishExt = RabbitMQ_Publish(config['amqp_external_publish']);
-        
+
+        ## Check the type of framework utilized to build the cloud.Intance the
+        ## correct API.
+        if config['cloud_framework']['type'] == 'openstack';
+            name = config['cloud_framework']['name'];
+            pass = config['cloud_framework']['pass'];
+            auth = config['cloud_framework']['auth'];
+            proj = config['cloud_framework']['proj'];
+
+            self.__cloudFramework = MCT_Openstack_Nova(name,pass,auth,proj);
+
 
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
@@ -178,6 +190,8 @@ class MCT_Agent(RabbitMQ_Consume):
             ## Select the appropriate action:
             ## ------------------------------
             if message['code'] == 1:
+
+                self.__cloudFramework
 
 #{u'status': 0, u'destAdd': u'20.0.0.30', u'code': 1, u'playerId': u'Player1', u'retId': u'0e1de050-0ba1-4edf-b991-3c5b296b1239', u'reqId': u'0e1de050-0ba1-4edf-b991-3c5b296b1239', u'data': {u'uuid': u'0e1de050-0ba1-4edf-b991-3c5b296b1239', u'mem': 512, u'image': u'cirros-0.3.3-x86_64', u'vcpus': 1, u'flavor': u'm1.tiny', u'disk': 1, u'name': u'instance-00000061'}, u'origAdd': u'10.0.0.30'}
 
