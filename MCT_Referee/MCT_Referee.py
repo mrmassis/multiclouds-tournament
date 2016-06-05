@@ -275,7 +275,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     def __add_instance(self, division, message):
         ## 
-        timeStamp = timeStamp = str(datetime.datetime.now());
+        timeStamp = str(datetime.datetime.now());
 
         if message['retId'] != '':
             print "RETORNO";
@@ -283,7 +283,7 @@ class MCT_Referee(RabbitMQ_Consume):
             message['destAdd'] = '';
             message['retId'  ] = '';
 
-            ## UPDATE DATABASE:
+            ## TODO: UPDATE DATABASE:
 
         else:
 
@@ -296,13 +296,13 @@ class MCT_Referee(RabbitMQ_Consume):
 
                 ## Set the message to be a forward message (perform a map). Send
                 ## it to the destine and waiting the return.
-                message['retId'  ] = message['reqId'];
+                message['retId'] = message['reqId'];
 
                 ## Set the target address. The target addr is the player's addrs
                 ## tha will accept the request.
                 message['destAdd'] = addr;
 
-                ## ADD IN DATABASE:
+                ## TODO: ADD IN DATABASE:
                 #query  = "INSERT INTO INSTANCE (";
                 #query += "player_id, ";
                 #query += "request_id, ";
@@ -330,7 +330,9 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM dict message ==.
     ##
     def __del_instance_inf(self, division, message):
-        #logger.info('DELETE MESSAGE: %s', str(message));
+        ## LOG:
+        logger.info('DELETE MESSAGE: %s', str(message));
+
         print message;
 
         ## Tem que recuperar quem esta executando a instancia.

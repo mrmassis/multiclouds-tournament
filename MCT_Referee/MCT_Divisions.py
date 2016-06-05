@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 
 
-import pika;
 import time;
 import sys;
 import os;
 import datetime;
 import ConfigParser;
-import json;
 import logging;
 import logging.handlers;
 
@@ -21,10 +19,10 @@ from multiprocessing  import Process, Queue, Lock;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE   = '/etc/mct/mct_referee.ini';
-LOG_NAME      = 'MCT_Referee';
+CONFIG_FILE   = '/etc/mct/mct_divisions.ini';
+LOG_NAME      = 'MCT_Divisions';
 LOG_FORMAT    = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
-LOG_FILENAME  = '/var/log/mct/mct_referee.log';
+LOG_FILENAME  = '/var/log/mct/mct_divisions.log';
 
 
 
@@ -121,16 +119,17 @@ class Division(Process):
             eT = timeNow - timeOld;
 
             if divmod(eT.total_seconds(),60)[0] >= int(self.__dConf['round']):
+
                  ## LOG:
                  logger.info('ROUND FINISHED!');
 
                  ## Calculates attributes (score and history) of each player in
                  ## the division.
-                 #self.__calculate_attributes();
+                 self.__calculate_attributes();
 
                  timeOld = datetime.datetime.now();
 
-            time.sleep(float(self.__dConf['steep']));
+            time.sleep(float(self.__dConf['interval']));
 
         return 0;
 
@@ -170,6 +169,7 @@ class Division(Process):
             ## Get all request from a player. The result considers all requests
             ## before the idx.
             query  = "SELECT * FROM REQUEST ";
+
             query += "WHERE ";
             query += "player_id='"+ player[0] +"' and id >='"+ str(index)+"' ";
 
@@ -179,18 +179,18 @@ class Division(Process):
 
             if valRet == []:
                 ## Get the last ID obtained from query:
-                nIndex = 0 
+                nIndex = 0
 
                 nScore = self.__calculate_score(player[1]);
                 nHistc = self.__calculate_histc(player[2]);
                 nDivis = 1;
-                
+
                 query  = "UPDATE PLAYER SET ";
                 query += "score='"      + str(nScore)    + "', ";
                 query += "historic='"   + str(nHistc)    + "', ";
                 query += "division='"   + str(nDivis)    + "', ";
                 query += "WHERE name='" + str(player[0]) + "'  ";
-                
+
                 print query
 
                 #self.__dLock.acquire();
@@ -199,7 +199,7 @@ class Division(Process):
                 #
                 query  = "UPDATE LAST_IDX SET "
                 query += "idx='"            +str(nIndex)       + "' ";
-                query += "WHERE divison='" + str(self.__dNumb) + "' "; 
+                query += "WHERE divison='" + str(self.__dNumb) + "' ";
 
                 print query
                 #
@@ -210,9 +210,11 @@ class Division(Process):
         return 0;
 
 
+
     ##
-    ## BRIEF: 
+    ## BRIEF: calculate a new player's score. 
     ## ------------------------------------------------------------------------
+    ## @PARAM float oldScore == the score before update.
     ## 
     def __calculate_score(self, oldScore):
         ## TODO:
@@ -226,8 +228,9 @@ class Division(Process):
 
 
     ##
-    ## BRIEF: 
+    ## BRIEF: calculate a new player's historic.
     ## ------------------------------------------------------------------------
+    ## @PARAM float oldHistoric == the historic before update.
     ## 
     def __calculate_histc(self, oldHistc):
         ## TODO:
@@ -235,5 +238,132 @@ class Division(Process):
         ## LOG:
         logger.info("CALCULATE HISTC");
         return oldHistc;
+## END CLASS.
+
+
+
+
+
+
+
+
+class MCT_Divisions:
+
+    """
+    Class MCT_Referee: start and mantain the MCT referee.
+    ---------------------------------------------------------------------------
+    PUBLIC METHODS:
+    ** run            == main loop.
+    ** gracefull_stop == grecefull finish the divisions.
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __threadsId = None;
+    __interval  = None;
+    __lock      = None;
+    __db        = None;
+
+
+    ###########################################################################
+    ## SPECIAL METHODS                                                       ##
+    ###########################################################################
+    def __init__(self):
+
+        ## Get the configurations related to the execution of the divisions de
+        ## fined by the User.
+        configs = self.__get_configs(CONFIG_FILE);
+
+        ## Intance a new object to handler all operation in the local database
+        self.__db = Database(configs['database']);
+
+        ## Get a new lock from package process. This lock is to be used inside
+        ## the thread division.
+        self.__lock = Lock();
+
+        ## Time to waiting until next loop:
+        self.__interval = config['main']['interval'];
+
+
+
+    ###########################################################################
+    ## PUBLIC METHODS                                                        ##
+    ###########################################################################
+    ##
+    ## BRIEF: main loop.
+    ## ------------------------------------------------------------------------
+    ##
+    def run(self):
+        while True:
+            time.sleep(float(self.__interval));
+            
+            ## TODO:
+            ## Check the sanity of the divisions' thread (is running?).
+
+        return 0;
+
+
+    ##
+    ## BRIEF: grecefull finish the divisions.
+    ## ------------------------------------------------------------------------
+    ##
+    def gracefull_stop(self):
+
+        for thread in self.__threadsId:
+            thread.terminate();
+            thread.join();
+
+        ## LOG:
+        logger.info('GRACEFULL STOP ...');
+        return 0;
+
+
+    ##
+    ## BRIEF: get config options.
+    ## ------------------------------------------------------------------------
+    ## @PARAM str configName == file with configuration.
+    ##
+    def __get_configs(self, configName):
+        cfg = {};
+
+        config = ConfigParser.ConfigParser();
+        config.readfp(open(configName));
+
+        ## Scan the configuration file and get the relevant informations and sa
+        ## ve then in cfg dictionary.
+        for section in config.sections():
+            cfg[section] = {};
+
+            for option in config.options(section):
+                cfg[section][option] = config.get(section,option);
+
+        return cfg;
+## END.
+
+
+
+
+
+
+
+
+###############################################################################
+## MAIN                                                                      ##
+###############################################################################
+if __name__ == "__main__":
+    ## LOG:
+    logger.info('EXECUTION STARTED...');
+
+    try:
+        mctDivisions = MCT_Divisions();
+        mctDivisions.run();
+
+    except KeyboardInterrupt, error:
+        mctDivisions.gracefull_stop();
+
+    ## LOG:
+    logger.info('EXECUTION FINISHED...');
+    sys.exit(0);
 ## EOF.
 

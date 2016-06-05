@@ -399,7 +399,7 @@ class MCT_Action(object):
             'code'    : action,
             'playerId': self.__cfg['main']['player'],
             'status'  : 0,
-            'reqId'   : index,
+            'reqId'   : self.__cfg['main']['player'] + '_' + index,
             'retId'   : '',
             'origAdd' : self.__cfg['main']['address'],
             'destAdd' : '',

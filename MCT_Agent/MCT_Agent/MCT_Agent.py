@@ -8,10 +8,11 @@ import time;
 import logging;
 import logging.handlers;
 import pika;
+import datetime;
 
-
-from lib.openstack_API import MCT_Openstack_Nova;
-from lib.amqp          import RabbitMQ_Publish, RabbitMQ_Consume;
+from lib.openstack_API          import MCT_Openstack_Nova;
+from lib.amqp                   import RabbitMQ_Publish, RabbitMQ_Consume;
+from nova.virt.mct.lib.database import MCT_Database;
 
 
 
@@ -80,13 +81,14 @@ class MCT_Agent(RabbitMQ_Consume):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __routeInt   = None;
-    __routeExt   = None;
-    __publishInt = None;
-    __publishExt = None;
-    __my_ip      = None;
-    __cloud      = None;
-    __cloudType  = None;
+    __routeInt     = None;
+    __routeExt     = None;
+    __publishInt   = None;
+    __publishExt   = None;
+    __my_ip        = None;
+    __cloud        = None;
+    __cloudType    = None;
+    __dbConnection = None;
 
 
     ###########################################################################
@@ -113,17 +115,21 @@ class MCT_Agent(RabbitMQ_Consume):
         self.__publishInt = RabbitMQ_Publish(config['amqp_internal_publish']);
         self.__publishExt = RabbitMQ_Publish(config['amqp_external_publish']);
 
+        ## Intance a new object to handler all operation in the local database.
+        self.__dbConnection = MCT_Database(config['database']);
+
         ## Check the type of framework utilized to build the cloud.Intance the
         ## correct API.
         self.__cloudType = config['cloud_framework']['type'];
 
-        if self.__cloudType == 'openstack';
+        if self.__cloudType == 'openstack':
+
             name = config['cloud_framework']['name'];
-            pass = config['cloud_framework']['pass'];
+            pswd = config['cloud_framework']['pass'];
             auth = config['cloud_framework']['auth'];
             proj = config['cloud_framework']['proj'];
 
-            self.__cloud = MCT_Openstack_Nova(name,pass,auth,proj);
+            self.__cloud = MCT_Openstack_Nova(name, pswd, auth, proj);
 
 
     ###########################################################################
@@ -192,6 +198,7 @@ class MCT_Agent(RabbitMQ_Consume):
 
             ## Select the appropriate action (create instance, delete instance,
             ## suspend instance e resume instance): 
+            ## Create:
             if message['code'] == 1:
 
                 vmsL = message['data']['name'  ];
@@ -199,16 +206,26 @@ class MCT_Agent(RabbitMQ_Consume):
                 fvlL = message['data']['flavor'];
                 netL = 'fake-net';
 
-                status = self.__cloud.create_instance(vmsL, imgL, flvL, netL):
+                status = self.__cloud.create_instance(vmsL, imgL, flvL, netL);
 
+                ## Insert in the MAP_UUID table the origin uuid (player source)
+                ## and the local instance uuuid.
+                self.__set_map_inst_id(destId, message['data']['reqId']);
+
+            ## Delete:
             elif message['code'] == 2:
-                status =  self.__cloud.delete_instance(message['data']['id']);
+                instId =self.__get_map_inst_id(message['data']['reqId'],True);
+                status =self.__cloud.delete_instance(instId);
 
+            ## Suspend:
             elif message['code'] == 3:
-                status =  self.__cloud.suspend_instance(message['data']['id']);
+                instId =self.__get_map_inst_id(message['data']['reqId']);
+                status =self.__cloud.suspend_instance(instId);
 
+            ## Resume:
             elif message['code'] == 4:
-                status =  self.__cloud.resume_instance(message['data']['id']);
+                instId =self.__get_map_inst_id(message['data']['reqId']);
+                status =self.__cloud.resume_instance(instId);
 
             ## --
             ## The MCT_Agent support more than one cloud framework.So is neces-
@@ -243,16 +260,65 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     def __convert_status(self, status, code):
 
-        if self.__cloudType == 'openstack';
-            ## TODO:
+        if self.__cloudType == 'openstack':
             genericStatus = {
-                1 : { '' : 0,    },
-                2 : { '' : 0,    },
-                3 : { '' : 0,    },
-                4 : { '' : 0,    }
+                1 : { 'ERROR':0, 'ACTIVE'      :1},
+                2 : { 'ERROR':0, 'HARD_DELETED':1},
+                3 : { 'ERROR':0, 'SUSPENDED'   :1},
+                4 : { 'ERROR':0, 'ACTIVE'      :1}
             }
 
-        return newStatus = genericStatus[code][status];
+        return genericStatus[code][status];
+
+
+    ##
+    ## Brief: create a map between two uuid.
+    ## ------------------------------------------------------------------------
+    ## @PARAM str destId == local uuid.
+    ## @PARAM str origId == origin uuid.
+    ##
+    def __set_map_inst_id(self, destId, origId):
+        ## 
+        timeStamp = str(datetime.datetime.now());
+
+        query  = "INSERT INTO MAP (";
+        query += "uuid_src, ";
+        query += "uuid_dst, ";
+        query += "type_obj, ";
+        query += "date";
+        query += ") VALUES (%s, %s, %s, %s, %s)";
+        value  = (origId, destId, 'instance', timeStamp);
+
+        valRet = self.__dbConnection.insert_query(query, value);
+
+        return 0;
+
+    ##
+    ## Brief: get the local uuid from object.
+    ## ------------------------------------------------------------------------
+    ## @PARAM str  origId == origin uuid.
+    ## @PARAM bool delete == check if is to delete entry.
+    ##
+    def __get_map_inst_id(self, origId, delete=False):
+        destId = '';
+
+        ## Mount the select query: 
+        dbQuery  = "SELECT uuid_dst FROM MAP WHERE ";
+        dbQuery += "uuid_src='" + origId + "'";
+
+        dataReceived = [] or self.__dbConnection.select_query(dbQuery);
+
+        if dataReceived != []:
+            destId = dataReceived[0][0];
+
+            if delete:
+                ## Delete the correspondent entry:
+                query  = "DELETE uuid_src FROM MAP WHERE "
+                query += "uuid_src='" + origId + "'";
+
+                valRet = self.__dbConnection.delete_query(query); 
+
+        return dstId;
 
 
     ##

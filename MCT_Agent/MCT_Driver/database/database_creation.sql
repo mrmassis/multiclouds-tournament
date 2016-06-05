@@ -22,6 +22,20 @@ CREATE TABLE IF NOT EXISTS `mct`.`REQUEST` (
 ENGINE = InnoDB
 PACK_KEYS = DEFAULT;
 
+-- -----------------------------------------------------
+-- Table `mct`.`MAP`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mct`.`MAP` ;
+
+CREATE TABLE IF NOT EXISTS `mct`.`MAP` (
+  `uuid_src` VARCHAR(45) NOT NULL,
+  `uuid_dst` VARCHAR(45) NOT NULL,
+  `type_obj` VARCHAR(45) NOT NULL,
+  `date`     TIMESTAMP NULL,
+  PRIMARY KEY (`uuid_src`))
+ENGINE = InnoDB
+PACK_KEYS = DEFAULT;
+
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;

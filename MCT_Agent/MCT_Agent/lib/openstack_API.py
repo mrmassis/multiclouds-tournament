@@ -223,7 +223,7 @@ class MCT_Openstack_Nova:
            server = self.__nova.servers.find(id = instanceId);
            status = server.status;
        except novaclient.exceptions.NotFound as error:
-           status = 'NOT_FOUND';
+           status = 'ERROR';
 
        ## Case the intance (id) status is "active or not_found". Nothing to do!
        if status == 'ACTIVE':
@@ -238,8 +238,7 @@ class MCT_Openstack_Nova:
                     server = self.__nova.servers.get(server.id)
                     status = server.status;
                 except:
-                    status = 'DELETED';
-                    pass;
+                    status = 'HARD_DELETED';
 
                 time.sleep(5);
 
@@ -258,7 +257,7 @@ class MCT_Openstack_Nova:
            server = self.__nova.servers.find(id = instanceId);
            status = server.status;
        except novaclient.exceptions.NotFound as error:
-           status = 'NOT_FOUND';
+           status = 'ERROR';
 
        ## Case the intance (id) status is "active or not_found". Nothing to do!
        if status == 'ACTIVE':
@@ -292,7 +291,7 @@ class MCT_Openstack_Nova:
            server = self.__nova.servers.find(id = instanceId);
            status = server.status;
        except novaclient.exceptions.NotFound as error:
-           status = 'NOT_FOUND';
+           status = 'ERROR';
 
        ## Case the intance (id) status is "active or not_found". Nothing to do!
        if status == 'SUSPENDED':
