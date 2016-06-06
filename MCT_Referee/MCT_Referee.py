@@ -118,16 +118,6 @@ class MCT_Referee(RabbitMQ_Consume):
         ##
         self.__lock = Lock();
 
-        #for divNumb in range(1, int(configs['main']['num_divisions']) + 1):
-        #     divName = 'division' + str(divNumb);
-        #     divConf = configs[divName];
-
-        #     division=Division(divNumb,divName,divConf,self.__db,self.__lock);
-        #     division.daemon = True;
-        #     division.start();
-
-        #     self.__threadsId.append(division);
-
 
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
