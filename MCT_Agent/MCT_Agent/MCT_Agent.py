@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 
-import ConfigParser;
 import sys;
 import json;
 import time;
@@ -10,9 +9,10 @@ import logging.handlers;
 import pika;
 import datetime;
 
-from lib.openstack_API          import MCT_Openstack_Nova;
-from lib.amqp                   import RabbitMQ_Publish, RabbitMQ_Consume;
-from nova.virt.mct.lib.database import MCT_Database;
+from lib.utils         import *;
+from lib.openstack_API import MCT_Openstack_Nova;
+from lib.amqp          import RabbitMQ_Publish, RabbitMQ_Consume;
+from lib.database      import MCT_Database;
 
 
 
@@ -98,7 +98,7 @@ class MCT_Agent(RabbitMQ_Consume):
 
         ## Get all configs parameters presents in the config file localized in
         ## CONFIG_FILE path.
-        config = self.__get_config(CONFIG_FILE);
+        config = get_configs(CONFIG_FILE);
 
         ## Local address:
         self.__my_ip = config['main']['my_ip'];
@@ -319,26 +319,6 @@ class MCT_Agent(RabbitMQ_Consume):
                 valRet = self.__dbConnection.delete_query(query); 
 
         return dstId;
-
-
-    ##
-    ## BRIEF: obtain all configuration from conffiles.
-    ## ------------------------------------------------------------------------
-    ## @PARAM str cfgFile == conffile name.
-    ##
-    def __get_config(self, cfgFile):
-       cfg = {};
-
-       config = ConfigParser.ConfigParser();
-       config.readfp(open(cfgFile));
-
-       for section in config.sections():
-           cfg[section] = {};
-
-           for option in config.options(section):
-               cfg[section][option] = config.get(section, option);
-
-       return cfg;
 ## END.
 
 
