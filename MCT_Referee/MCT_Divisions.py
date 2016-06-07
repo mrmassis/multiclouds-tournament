@@ -9,8 +9,9 @@ import ConfigParser;
 import logging;
 import logging.handlers;
 
-from lib.database     import Database;
-from multiprocessing  import Process, Queue, Lock;
+from lib.database    import Database;
+from multiprocessing import Process, Queue, Lock;
+from lib.utils       import *;
 
 
 
@@ -191,24 +192,19 @@ class Division(Process):
                 query += "division='"   + str(nDivis)    + "', ";
                 query += "WHERE name='" + str(player[0]) + "'  ";
 
-                print query
-
-                #self.__dLock.acquire();
-                #valRet = self.__dBase.update_query(query);
-                #self.__dLock.release();
-                #
+                self.__dLock.acquire();
+                valRet = self.__dBase.update_query(query);
+                self.__dLock.release();
+                
                 query  = "UPDATE LAST_IDX SET "
                 query += "idx='"            +str(nIndex)       + "' ";
                 query += "WHERE divison='" + str(self.__dNumb) + "' ";
-
-                print query
-                #
-                #self.__dLock.acquire();
-                #valRet = self.__dBase.update_query(query);
-                #self.__dLock.release();
+                
+                self.__dLock.acquire();
+                valRet = self.__dBase.update_query(query);
+                self.__dLock.release();
 
         return 0;
-
 
 
     ##
@@ -273,7 +269,7 @@ class MCT_Divisions:
 
         ## Get the configurations related to the execution of the divisions de
         ## fined by the User.
-        configs = self.__get_configs(CONFIG_FILE);
+        configs = get_configs(CONFIG_FILE);
 
         ## Intance a new object to handler all operation in the local database
         self.__db = Database(configs['database']);
@@ -284,6 +280,18 @@ class MCT_Divisions:
 
         ## Time to waiting until next loop:
         self.__interval = config['main']['interval'];
+
+        ## Create all threads. The number of threads are defineds in the conf.
+        ## file.
+        for divNumb in range(1, int(configs['main']['num_divisions']) + 1):
+            divName = 'division' + str(divNumb);
+            divConf = configs[divName];
+
+            division = Division(divNumb,divName,divConf,self.__db,self.__lock);
+            division.daemon = True;
+            division.start();
+
+            self.__threadsId.append(division);
 
 
 
@@ -324,21 +332,21 @@ class MCT_Divisions:
     ## ------------------------------------------------------------------------
     ## @PARAM str configName == file with configuration.
     ##
-    def __get_configs(self, configName):
-        cfg = {};
+#    def __get_configs(self, configName):
+#        cfg = {};
 
-        config = ConfigParser.ConfigParser();
-        config.readfp(open(configName));
+#        config = ConfigParser.ConfigParser();
+#        config.readfp(open(configName));
 
         ## Scan the configuration file and get the relevant informations and sa
         ## ve then in cfg dictionary.
-        for section in config.sections():
-            cfg[section] = {};
+#        for section in config.sections():
+#            cfg[section] = {};
 
-            for option in config.options(section):
-                cfg[section][option] = config.get(section,option);
+#            for option in config.options(section):
+#                cfg[section][option] = config.get(section,option);
 
-        return cfg;
+#        return cfg;
 ## END.
 
 

@@ -6,7 +6,7 @@ import time;
 import sys;
 import os;
 import datetime;
-import ConfigParser;
+#import ConfigParser;
 import json;
 import logging;
 import logging.handlers;
@@ -15,6 +15,7 @@ from lib.database     import Database;
 from multiprocessing  import Process, Queue, Lock;
 from lib.scheduller   import *;
 from lib.amqp         import RabbitMQ_Publish, RabbitMQ_Consume;
+from lib.utils        import *;
 
 
 
@@ -92,7 +93,7 @@ class MCT_Referee(RabbitMQ_Consume):
 
         ## Get the configurations related to the execution of the divisions de
         ## fined by the User.
-        configs = self.__get_configs(CONFIG_FILE);
+        configs = get_configs(CONFIG_FILE);
 
         ## Get which route is used to deliver the message to the MCT_Dispatch.
         self.__routeDispatch = configs['amqp_publish']['route'];
@@ -126,15 +127,15 @@ class MCT_Referee(RabbitMQ_Consume):
     ## BRIEF: grecefull finish the divisions.
     ## ------------------------------------------------------------------------
     ##
-    def gracefull_stop(self):
+#    def gracefull_stop(self):
 
-        for thread in self.__threadsId:
-            thread.terminate();
-            thread.join();
+#        for thread in self.__threadsId:
+#            thread.terminate();
+#            thread.join();
 
         ## LOG:
-        logger.info('GRACEFULL STOP ...');
-        return 0;
+#        logger.info('GRACEFULL STOP ...');
+#        return 0;
 
 
     ##
@@ -402,21 +403,21 @@ class MCT_Referee(RabbitMQ_Consume):
     ## ------------------------------------------------------------------------
     ## @PARAM str configName == file with configuration.
     ##
-    def __get_configs(self, configName):
-        cfg = {};
+#    def __get_configs(self, configName):
+#        cfg = {};
 
-        config = ConfigParser.ConfigParser();
-        config.readfp(open(configName));
+#        config = ConfigParser.ConfigParser();
+#        config.readfp(open(configName));
 
         ## Scan the configuration file and get the relevant informations and sa
         ## ve then in cfg dictionary.
-        for section in config.sections():
-            cfg[section] = {};
+#        for section in config.sections():
+#            cfg[section] = {};
 
-            for option in config.options(section):
-                cfg[section][option] = config.get(section,option);
+#            for option in config.options(section):
+#                cfg[section][option] = config.get(section,option);
 
-        return cfg;
+#        return cfg;
 ## END.
 
 
@@ -438,7 +439,7 @@ if __name__ == "__main__":
         mctReferee.consume();
 
     except KeyboardInterrupt, error:
-        mctReferee.gracefull_stop();
+        pass;
 
     ## LOG:
     logger.info('EXECUTION FINISHED...');
