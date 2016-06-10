@@ -65,7 +65,6 @@ class MCT_Communication(Process):
         self.__config = self.__get_config(CONFIG_FILE);
 
         ## Intance a new object to handler all operation in the local database
-        #self.__dbConnection = Database(self.__config['database']);
         self.__dbConnection = dbConnection;
 
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
@@ -119,7 +118,9 @@ class MCT_Communication(Process):
         query = "INSERT INTO REQUEST (request_id, status, message) VALUES (%s,%s,%s)";
         value = (message['reqId'], message['status'], str(message['data']));
        
-        self.__dbConnection.insert_query(query, value);
+        valret = self.__dbConnection.insert_query(query, value);
+ 
+        LOG.info(valret);
 
 
     ##
@@ -207,9 +208,16 @@ class MCT_Communication(Process):
     ##
     def __init_publish(self, cfg):
 
+        ## Credentials:
+        user = self.__config['rabbitmq']['user'];
+        pswd = self.__config['rabbitmq']['pass'];
+
+        credentials = pika.PlainCredentials(user, pswd);
+
         ## Connection parameters object that is passed into the connection ada-
         ## pter upon construction. 
-        parameters = pika.ConnectionParameters(host=cfg['address']);
+        parameters = pika.ConnectionParameters(host        = cfg['address'],
+                                               credentials = credentials);
 
         ## The BlockingConnection creates a layer on top of Pika's asynchronous
         ## core providing methods that will block until their expected response

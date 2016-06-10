@@ -1,22 +1,29 @@
-import contextlib;
-import socket;
+import contextlib
+import socket
+
+from oslo_config          import cfg
+from oslo_log             import log as logging
+from oslo_serialization   import jsonutils
+from nova.compute         import arch
+from nova.compute         import hv_type
+from nova.compute         import power_state
+from nova.compute         import task_states
+from nova.compute         import vm_mode
+from nova.console         import type as ctype
+from nova                 import db
+from nova                 import exception
+from nova.i18n            import _LW
+from nova                 import utils
+from nova.virt            import diagnostics
+from nova.virt            import driver
+from nova.virt            import hardware
+from nova.virt            import virtapi
+from nova.virt.mct.action import MCT_Action;
 
 
-from oslo.config                     import cfg
-from nova.compute                    import power_state
-from nova.compute                    import task_states
-from nova.console                    import type as ctype
-from nova                            import db
-from nova                            import exception
-from nova.i18n                       import _
-from nova.openstack.common           import jsonutils
-from nova.openstack.common           import log as logging
-from nova                            import utils
-from nova.virt                       import diagnostics
-from nova.virt                       import driver
-from nova.virt                       import virtapi
 
-from nova.virt.mct.lib.action        import MCT_Action;
+
+
 
 
 
@@ -294,7 +301,7 @@ class MCT_Driver(driver.ComputeDriver):
     ##
     def destroy(self, context, instance, network_info, block_device_info=None,
                 destroy_disks=True, migrate_data=None):
- 
+
         ## Create a new dictionary struct with will be contain the parameter to
         ## intance a new VM.
         data = {

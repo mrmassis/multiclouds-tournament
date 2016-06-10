@@ -111,6 +111,13 @@ class MCT_Agent(RabbitMQ_Consume):
         ## defined in the configuration file.
         RabbitMQ_Consume.__init__(self, config['amqp_consume']);
 
+        ## Credentials:
+        config['amqp_internal_publish']['user'] = config['rabbitmq']['user'];
+        config['amqp_internal_publish']['pass'] = config['rabbitmq']['pass'];
+
+        config['amqp_external_publish']['user'] = config['rabbitmq']['user'];
+        config['amqp_external_publish']['pass'] = config['rabbitmq']['pass'];
+
         ## Instantiates an object to perform the publication of AMQP messages.
         self.__publishInt = RabbitMQ_Publish(config['amqp_internal_publish']);
         self.__publishExt = RabbitMQ_Publish(config['amqp_external_publish']);

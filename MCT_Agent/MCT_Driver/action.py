@@ -12,8 +12,8 @@ import time;
 import ast;
 import logging;
 
-from nova.virt.mct.lib.communication import MCT_Communication;
-from nova.virt.mct.lib.database      import MCT_Database;
+from nova.virt.mct.communication import MCT_Communication;
+from nova.virt.mct.database      import MCT_Database;
 
 
 
@@ -330,12 +330,17 @@ class MCT_Action(object):
     def __waiting_return(self, requestId):
         count = 0;
 
+        ## Concat the player in the requestID:
+        requestId = self.__cfg['main']['player'] + "_" + requestId;
+
         ## Waiting for the answer arrive. When the status change status get it.
         while True or count < REQUEST_PENDING_MAXTRY:
 
             ## Mount the select query: 
             dbQuery  = "SELECT status, message FROM REQUEST WHERE ";
             dbQuery += "request_id='" + requestId + "'";
+ 
+            LOG.info(dbQuery)
 
             dataReceived = [] or self.__dbConnection.select_query(dbQuery);
 
@@ -401,7 +406,7 @@ class MCT_Action(object):
             'status'  : 0,
             'reqId'   : self.__cfg['main']['player'] + '_' + index,
             'retId'   : '',
-            'origAdd' : self.__cfg['main']['address'],
+            'origAdd' : self.__cfg['main']['address_external'],
             'destAdd' : '',
             'data'    : {}
         };
