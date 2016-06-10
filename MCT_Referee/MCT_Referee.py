@@ -136,8 +136,6 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     def callback(self, channel, method, properties, message):
 
-        print message
-
         ## LOG:
         logger.info('MESSAGE %s RECEIVED FROM: %s.',message,properties.app_id);
 
@@ -259,8 +257,6 @@ class MCT_Referee(RabbitMQ_Consume):
         timeStamp = str(datetime.datetime.now());
 
         if message['retId'] != '':
-            print "RETORNO";
-
             message['destAdd'] = '';
             message['retId'  ] = '';
 
@@ -278,6 +274,8 @@ class MCT_Referee(RabbitMQ_Consume):
                 ## Set the message to be a forward message (perform a map). Send
                 ## it to the destine and waiting the return.
                 message['retId'] = message['reqId'];
+
+                print addr
 
                 ## Set the target address. The target addr is the player's addrs
                 ## tha will accept the request.
