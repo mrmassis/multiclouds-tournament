@@ -188,6 +188,12 @@ class MCT_Openstack_Nova:
     def create_instance(self, vmsL, imgL, flvL, netL, key=''):
         zoneName = 'nova';
 
+
+        #imgL = 'cirros-0.3.4-x86_64';
+        #flvL = 'm1.tiny';
+        #netL = 'demo-net';
+
+
         ## The Compute (nova) python bindings enable you to get an artefact obj
         ## by name.
         img = self.__nova.images.find  (name = imgL);
@@ -348,7 +354,7 @@ class MCT_Openstack_Nova:
 if __name__ == "__main__":
 
     config = {    
-        'auth' : 'http://30.0.0.7:5000/v3',
+        'auth' : 'http://20.0.0.8:5000/v3',
         'user' : 'mct',
         'pswd' : 'password',
         'proj' : 'mct',
