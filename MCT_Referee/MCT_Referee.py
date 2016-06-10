@@ -6,7 +6,6 @@ import time;
 import sys;
 import os;
 import datetime;
-#import ConfigParser;
 import json;
 import logging;
 import logging.handlers;
@@ -102,6 +101,10 @@ class MCT_Referee(RabbitMQ_Consume):
         ## defined in the configuration file.
         RabbitMQ_Consume.__init__(self, configs['amqp_consume']);
 
+        ## Credentials:
+        configs['amqp_publish']['user'] = configs['rabbitmq']['user'];
+        configs['amqp_publish']['pass'] = configs['rabbitmq']['pass'];
+
         ## Instantiates an object to perform the publication of AMQP messages.
         self.__publish=RabbitMQ_Publish(configs['amqp_publish']);
 
@@ -124,21 +127,6 @@ class MCT_Referee(RabbitMQ_Consume):
     ## PUBLIC METHODS                                                        ##
     ###########################################################################
     ##
-    ## BRIEF: grecefull finish the divisions.
-    ## ------------------------------------------------------------------------
-    ##
-#    def gracefull_stop(self):
-
-#        for thread in self.__threadsId:
-#            thread.terminate();
-#            thread.join();
-
-        ## LOG:
-#        logger.info('GRACEFULL STOP ...');
-#        return 0;
-
-
-    ##
     ## BRIEF: method invoked when the pika receive a message.
     ## ------------------------------------------------------------------------
     ## @PARAM pika.Channel              channel    = the communication channel.
@@ -147,6 +135,8 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM str                       message    = message received.
     ##
     def callback(self, channel, method, properties, message):
+
+        print message
 
         ## LOG:
         logger.info('MESSAGE %s RECEIVED FROM: %s.',message,properties.app_id);
@@ -396,28 +386,6 @@ class MCT_Referee(RabbitMQ_Consume):
                selectedPlayer = {};
 
        return selectedPlayer;
-
-
-    ##
-    ## BRIEF: get config options.
-    ## ------------------------------------------------------------------------
-    ## @PARAM str configName == file with configuration.
-    ##
-#    def __get_configs(self, configName):
-#        cfg = {};
-
-#        config = ConfigParser.ConfigParser();
-#        config.readfp(open(configName));
-
-        ## Scan the configuration file and get the relevant informations and sa
-        ## ve then in cfg dictionary.
-#        for section in config.sections():
-#            cfg[section] = {};
-
-#            for option in config.options(section):
-#                cfg[section][option] = config.get(section,option);
-
-#        return cfg;
 ## END.
 
 

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 
-import ConfigParser;
 import sys;
 import json;
 import datetime;
 import logging;
 import logging.handlers;
 
+from lib.utils    import *;
 from lib.database import Database;
 from lib.amqp     import RabbitMQ_Publish, RabbitMQ_Consume;
 
@@ -85,10 +85,12 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __publish         = None;
-    __divisions       = [];
-    __configs         = None;
-    __dbConnection    = None;
+    __publish       = None;
+    __divisions    = [];
+    __configs      = None;
+    __dbConnection = None;
+    __rabbitUser   = None;
+    __rabbitPass   = None;
 
 
     ###########################################################################
@@ -98,7 +100,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
 
         ## Get all configs parameters presents in the config file localized in
         ## CONFIG_FILE path.
-        configs = self.__get_config(CONFIG_FILE);
+        configs = get_configs(CONFIG_FILE);
 
         ## Get which 'route' is used to deliver the message to the MCT_Referee.
         self.__routeReferee = configs['amqp_publish']['route'];
@@ -106,6 +108,13 @@ class MCT_Dispatch(RabbitMQ_Consume):
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
         ## defined in the configuration file.
         RabbitMQ_Consume.__init__(self, configs['amqp_consume']);
+
+        ## Credentials:
+        self.__rabbitUser = configs['rabbitmq']['user'];
+        self.__rabbitPass = configs['rabbitmq']['pass'];
+
+        configs['amqp_publish']['user'] = self.__rabbitUser;
+        configs['amqp_publish']['pass'] = self.__rabbitPass;
 
         ## Instance a new object to perform the publication of 'AMQP' messages.
         self.__publish=RabbitMQ_Publish(configs['amqp_publish']);
@@ -177,14 +186,15 @@ class MCT_Dispatch(RabbitMQ_Consume):
             'route'     : AGENT_ROUTE,
             'exchange'  : AGENT_EXCHANGE,
             'queue_name': AGENT_QUEUE,
-            'address'   : playerAddress 
+            'address'   : playerAddress,
+            'user'      : self.__rabbitUser,
+            'pass'      : self.__rabbitPass
         };
 
         targetPublish = RabbitMQ_Publish(config); 
         targetPublish.publish(message, AGENT_ROUTE);
 
         del targetPublish;
-
         return 0;
 
 
@@ -296,26 +306,6 @@ class MCT_Dispatch(RabbitMQ_Consume):
         ## LOG:
         logger.info('INSPECT REQUEST!');
         return 0;
-
-
-    ##
-    ## BRIEF: obtain all configuration from conffiles.
-    ## ------------------------------------------------------------------------
-    ## @PARAM str cfgFile == conffile name.
-    ##
-    def __get_config(self, cfgFile):
-       cfg = {};
-
-       config = ConfigParser.ConfigParser();
-       config.readfp(open(cfgFile));
-
-       for section in config.sections():
-           cfg[section] = {};
-
-           for option in config.options(section):
-               cfg[section][option] = config.get(section, option);
-
-       return cfg;
 ## END.
 
 
@@ -332,8 +322,8 @@ if __name__ == "__main__":
     logger.info('EXECUTION STARTED...');
 
     try:
-        daemon = MCT_Dispatch();
-        daemon.consume();
+        mct_dispatch = MCT_Dispatch();
+        mct_dispatch.consume();
 
     except KeyboardInterrupt, error:
         pass;

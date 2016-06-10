@@ -45,11 +45,14 @@ class RabbitMQ_Publish(object):
 
         self.__identifier = data['identifier'];
         self.__exchange   = data['exchange'  ];
-        self.__address    = data['address'   ]
+
+        ## Credentials:
+        credentials = pika.PlainCredentials(data['user'], data['pass']);
 
         ## Connection parameters object that is passed into the connection ada-
         ## pter upon construction. 
-        parameters = pika.ConnectionParameters(host=self.__address);
+        parameters = pika.ConnectionParameters(host        = data['address'],
+                                               credentials = credentials);
 
         ## The BlockingConnection creates a layer on top of Pika's asynchronous
         ## core providing methods that will block until their expected response
