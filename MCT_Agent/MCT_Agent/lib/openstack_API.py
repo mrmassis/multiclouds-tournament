@@ -6,7 +6,7 @@
 import os;
 import time;
 
-from keystoneclient.auth.identity import v2;
+from keystoneclient.auth.identity import v2,v3
 from keystoneclient               import session;
 from novaclient                   import client;
 
@@ -152,17 +152,19 @@ class MCT_Openstack_Nova:
     ###########################################################################
     ## SPECIAL METHODS                                                       ## 
     ###########################################################################
-    def __init__(self, user, pswd, auth, proj):
+    def __init__(self, cfg):
 
         ## If you have PROJECT_NAME instead of a PROJECT_ID, use the string la
         ## bel project_name parameter. Similarly, if your cloud uses keystonv3
         ## and you have a DOMAIN_NAME or DOMAIN_ID, provide it as user_domain_
         ## (name|id) and if you are using a PROJECT_NAME also provide the doma
         ## in information as project_domain_(name|id).
-        auth = v2.Password(auth_url    = auth,
-                           username    = user,
-                           password    = pswd,
-                           tenant_name = proj);
+        auth = v3.Password(auth_url            = cfg['auth'],
+                           username            = cfg['user'],
+                           password            = cfg['pswd'],
+                           project_name        = cfg['proj'],
+                           user_domain_name    = cfg['user_domain_name'],
+                           project_domain_name = cfg['proj_domain_name']);
 
         ## Ponto de contato para os servicos do OpenStack. Armazena as creden-
         ## ciais e informacoes requeridas para comunicacao.  
@@ -208,7 +210,12 @@ class MCT_Openstack_Nova:
             server = self.__nova.servers.get(server.id)
             status = server.status;
  
-        return status;
+        try:
+            destId = server.id;
+        except:
+            destId = '';
+
+        return (status, destId);
 
 
     ##
@@ -242,7 +249,7 @@ class MCT_Openstack_Nova:
 
                 time.sleep(5);
 
-       return status;
+       return (status, '');
 
 
     ##
@@ -339,19 +346,34 @@ class MCT_Openstack_Nova:
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
-    
-    user = os.environ['OS_USERNAME'   ];
-    pswd = os.environ['OS_PASSWORD'   ];
-    auth = os.environ['OS_AUTH_URL'   ];
-    proj = os.environ['OS_TENANT_NAME'];
-    
-    framework = MCT_Openstack_Nova(user, pswd, auth, proj);
 
-    #vmsL = 'teste';
-    #imgL = 'cirros-0.3.3-x86_64';
-    #flvL = 'm1.tiny';
-    #netL = 'fake-net';
+    config = {    
+        'auth' : 'http://30.0.0.7:5000/v3',
+        'user' : 'mct',
+        'pswd' : 'password',
+        'proj' : 'mct',
+        'user_domain_name':'default',
+        'proj_domain_name':'default'
+    };
 
-    #status = framework.create_instance(vmsL, imgL, flvL, netL);
+    framework = MCT_Openstack_Nova(config);
+
+    vmsL = 'teste';
+    imgL = 'cirros-0.3.4-x86_64';
+    flvL = 'm1.tiny';
+    netL = 'demo-net';
+
+    ##
+    valret = framework.create_instance(vmsL, imgL, flvL, netL);
+
+    print 'CREATE ---------------------------------------------------------- ';
+    print valret[0]
+    print valret[1]
+
+    valret =  framework.delete_instance(valret[1]);
+
+    print 'DELETE ---------------------------------------------------------- ';
+    print valret[0]
+    print valret[1]
 ## EOF.
 

@@ -130,13 +130,7 @@ class MCT_Agent(RabbitMQ_Consume):
         self.__cloudType = config['cloud_framework']['type'];
 
         if self.__cloudType == 'openstack':
-
-            name = config['cloud_framework']['name'];
-            pswd = config['cloud_framework']['pass'];
-            auth = config['cloud_framework']['auth'];
-            proj = config['cloud_framework']['proj'];
-
-            self.__cloud = MCT_Openstack_Nova(name, pswd, auth, proj);
+            self.__cloud = MCT_Openstack_Nova(config['cloud_framework'];
 
 
     ###########################################################################
@@ -207,32 +201,19 @@ class MCT_Agent(RabbitMQ_Consume):
             ## suspend instance e resume instance): 
             ## Create:
             if message['code'] == 1:
-
-                vmsL = message['data']['name'  ];
-                imgL = message['data']['image' ];
-                fvlL = message['data']['flavor'];
-                netL = 'fake-net';
-
-                status = self.__cloud.create_instance(vmsL, imgL, flvL, netL);
-
-                ## Insert in the MAP_UUID table the origin uuid (player source)
-                ## and the local instance uuuid.
-                self.__set_map_inst_id(destId, message['data']['reqId']);
+                status = self.__create_server(message);
 
             ## Delete:
             elif message['code'] == 2:
-                instId =self.__get_map_inst_id(message['data']['reqId'],True);
-                status =self.__cloud.delete_instance(instId);
+                status = self.__delete_server(message);
 
             ## Suspend:
             elif message['code'] == 3:
-                instId =self.__get_map_inst_id(message['data']['reqId']);
-                status =self.__cloud.suspend_instance(instId);
+                status = self.__suspnd_server(message);
 
             ## Resume:
             elif message['code'] == 4:
-                instId =self.__get_map_inst_id(message['data']['reqId']);
-                status =self.__cloud.resume_instance(instId);
+                status = self.__resume_server(message);
 
             ## --
             ## The MCT_Agent support more than one cloud framework.So is neces-
@@ -244,6 +225,76 @@ class MCT_Agent(RabbitMQ_Consume):
             self.__publishInt.publish(message, self.__routeInt);
 
         return 0;
+
+
+    ##
+    ## BRIEF: create localy a new server.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict message == received message.
+    ##
+    def __create_server(self, message):
+
+        vmsL = message['data']['name'  ];
+        imgL = message['data']['image' ];
+        fvlL = message['data']['flavor'];
+        netL = 'demo-net';
+
+        valret = self.__cloud.create_instance(vmsL, imgL, flvL, netL);
+
+        status = valret[0];
+        destId = valret[1];        
+
+        if status == 'ACTIVE':
+            ## Insert in the MAP table the origin uuid (player source) and the
+            ## local instance uuuid.
+            self.__set_map_inst_id(destId, message['data']['reqId']);
+
+        return status;
+
+
+    ##
+    ## BRIEF: delete localy a new server.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict message == received message.
+    ##
+    def __delete_server(self, message):
+
+        ## Obtain the local ID from MAP table.
+        destId = self.__get_map_inst_id(message['data']['reqId']);
+
+        ## Delete the server:
+        valret = self.__cloud.delete_instance(destId);
+
+        status = valret[0];
+
+        if status == 'HARD_DELETED':
+            self.__get_map_inst_id(message['data']['reqId'],True);
+
+        return status;
+
+
+    ##
+    ## BRIEF: suspnd localy a new server.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict message == received message.
+    ##
+    def __suspnd_server(self, message):
+        destId = self.__get_map_inst_id(message['data']['reqId']);
+
+        #    status =self.__cloud.suspend_instance(instId);
+        return 'NOT_IMPLEMENTED';
+
+
+    ##
+    ## BRIEF: resume localy a new server.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict message == received message.
+    ##
+    def __resume_server(self, message):
+        destId = self.__get_map_inst_id(message['data']['reqId']);
+
+        #    status =self.__cloud.resume_instance(instId);
+        return 'NOT_IMPLEMENTED';
 
 
     ##
