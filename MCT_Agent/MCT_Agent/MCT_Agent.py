@@ -130,7 +130,7 @@ class MCT_Agent(RabbitMQ_Consume):
         self.__cloudType = config['cloud_framework']['type'];
 
         if self.__cloudType == 'openstack':
-            self.__cloud = MCT_Openstack_Nova(config['cloud_framework'];
+            self.__cloud = MCT_Openstack_Nova(config['cloud_framework']);
 
 
     ###########################################################################
@@ -236,7 +236,7 @@ class MCT_Agent(RabbitMQ_Consume):
 
         vmsL = message['data']['name'  ];
         imgL = message['data']['image' ];
-        fvlL = message['data']['flavor'];
+        flvL = message['data']['flavor'];
         netL = 'demo-net';
 
         valret = self.__cloud.create_instance(vmsL, imgL, flvL, netL);
