@@ -1,26 +1,38 @@
 import contextlib
 import socket
 
-from oslo_config          import cfg
-from oslo_log             import log as logging
-from oslo_serialization   import jsonutils
-from nova.compute         import arch
-from nova.compute         import hv_type
-from nova.compute         import power_state
-from nova.compute         import task_states
-from nova.compute         import vm_mode
-from nova.console         import type as ctype
-from nova                 import db
-from nova                 import exception
-from nova.i18n            import _LW
-from nova                 import utils
-from nova.virt            import diagnostics
-from nova.virt            import driver
-from nova.virt            import hardware
-from nova.virt            import virtapi
-from nova.virt.mct.action import MCT_Action;
+
+## to JUNO version:
+try:
+    from nova.openstack.common import log as logging;
+    from nova.openstack.common import jsonutils;
+    from oslo.config           import cfg;
+    from nova.i18n             import _;
+    from nova.virt             import virtapi;
+
+## to KILO version:
+except:
+    from nova.compute          import vm_mode;
+    from nova.compute          import arch;
+    from nova.compute          import hv_type;
+    from oslo_log              import log as logging;
+    from oslo_serialization    import jsonutils;
+    from oslo_config           import cfg;
+    from nova.i18n             import _LW;
+    from nova.virt             import hardware;
 
 
+from nova.compute              import power_state;
+from nova.compute              import task_states;
+from nova.console              import type as ctype;
+from nova                      import db;
+from nova                      import exception;
+from nova                      import utils;
+from nova.virt                 import diagnostics;
+from nova.virt                 import driver;
+
+from nova.virt.mct.action    import MCT_Action;
+from nova.virt.mct.instances import MCT_Instances;
 
 
 
@@ -39,41 +51,6 @@ LOG = logging.getLogger(__name__)
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
-class Instance(object):
-
-    """
-    Class Instance: 
-    ---------------------------------------------------------------------------
-    """
-
-    ###########################################################################
-    ## ATTRIBUTES                                                            ##
-    ###########################################################################
-    name = None;
-    uuid = None;
-    state= None;
-
-
-    ###########################################################################
-    ## SPECIAL METHODS                                                       ##
-    ###########################################################################
-    def __init__(self, name, uuid, state):
-        self.name  = name;
-        self.state = state;
-        self.uuid  = uuid;
- 
-    def __getitem__(self, key):
-        return getattr(self, key);
-
-## EOF.
-
-
-
-
-
-
-
-
 class MCT_Driver(driver.ComputeDriver):
 
     """
@@ -122,7 +99,7 @@ class MCT_Driver(driver.ComputeDriver):
         ## CRASHED   = 0x06
         ## SUSPENDED = 0x07
         ##
-        returnState = {
+        self.returnState = {
             0 : power_state.NOSTATE ,
             1 : power_state.RUNNING ,
             2 : power_state.PAUSED  ,
@@ -131,9 +108,11 @@ class MCT_Driver(driver.ComputeDriver):
             7 : power_state.SUSPENDED
         };
 
+        ## TODO: ver diferenca entre power and task status.
+
         ## Instance the classe that will be the interface layer between the MCT
         ## drive and MCT_Agent. 
-        self.mct = MCT_Action(returnState);
+        self.mct = MCT_Action(self.returnState);
 
         ## Get the machine hostname. It will be the nodename:
         self.__hostname = socket.gethostname();
@@ -155,6 +134,9 @@ class MCT_Driver(driver.ComputeDriver):
             "supports_recreate": True,
         };
 
+        ## Create the object that will store the "MCT instances" in execution,
+        self.__instances = MCT_Instances();
+
 
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
@@ -164,11 +146,71 @@ class MCT_Driver(driver.ComputeDriver):
     ##        including catching up with currently running VM's on the given
     ##        host.
     ## ------------------------------------------------------------------------
-    ## @PARAM host == .
+    ## @PARAM host == this host.
     ##
     def init_host(self, host):
-        LOG.info("[MCT_DRIVE] INIT HOST!");
+
+        ## Get all "MCT instances" that are running and store in the database.
+        self.__instances.recovery_instances();
+
+        LOG.info("INIT HOST: %s", str(host));
         return
+
+
+    ##
+    ## BRIEF: return the nodes name of all nodes managed by the compute service.
+    ##        This method is for multi compute-nodes suporte. If a driver suppo
+    ##        rt multi compute-nodes, this method returns a list of nodename ma
+    ##        naged by the service. Otherwise, this method should return [hyper
+    ##        visor_hostname].
+    ## ------------------------------------------------------------------------
+    ## @PARAM refresh ==  
+    ##
+    def get_available_nodes(self, refresh=False):
+
+        ## LOG:
+        LOG.info("GET AVALIABLE NODES!");
+
+        return [self.__hostname];
+
+
+
+    ## ------------------------------------------------------------------------
+    ## INSTANCES
+    ## ------------------------------------------------------------------------ 
+    ##
+    ## BRIEF: get instance information.
+    ## ------------------------------------------------------------------------
+    ## @PARAM instance == (nova.objects.instance) Instance This function should
+    ##                    use the data there to guide the creation of the new
+    ##                    instance.
+    ##
+    def get_info(self, instance):
+
+        ## Check if the instance exist. The openstack will be compare the dbase
+        ## with local intances dbase.
+        if self.__instances.check_exist(instance['uuid']) == False:
+            raise exception.InstanceNotFound(instance_id=instance['name']);
+
+        ## Get update instance:
+        instance = self.__instances.get_instance(instance['uuid']);
+
+        ## instanceinfo object:
+        ## state       == the running sate, one of the power_state codes.
+        ## max_mem_kb  == (int) the maximum memory in KBytes allowed.
+        ## mem_kb      == (int) the memory in KBytes for the instance.
+        ## nun_cpu     == (int) the number of virtual CPUs for the instance.
+        ## cpu_time_ns == (int) the CPU time used in nano seconds.
+        ##
+        intanceInfoObj = {
+            'state'   : self.returnState[instance['pwrs']],
+            'mem'     : instance['memo'],
+            'num_cpu' : instance['vcpu'],
+            'max_mem' : 0,
+            'cpu_time': 0
+        };
+
+        return instanceInfoObj;
 
 
     ##
@@ -178,13 +220,14 @@ class MCT_Driver(driver.ComputeDriver):
     ## @RETURN a List.
     ##
     def list_instances(self):
+
+        ## Get all instances names:
+        instancesList = self.__instances.get_instances_name();
+
         ## LOG:
-        LOG.info("[MCT_DRIVE] LIST INSTANCE: %s", self.instances.keys());
- 
-        ## TODO:
-        ## Tem que ir ateh o MCT_Agent e obter todas as VMs executadas remota-
-        ## mente com origem nesse host.
-        return self.instances.keys();
+        LOG.info("LIST INSTANCES NAMES: %s", instancesList);
+
+        return instancesList;
 
 
     ##
@@ -194,45 +237,90 @@ class MCT_Driver(driver.ComputeDriver):
     ## @RETURN a List.
     ##
     def list_instance_uuids(self):
-        LOG.info("[MCT_DRIVE] LIST INSTANCES UUIDS!");
 
-        ## Tem que ir ateh o MCT_Agent e obter todas as VMs executadas remota-
-        ## mente com origem nesse host.
-        return [self.instances[name].uuid for name in self.instances.keys()]
+        ## Get all instances names:
+        instancesList = self.__instances.get_instances_uuid();
+
+        ## LOG:
+        LOG.info("LIST INSTANCES UUIDS: %s", instancesList);
+
+        return instancesList;
+
+    ## END INSTANCES.
+
 
 
     ##
-    ## BRIEF: plug virtual interfaces (VIF) into the given instance at boot ti-
-    ##        me (the counter action is unplug_vif).
+    ## BRIEF: Retrive resource informations. This method is called when "nova-
+    ##        compute launches,and as part of a periodic task that records the
+    ##        the resuts in the DB.
     ## ------------------------------------------------------------------------
-    ## @PARAM instance     == (nova.objects.instance.Instance) the instance wi-
-    ##                        ch gets VIFs plugged.
-    ## @PARAM network_info == (nova.network.model.NetworkInfo) the object which
-    ##                        contains information about the VIFs to plug.
+    ## @PARAM nodename == node wich the caller want get resources from a driver
+    ##                    that manages only one node can safely ignore this.
     ##
-    ## @RETURN None.
-    ## 
-    def plug_vifs(self, instance, network_info):
-        LOG.info("[MCT_DRIVE] PLUG VIFS!");
+    ## @RETURN (dict) dictionary describing resources.
+    ##
+    def get_available_resource(self, nodename):
 
-        ## Aqui ou no MCT_Agent serah necessario realizar um trabalho de mapea-
-        ## mento porque a rede sera em um contexto remoto diferente do local.
-        pass
+        ## LOG:
+        LOG.info("GET AVALIBLE RESOURCES! NODE %s", nodename);
+        
+        ## Request to MCT Agent informations about MCT resources. The return is
+        ## a dictionary of information resources. These values depend on the di
+        ## vision of the player belongs.
+        valRet = self.mct.get_resource_inf();
+
+        resources = {};
+
+        ## Convert the units to compreensive format. The original forma is "MB".
+        if valRet != {}:
+            resources['vcpus'         ] = valRet['data']['vcpu'          ]; 
+            resources['vcpus_used'    ] = valRet['data']['vcpu_used'     ]; 
+            resources['memory_mb'     ] = valRet['data']['memory_mb'     ];
+            resources['memory_mb_used'] = valRet['data']['memory_mb_used'];
+            resources['local_gb'      ] = valRet['data']['disk_mb'       ]/1024;
+            resources['local_gb_used' ] = valRet['data']['disk_mb_used'  ]/1024;
+        else:
+            resources['vcpus'         ] = 10; 
+            resources['vcpus_used'    ] = 0; 
+            resources['memory_mb'     ] = 100000;
+            resources['memory_mb_used'] = 0;
+            resources['local_gb'      ] = 100000;
+            resources['local_gb_used' ] = 0;
+
+        ## Copy the status base (fixed values) and concatenate with actual reso
+        ## urce informations obtained from MCT.
+        actualResourcesStatus = self.__resourcesStatusBase.copy();
+        actualResourcesStatus.update(resources);
+
+        return actualResourcesStatus;
 
 
     ##
-    ## BRIEF: unplug virtual interfaces (VIF) from networks.
+    ## BRIEF: Cleanup the instance resources. Instance should have been destro-
+    ##        yed from the Hypervisor before calling this method.
     ## ------------------------------------------------------------------------
-    ## @PARAM instance     == (nova.objects.instance.Instance) the instance wi-
-    ##                        ch gets VIFs plugged.
-    ## @PARAM network_info == (nova.network.model.NetworkInfo) the object which
-    ##                        will be plugged.
-    ## 
-    def unplug_vifs(self, instance, network_info):
-        LOG.info("[MCT_DRIVE] UNPLUG VIFS!");
-        pass
+    ## @PARAM context           == security context;
+    ## @PARAM instance          == (nova.objects.instance) Instance This funct-
+    ##                             ion should use the data there to guide the
+    ##                             creation of the new instance.
+    ## @PARAM network_info      == get_instance_nw_info();
+    ## @PARAM block_device_info == Information about block devices to be attac-
+    ##                             hed to the instance.
+    ## @PARAM destroy_disks     == Indicates if disks should be destroyed.
+    ## @PARAM migrate_data      == Implementation specific params.
+    ## @PARAM destroy_vifs      == 
+    ##
+    def cleanup(self, context, instance, network_info, block_device_info=None,
+                destroy_disks=True, migrate_data=None, destroy_vifs=True):
+
+        LOG.info("CLEANUP - NOT IMPLEMENTED YET!");
+        pass;
 
 
+    ## ------------------------------------------------------------------------
+    ## EXPLICT ACTIONS
+    ## ------------------------------------------------------------------------
     ##
     ## BRIEF: Create a new "instance/VM/domain" on the virtualization platform
     ##        Once this successfully completes, the instance should be running
@@ -268,18 +356,23 @@ class MCT_Driver(driver.ComputeDriver):
             'storage' : block_device_info
         }
 
+        ## Add a inew intance in the object list:
+        self.__instances.insert(instance, 'BUILDING', 0);
+
         ## Research the more apropriated (by the score) player to accept the VM
         ## creation.
         valRet = self.mct.create_instance(data);
 
         if valRet != {}:
-            status = valRet['status'];
+            mctState = valRet['status'];
+            pwrState = valRet['status'];
+        else:
+            mctState = 'UNREACHABLE';
+            pwrState = 0;
 
-        ##
-        mctInstance = Instance(instance['name'], instance['uuid'], status);
-
-        ## 
-        self.instances[instance['name']] = mctInstance;
+        ## Update instance data.
+        self.__instances.change_mct_state(instance['uuid'], mctState);
+        self.__instances.change_pwr_state(instance['uuid'], pwrState);
 
         ## LOG:
         LOG.info("[MCT_DRIVE] INSTANCE SPAWN! STATE: %s", str(valRet));
@@ -312,43 +405,22 @@ class MCT_Driver(driver.ComputeDriver):
 
         ## Get the instance name to be destroied. The instance object is recei-
         ## ved from parameter list.
-        name = instance['name'];
+        uuid = instance['uuid'];
 
-        ## Check if the instance exist.
-        if name in self.instances:
-            valRet = self.mct.delete_instance(data);
+        ## Check if:
+        if self.__instances.check_exist(uuid) == True:
 
-            del self.instances[name];
+            if self.__instances.get_mct_state(uuid) != 'UNREACHABLE':
+                valRet = self.mct.delete_instance(data);
+
+            ## Remove instance from object list (check by UUID). Update inter-
+            ## nal database.
+            self.__instances.remove(uuid); 
 
         else:
-            LOG.warning(_("[MCT_Drive] %(name)s not in instances %(inst)s") %
-                         {'name': name,
-                         'inst' : self.instances}, instance=instance);
+            LOG.warning("INSTANCES uuid=%s NOT IN LOCAL DICTIONARY!", uuid);
 
-        LOG.info("[MCT_Drive] Instance Destroyed!");
-
-
-    ##
-    ## BRIEF: Cleanup the instance resources. Instance should have been destro-
-    ##        yed from the Hypervisor before calling this method.
-    ## ------------------------------------------------------------------------
-    ## @PARAM context           == security context;
-    ## @PARAM instance          == (nova.objects.instance) Instance This funct-
-    ##                             ion should use the data there to guide the
-    ##                             creation of the new instance.
-    ## @PARAM network_info      == get_instance_nw_info();
-    ## @PARAM block_device_info == Information about block devices to be attac-
-    ##                             hed to the instance.
-    ## @PARAM destroy_disks     == Indicates if disks should be destroyed.
-    ## @PARAM migrate_data      == Implementation specific params.
-    ## @PARAM destroy_vifs      == 
-    ##
-    def cleanup(self, context, instance, network_info, block_device_info=None,
-                destroy_disks=True, migrate_data=None, destroy_vifs=True):
-
-
-        LOG.info("[MCT_Drive] clenup!");
-        pass;
+        LOG.info("INSTANCE UUID=%s DESTROYED!", uuid);
 
 
     ##
@@ -361,13 +433,10 @@ class MCT_Driver(driver.ComputeDriver):
     ##                             the snapshot.
     ##
     def snapshot(self, context, instance, name, update_task_state):
-        LOG.info("[MCT_Drive] snapshot!");
-
-        if instance['name'] not in self.instances:
-            raise exception.InstanceNotRunning(instance_id=instance['uuid']);
-
-        update_task_state(task_state=task_states.IMAGE_UPLOADING);
-
+        ## LOG.
+        LOG.info("SNAPSHOT - NOT IMPLEMENTED YET!");
+        pass;
+         
 
     ##
     ## BRIEF: reboot the specified instance.
@@ -383,7 +452,9 @@ class MCT_Driver(driver.ComputeDriver):
     ##
     def reboot(self, context, instance, network_info, reboot_type,
                block_device_info=None, bad_volumes_callback=None):
-        LOG.info("[MCT_Drive] reboot!");
+
+        ## LOG:
+        LOG.info("REBOOT - NOT IMPLEMENTED YET!");
 
         ## After this called successfully, the instance's state goes back to po
         ## wer_state.RUNNING. The virtualization plataform should ensure that t
@@ -393,13 +464,312 @@ class MCT_Driver(driver.ComputeDriver):
 
 
     ##
+    ## BRIEF: soft delete an instance.
+    ## ------------------------------------------------------------------------
+    ## @PARAM instance == (nova.objects.instance) Instance This function should
+    ##                    use the data there to guide the creation of the new
+    ##                    instance.
+    ##
+    def soft_delete(self, instance):
+        ## LOG:
+        LOG.info("SOFT DELETE INSTANCE - NOT IMPLEMENTED YET!");
+        pass
+
+
+    ##
+    ## BRIEF: restore an instance.
+    ## ------------------------------------------------------------------------
+    ## @PARAM instance == (nova.objects.instance) Instance This function should
+    ##                    use the data there to guide the creation of the new
+    ##                    instance.
+    ##
+    def restore(self, instance):
+        ## LOG:
+        LOG.info("RESTORE INSTANCE - NOT IMPLEMENTED YET!");
+        pass
+
+
+    ##
+    ## BRIEF: pause an instance.
+    ## ------------------------------------------------------------------------
+    ## @PARAM instance == (nova.objects.instance) Instance This function should
+    ##                    use the data there to guide the creation of the new
+    ##                    instance.
+    ##
+    def pause(self, instance):
+        ## LOG:
+        LOG.info("PAUSE INTERFACE - NOT IMPLEMENTED YET!");
+        pass
+
+
+    ##
+    ## BRIEF: unpause an instance.
+    ## ------------------------------------------------------------------------
+    ## @PARAM instance == (nova.objects.instance) Instance This function should
+    ##                    use the data there to guide the creation of the new
+    ##                    instance.
+    ##
+    def unpause(self, instance):
+        ## LOG:
+        LOG.info("UNPAUSE INTERFACE - NOT IMPLEMENTED YET!");
+        pass
+
+
+    ##
+    ## BRIEF: suspend an instance.
+    ## ------------------------------------------------------------------------
+    ## @PARAM instance == (nova.objects.instance) Instance This function should
+    ##                    use the data there to guide the creation of the new
+    ##                    instance.
+    ##
+    def suspend(self, instance):
+        ## LOG:
+        LOG.info("SUSPEND INTERFACE - NOT IMPLEMENTED YET!");
+        pass
+
+
+    ##
+    ## BRIEF: power off an instance.
+    ## ------------------------------------------------------------------------
+    ##
+    def power_off(self, instance, shutdown_timeout=0, shutdown_attempts=0):
+        ## LOG:
+        LOG.info("POWER OFF INTERFACE - NOT IMPLEMENTED YET!");
+        pass
+
+
+    ##
+    ## BRIEF: power on an instance.
+    ## ------------------------------------------------------------------------
+    ##
+    def power_on(self, context, instance, network_info, block_device_info):
+        ## LOG:
+        LOG.info("POWER ON INTERFACE - NOT IMPLEMENTED YET!");
+        pass
+
+
+    ##
+    ## BRIEF: resume an instance.
+    ## ------------------------------------------------------------------------
+    ##
+    def resume(self, context, instance, network_info, block_device_info=None):
+        ## LOG:
+        LOG.info("RESUME INTERFACE - NOT IMPLEMENTED YET!");
+        pass
+
+    ## END ACTIONS.
+
+
+    ## ------------------------------------------------------------------------
+    ## VIFS
+    ## ------------------------------------------------------------------------
+    ##
+    ## BRIEF: plug virtual interfaces (VIF) into the given instance at boot ti-
+    ##        me (the counter action is unplug_vif).
+    ## ------------------------------------------------------------------------
+    ## @PARAM instance     == (nova.objects.instance.Instance) the instance wi-
+    ##                        ch gets VIFs plugged.
+    ## @PARAM network_info == (nova.network.model.NetworkInfo) the object which
+    ##                        contains information about the VIFs to plug.
+    ##
+    ## @RETURN None.
+    ## 
+    def plug_vifs(self, instance, network_info):
+        LOG.info("PLUG VIFS - NOT IMPLEMENTED YET!");
+        pass
+
+
+    ##
+    ## BRIEF: unplug virtual interfaces (VIF) from networks.
+    ## ------------------------------------------------------------------------
+    ## @PARAM instance     == (nova.objects.instance.Instance) the instance wi-
+    ##                        ch gets VIFs plugged.
+    ## @PARAM network_info == (nova.network.model.NetworkInfo) the object which
+    ##                        will be plugged.
+    ## 
+    def unplug_vifs(self, instance, network_info):
+        LOG.info("UNPLUG VIFS - NOT IMPLEMENTED YET!");
+        pass
+
+
+
+    def attach_interface(self, instance, image_meta, vif):
+        if vif['id'] in self.__interfaces:
+            raise exception.InterfaceAttachFailed(
+                    instance_uuid=instance['uuid'])
+        self.__interfaces[vif['id']] = vif
+
+    def detach_interface(self, instance, vif):
+        try:
+            del self.__interfaces[vif['id']]
+        except KeyError:
+            raise exception.InterfaceDetachFailed(
+                    instance_uuid=instance['uuid'])
+    ## END VIFS.
+
+
+
+    ## ------------------------------------------------------------------------
+    ## VOLUMES
+    ## ------------------------------------------------------------------------
+    def get_all_volume_usage(self, context, compute_host_bdms):
+        """Return usage info for volumes attached to vms on
+           a given host.
+        """
+        volusage = []
+        return volusage
+
+
+    ##
+    ## BRIEF: get the connector information for the instance for attaching to
+    ##        volumes. 
+    ## ------------------------------------------------------------------------
+    ## @PARAM instance ==  
+    ##
+    def get_volume_connector(self, instance):
+        ## LOG:
+        LOG.info("[MCT_DRIVE] GET VOLUME CONNECTOR - NOT IMPLEMENTED YET!");
+
+        ## Connector information is a dictionary representing the ip of the ma-
+        ## chine that will be making the connection, the name of the iscsi ini-
+        ## tiator and the hostname of the machine as follow:
+        connectorInf = {
+            'ip'       : '127.0.0.1',
+            'initiator': 'fake',
+            'host'     : 'fakehost'
+        }
+
+        return connectorInf;
+
+
+    ##
+    ## BRIEF:
+    ## ------------------------------------------------------------------------
+    ##
+    def attach_volume(self, context, connection_info, instance, mountpoint,
+                      disk_bus=None, device_type=None, encryption=None):
+        """Attach the disk to the instance at mountpoint using info."""
+        instance_name = instance['name']
+        if instance_name not in self.__mounts:
+            self.__mounts[instance_name] = {}
+        self.__mounts[instance_name][mountpoint] = connection_info
+
+
+    ##
+    ## BRIEF:
+    ## ------------------------------------------------------------------------
+    ##
+    def detach_volume(self, connection_info, instance, mountpoint,
+                      encryption=None):
+        """Detach the disk attached to the instance."""
+        try:
+            del self.__mounts[instance['name']][mountpoint]
+        except KeyError:
+            pass
+
+
+    ##
+    ## BRIEF:
+    ## ------------------------------------------------------------------------
+    ##
+    def swap_volume(self, old_connection_info, new_connection_info,
+                    instance, mountpoint, resize_to):
+        """Replace the disk attached to the instance."""
+        instance_name = instance['name']
+        if instance_name not in self.__mounts:
+            self.__mounts[instance_name] = {}
+        self.__mounts[instance_name][mountpoint] = new_connection_info
+
+    ## END VOLUMES.
+
+
+
+
+
+
+
+
+    ##
+    ## BRIEF: check access of instance files on the host.
+    ## ------------------------------------------------------------------------
+    ## @PARAM instance == nova.object.instance.Instance to lookup.
+    ##
+    ## @RETURN (bool) True if files of an instance with the supplied ID accessi
+    ##                ble on the host. False otherwise.
+    ##
+    def instance_on_disk(self, instance):
+        ## LOG:
+        LOG.info("INSTANCE ON DISK!");
+
+        ## NOTE: used in rebuild for HA implementation and required for valida-
+        ##       tion of access to instance shared disk files.
+        return False;
+
+    ##
     ## BRIEF: retrieves the IP addres od the dom0.
     ## ------------------------------------------------------------------------
     ##
     @staticmethod
     def get_host_ip_addr():
-        LOG.info("[MCT_Drive] get_host_ip_addr!");
+        LOG.info("get_host_ip_addr!");
         return '192.168.0.1';
+
+    ##
+    ## BRIEF: reboot, shutsdown or powers up the host.
+    ## ------------------------------------------------------------------------
+    ## @PARAM host   == the target.
+    ## @PARAM action == the action.
+    ##
+    def host_power_action(self, host, action):
+        LOG.info("HOST POWER ACTION!");
+        return action;
+
+
+    ##
+    ## BRIEF: start/stop host maintenance window. On start, it triggers the mi-
+    ##        gration of all instance to other hosts. Consider the combinantion
+    ##        with set_host_enable().
+    ## ------------------------------------------------------------------------
+    ## @PARAM host == the name of the host whose maintenance mode should be mo-
+    ##                fied.
+    ## @PARAM mode == if True, go into the maintenance mode. If False, leaving
+    ##                the maintenance mode.
+    ##
+    ## @RETURN (str) on_maintenance if switched to maintenance mode or of_main-
+    ##               tenance if maintenance mode got left.
+    ##
+    def host_maintenance_mode(self, host, mode):
+        LOG.info("host_maintenance_mode!");
+
+        if not mode:
+            return 'off_maintenance';
+
+        return 'on_maintenance';
+
+
+    ##
+    ## BRIEF: set the abilitity of this host to accept new instances.
+    ## ------------------------------------------------------------------------
+    ## @PARAM host    ==
+    ## @PARAM enabled == if True, the host will accept new instances. If it is
+    ##                   False, the host won't accept new instnaces
+    ##
+    ## @RETURN (str) if the host can accept further instances, return "enabled"
+    ##               if further instance shouldn't be scheduled to this host,
+    ##               return disabled.
+    ##
+    def set_host_enabled(self, host, enabled):
+        LOG.info("set_host_enable!");
+
+        if enabled:
+            return 'enabled';
+
+        return 'disabled';
+
+
+
+
+
 
 
 
@@ -439,83 +809,8 @@ class MCT_Driver(driver.ComputeDriver):
                                            block_device_info=None):
         pass
 
-    def power_off(self, instance, shutdown_timeout=0, shutdown_attempts=0):
-        pass
-
-    def power_on(self, context, instance, network_info, block_device_info):
-        pass
-
-    def soft_delete(self, instance):
-        pass
-
-    def restore(self, instance):
-        pass
-
-    def pause(self, instance):
-        pass
-
-    def unpause(self, instance):
-        pass
-
-    def suspend(self, instance):
-        pass
-
-    def resume(self, context, instance, network_info, block_device_info=None):
-        pass
 
 
-
-    def attach_volume(self, context, connection_info, instance, mountpoint,
-                      disk_bus=None, device_type=None, encryption=None):
-        """Attach the disk to the instance at mountpoint using info."""
-        instance_name = instance['name']
-        if instance_name not in self.__mounts:
-            self.__mounts[instance_name] = {}
-        self.__mounts[instance_name][mountpoint] = connection_info
-
-    def detach_volume(self, connection_info, instance, mountpoint,
-                      encryption=None):
-        """Detach the disk attached to the instance."""
-        try:
-            del self.__mounts[instance['name']][mountpoint]
-        except KeyError:
-            pass
-
-    def swap_volume(self, old_connection_info, new_connection_info,
-                    instance, mountpoint, resize_to):
-        """Replace the disk attached to the instance."""
-        instance_name = instance['name']
-        if instance_name not in self.__mounts:
-            self.__mounts[instance_name] = {}
-        self.__mounts[instance_name][mountpoint] = new_connection_info
-
-    def attach_interface(self, instance, image_meta, vif):
-        if vif['id'] in self.__interfaces:
-            raise exception.InterfaceAttachFailed(
-                    instance_uuid=instance['uuid'])
-        self.__interfaces[vif['id']] = vif
-
-    def detach_interface(self, instance, vif):
-        try:
-            del self.__interfaces[vif['id']]
-        except KeyError:
-            raise exception.InterfaceDetachFailed(
-                    instance_uuid=instance['uuid'])
-
-
-    def get_info(self, instance):
-        if instance['name'] not in self.instances:
-            raise exception.InstanceNotFound(instance_id=instance['name'])
-        i = self.instances[instance['name']]
-
-        LOG.info('---->');
-        LOG.info(i.state);
-
-        return {'state': i.state,
-                'max_mem': 0,
-                'mem': 0,
-                'num_cpu': 2,
-                'cpu_time': 0}
 
 
 
@@ -563,12 +858,6 @@ class MCT_Driver(driver.ComputeDriver):
         bw = []
         return bw
 
-    def get_all_volume_usage(self, context, compute_host_bdms):
-        """Return usage info for volumes attached to vms on
-           a given host.
-        """
-        volusage = []
-        return volusage
 
     def get_host_cpu_stats(self):
         stats = {'kernel': 5664160000000L,
@@ -627,45 +916,6 @@ class MCT_Driver(driver.ComputeDriver):
 
 
     ##
-    ## BRIEF: Retrive resource informations. This method is called when "nova-
-    ##        compute launches,and as part of a periodic task that records the
-    ##        the resuts in the DB.
-    ## ------------------------------------------------------------------------
-    ## @PARAM nodename == node wich the caller want get resources from a driver
-    ##                    that manages only one node can safely ignore this.
-    ##
-    ## @RETURN (dict) dictionary describing resources.
-    ##
-    def get_available_resource(self, nodename):
-
-        ## LOG:
-        LOG.info("[MCT_Drive] GET AVALIBLE RESOURCES! NODE %s", nodename);
-        
-        ## Request to MCT Agent informations about MCT resources. The return is
-        ## a dictionary of information resources. These values depend on the di
-        ## vision of the player belongs.
-        valRet = self.mct.get_resource_inf();
-
-        ## Convert the units to compreensive format. The original forma is "MB".
-        if valRet != {}:
-            resources = {};
-
-            resources['vcpus'         ] = valRet['data']['vcpu'          ]; 
-            resources['vcpus_used'    ] = valRet['data']['vcpu_used'     ]; 
-            resources['memory_mb'     ] = valRet['data']['memory_mb'     ];
-            resources['memory_mb_used'] = valRet['data']['memory_mb_used'];
-            resources['local_gb'      ] = valRet['data']['disk_mb'       ]/1024;
-            resources['local_gb_used' ] = valRet['data']['disk_mb_used'  ]/1024;
-
-        ## Copy the status base (fixed values) and concatenate with actual reso
-        ## urce informations obtained from MCT.
-        actualResourcesStatus = self.__resourcesStatusBase.copy();
-        actualResourcesStatus.update(resources);
-
-        return actualResourcesStatus;
-
-
-    ##
     ## BRIEF:
     ## ------------------------------------------------------------------------
     ##
@@ -714,134 +964,4 @@ class MCT_Driver(driver.ComputeDriver):
     def test_remove_vm(self, instance_name):
         """Removes the named VM, as if it crashed. For testing."""
         self.instances.pop(instance_name)
-
-
-    ##
-    ## BRIEF: reboot, shutsdown or powers up the host.
-    ## ------------------------------------------------------------------------
-    ## @PARAM host   == the target.
-    ## @PARAM action == the action.
-    ##
-    def host_power_action(self, host, action):
-        LOG.info("[MCT_Drive] host_power_action!");
-        return action;
-
-
-    ##
-    ## BRIEF: start/stop host maintenance window. On start, it triggers the mi-
-    ##        gration of all instance to other hosts. Consider the combinantion
-    ##        with set_host_enable().
-    ## ------------------------------------------------------------------------
-    ## @PARAM host == the name of the host whose maintenance mode should be mo-
-    ##                fied.
-    ## @PARAM mode == if True, go into the maintenance mode. If False, leaving
-    ##                the maintenance mode.
-    ##
-    ## @RETURN (str) on_maintenance if switched to maintenance mode or of_main-
-    ##               tenance if maintenance mode got left.
-    ##
-    def host_maintenance_mode(self, host, mode):
-        LOG.info("[MCT_Drive] host_maintenance_mode!");
-
-        if not mode:
-            return 'off_maintenance';
-
-        return 'on_maintenance';
-
-
-    ##
-    ## BRIEF: set the abilitity of this host to accept new instances.
-    ## ------------------------------------------------------------------------
-    ## @PARAM host    ==
-    ## @PARAM enabled == if True, the host will accept new instances. If it is
-    ##                   False, the host won't accept new instnaces
-    ##
-    ## @RETURN (str) if the host can accept further instances, return "enabled"
-    ##               if further instance shouldn't be scheduled to this host,
-    ##               return disabled.
-    ##
-    def set_host_enabled(self, host, enabled):
-        LOG.info("[MCT_Drive] set_host_enable!");
-
-        if enabled:
-            return 'enabled';
-
-        return 'disabled';
-
-
-    ##
-    ## BRIEF: get the connector information for the instance for attaching to
-    ##        volumes. 
-    ## ------------------------------------------------------------------------
-    ## @PARAM instance ==  
-    ##
-    def get_volume_connector(self, instance):
-        ## LOG:
-        LOG.info("[MCT_DRIVE] GET VOLUME CONNECTOR!");
- 
-        ## Connector information is a dictionary representing the ip of the ma-
-        ## chine that will be making the connection, the name of the iscsi ini-
-        ## tiator and the hostname of the machine as follow:
-        connectorInf = {
-            'ip'       : '127.0.0.1',
-            'initiator': 'fake',
-            'host'     : 'fakehost'
-        }
-
-        return connectorInf;
-
-
-    ##
-    ## BRIEF: return the nodes name of all nodes managed by the compute service.
-    ##        This method is for multi compute-nodes suporte. If a driver suppo
-    ##        rt multi compute-nodes, this method returns a list of nodename ma
-    ##        naged by the service. Otherwise, this method should return [hyper
-    ##        visor_hostname].
-    ## ------------------------------------------------------------------------
-    ## @PARAM refresh ==  
-    ##
-    def get_available_nodes(self, refresh=False):
-        ## LOG:
-        LOG.info("[MCT_DRIVE] GET AVALIABLE NODES!");
-
-        return [self.__hostname];
-
-
-    ##
-    ## BRIEF: check access of instance files on the host.
-    ## ------------------------------------------------------------------------
-    ## @PARAM instance == nova.object.instance.Instance to lookup.
-    ##
-    ## @RETURN (bool) True if files of an instance with the supplied ID accessi
-    ##                ble on the host. False otherwise.
-    ##
-    def instance_on_disk(self, instance):
-        ## LOG:
-        LOG.info("[MCT_DRIVE] INSTANCE ON DISK!");
-
-        ## NOTE: used in rebuild for HA implementation and required for valida-
-        ##       tion of access to instance shared disk files.
-        return False;
-## END.
-
-
-
-
-
-
-
-
-
-
-class FakeVirtAPI(virtapi.VirtAPI):
-    def provider_fw_rule_get_all(self, context):
-        return db.provider_fw_rule_get_all(context)
-
-    @contextlib.contextmanager
-    def wait_for_instance_event(self, instance, event_names, deadline=300,
-                                error_callback=None):
-        # NOTE(danms): Don't actually wait for any events, just
-        # fall through
-        yield
-
 ## EOF.

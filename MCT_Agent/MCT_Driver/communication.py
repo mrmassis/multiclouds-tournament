@@ -11,7 +11,10 @@ import json;
 import pika;
 import logging;
 
-from multiprocessing import Process
+from multiprocessing     import Process
+from nova.virt.mct.utils import *;
+from pika.exceptions     import AMQPConnectionError, AMQPChannelError;
+
 
 
 
@@ -62,7 +65,7 @@ class MCT_Communication(Process):
 
         ## Get all configs parameters presents in the config file localized in
         ## CONFIG_FILE path.
-        self.__config = self.__get_config(CONFIG_FILE);
+        self.__config = get_configs(CONFIG_FILE);
 
         ## Intance a new object to handler all operation in the local database
         self.__dbConnection = dbConnection;
@@ -150,10 +153,14 @@ class MCT_Communication(Process):
 
         ## Publish to the channel with the given exchange,routing key and body.
         ## Returns a boolean value indicating the success of the operation.
-        ack = self.chnP.basic_publish(self.__config['amqp_publish']['exchange'], 
-                                      self.__config['amqp_publish']['route'], 
-                                      jData, 
-                                      properties);
+        try:
+            exchange = self.__config['amqp_publish']['exchange'];
+            route    = self.__config['amqp_publish']['route'   ];
+
+            ack = self.chnP.basic_publish(exchange, route, jData, properties);
+
+        except (AMQPConnectionError, AMQPChannelError), error:
+            ack = -1; 
 
         return ack;
 
@@ -177,6 +184,9 @@ class MCT_Communication(Process):
         ## core providing methods that will block until their expected response
         ## has returned. 
         connection = pika.BlockingConnection(parameters);
+
+        ## TODO:
+        ## check close callbacks:
 
         ## Create a new channel with the next available channel number or pass
         ## in a channel number to use. 
@@ -235,24 +245,4 @@ class MCT_Communication(Process):
 
         ## Confirme delivery.
         self.chnP.confirm_delivery;
-
-
-    ##
-    ## BRIEF: obtain all configuration from conffiles.
-    ## ------------------------------------------------------------------------
-    ## @PARAM str cfgFile == conffile name.
-    ##
-    def __get_config(self, cfgFile):
-       cfg = {};
-
-       config = ConfigParser.ConfigParser();
-       config.readfp(open(cfgFile));
-
-       for section in config.sections():
-           cfg[section] = {};
-
-           for option in config.options(section):
-               cfg[section][option] = config.get(section, option);
-
-       return cfg;
 ## EOF.

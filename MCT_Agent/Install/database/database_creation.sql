@@ -37,6 +37,24 @@ ENGINE = InnoDB
 PACK_KEYS = DEFAULT;
 
 
+-- -----------------------------------------------------
+-- Table `mct`.`INSTANCES`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mct`.`INSTANCES` ;
+
+CREATE TABLE IF NOT EXISTS `mct`.`INSTANCES` (
+  `uuid`      VARCHAR(45) NOT NULL,
+  `name`      VARCHAR(45) NULL,
+  `vcpu`      INT NULL,
+  `disk`      INT NULL,
+  `memory`    INT NULL,
+  `mct_state` VARCHAR(45) NULL,
+  `pwr_state` INT NULL,
+  PRIMARY KEY (`uuid`))
+ENGINE = InnoDB
+PACK_KEYS = DEFAULT;
+
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

@@ -28,8 +28,7 @@ CONFIG_FILE  = '/etc/mct/mct_agent.ini';
 LOG_NAME     = 'MCT_Agent';
 LOG_FORMAT   = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
 LOG_FILENAME = '/var/log/mct/mct_agent.log';
-
-
+DISPATCH_NAME= 'MCT_Dispatch';
 
 
 
@@ -59,16 +58,13 @@ logger.addHandler(handler);
 
 
 
-
-
-
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
 class MCT_Agent(RabbitMQ_Consume):
 
     """
-    
+    Class MCT_Agent. 
     ---------------------------------------------------------------------------
     callback == method invoked when the pika receive a message.
     
@@ -111,7 +107,7 @@ class MCT_Agent(RabbitMQ_Consume):
         ## defined in the configuration file.
         RabbitMQ_Consume.__init__(self, config['amqp_consume']);
 
-        ## Credentials:
+        ### Credentials:
         config['amqp_internal_publish']['user'] = config['rabbitmq']['user'];
         config['amqp_internal_publish']['pass'] = config['rabbitmq']['pass'];
 
@@ -127,10 +123,10 @@ class MCT_Agent(RabbitMQ_Consume):
 
         ## Check the type of framework utilized to build the cloud.Intance the
         ## correct API.
-        self.__cloudType = config['cloud_framework']['type'];
+        #self.__cloudType = config['cloud_framework']['type'];
 
-        if self.__cloudType == 'openstack':
-            self.__cloud = MCT_Openstack_Nova(config['cloud_framework']);
+        #if self.__cloudType == 'openstack':
+        #    self.__cloud = MCT_Openstack_Nova(config['cloud_framework']);
 
 
     ###########################################################################
@@ -154,7 +150,7 @@ class MCT_Agent(RabbitMQ_Consume):
 
         ## Check if is a request received from players or a return from a divi-
         ## sions. The identifier is the properties.app_id.
-        if properties.app_id == 'MCT_Dispatch':
+        if properties.app_id == DISPATCH_NAME:
             if self.__inspect_request(message) == 0:
                 self.__recv_message_dispatch(message, properties.app_id);
         else:
@@ -177,8 +173,17 @@ class MCT_Agent(RabbitMQ_Consume):
         ## LOG:
         logger.info('MESSAGE SEND TO DISPATCH: %s', message);
 
-        ## Publish the message to MCT_Dispatch via AMQP. 
-        self.__publishExt.publish(message, self.__routeExt);
+        ## Publish the message to MCT_Dispatch via AMQP. The MCT_Dispatch is in
+        ## the remote server. 
+        valRet = self.__publishExt.publish(message, self.__routeExt);
+
+        if valRet == False:
+            ## LOG:
+            logger.error("IT WAS NOT POSSIBLE TO SEND THE MSG TO DISPATCH!");
+        else:
+            ## LOG:
+            logger.info ('MESSAGE SENT TO DISPATCH!');
+      
         return 0;
 
 
@@ -281,7 +286,7 @@ class MCT_Agent(RabbitMQ_Consume):
     def __suspnd_server(self, message):
         destId = self.__get_map_inst_id(message['data']['reqId']);
 
-        #    status =self.__cloud.suspend_instance(instId);
+        ##status =self.__cloud.suspend_instance(instId);
         return 'NOT_IMPLEMENTED';
 
 
@@ -293,7 +298,7 @@ class MCT_Agent(RabbitMQ_Consume):
     def __resume_server(self, message):
         destId = self.__get_map_inst_id(message['data']['reqId']);
 
-        #    status =self.__cloud.resume_instance(instId);
+        ## status =self.__cloud.resume_instance(instId);
         return 'NOT_IMPLEMENTED';
 
 
@@ -303,11 +308,23 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict request == received request.
     ##
     def __inspect_request(self, request):
-        ## TODO: DEFINR FORMATO!
+        error = 0;
 
-        ## LOG:
-        logger.info('INSPECT REQUEST!');
-        return 0;
+        fields = ['status', 'reqId', 'code'   , 'playerId', 
+                  'retId' , 'data' , 'destAdd', 'origAdd'];
+
+        for field in fields:
+            if not request.has_key(field):
+                error += 1;
+ 
+        if error == 0:
+            ## LOG:
+            logger.info('ALL FIELDS ARE PRESENTS!');
+            return 0;
+        else:
+            ## LOG:
+            logger.info('SOME FIELDS ARE MISSING!');
+            return 1;
 
 
     ##

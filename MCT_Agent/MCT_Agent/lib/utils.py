@@ -7,6 +7,7 @@
 ## IMPORT                                                                    ##
 ###############################################################################
 import ConfigParser;
+import inspect;
 
 
 
@@ -42,5 +43,27 @@ def get_configs(configName):
             cfg[section][option] = config.get(section,option);
 
     return cfg;
+
+
+
+
+##
+## BRIEF: get the caller class.
+## ----------------------------------------------------------------------------
+## @PARAM deep == deep from get information.
+##
+def get_class_name_from_frame(deep=0):
+    stack = inspect.stack();
+
+    frame = stack[deep][0];
+    args, _, _, value_dict = inspect.getargvalues(frame);
+
+    string = value_dict['__file__'];
+
+    ## Extract the information from the name of file.
+    string = string.replace('./' ,'');
+    string = string.replace('.py','');
+
+    return string;
 
 ## EOF.
