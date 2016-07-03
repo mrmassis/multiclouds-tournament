@@ -592,13 +592,21 @@ class MCT_Driver(driver.ComputeDriver):
         pass
 
 
-
+    ##
+    ## BRIEF:
+    ## ------------------------------------------------------------------------
+    ##
     def attach_interface(self, instance, image_meta, vif):
         if vif['id'] in self.__interfaces:
             raise exception.InterfaceAttachFailed(
                     instance_uuid=instance['uuid'])
         self.__interfaces[vif['id']] = vif
 
+
+    ##
+    ## BRIEF:
+    ## ------------------------------------------------------------------------
+    ##
     def detach_interface(self, instance, vif):
         try:
             del self.__interfaces[vif['id']]

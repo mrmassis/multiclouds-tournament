@@ -9,6 +9,7 @@
 import mysql.connector;
 import mysql;
 
+from mysql.connector import errorcode;
 
 
 
@@ -53,6 +54,7 @@ class MCT_Database(object):
         dname = dbDictionary['base'];
 
         self.__dbConnection = self.__db_connect(dhost, duser, dpass, dname);
+        self.__dbConnection.autocommit = True;
 
 
     ###########################################################################
@@ -140,6 +142,7 @@ class MCT_Database(object):
         return 1;
 
 
+
     ###########################################################################
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
@@ -181,6 +184,5 @@ class MCT_Database(object):
                 return None;
 
         return connection;
-
 ## END.
 

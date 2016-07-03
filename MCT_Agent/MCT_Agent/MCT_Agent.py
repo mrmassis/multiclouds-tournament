@@ -100,7 +100,6 @@ class MCT_Agent(RabbitMQ_Consume):
         self.__my_ip = config['main']['my_ip'];
 
         ## Get which route is used to deliver the msg to the 'correct destine'.
-        self.__routeInt = config['amqp_internal_publish']['route'];
         self.__routeExt = config['amqp_external_publish']['route'];
 
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
@@ -108,14 +107,10 @@ class MCT_Agent(RabbitMQ_Consume):
         RabbitMQ_Consume.__init__(self, config['amqp_consume']);
 
         ### Credentials:
-        config['amqp_internal_publish']['user'] = config['rabbitmq']['user'];
-        config['amqp_internal_publish']['pass'] = config['rabbitmq']['pass'];
-
         config['amqp_external_publish']['user'] = config['rabbitmq']['user'];
         config['amqp_external_publish']['pass'] = config['rabbitmq']['pass'];
 
         ## Instantiates an object to perform the publication of AMQP messages.
-        self.__publishInt = RabbitMQ_Publish(config['amqp_internal_publish']);
         self.__publishExt = RabbitMQ_Publish(config['amqp_external_publish']);
 
         ## Intance a new object to handler all operation in the local database.
@@ -123,7 +118,7 @@ class MCT_Agent(RabbitMQ_Consume):
 
         ## Check the type of framework utilized to build the cloud.Intance the
         ## correct API.
-        #self.__cloudType = config['cloud_framework']['type'];
+        self.__cloudType = config['cloud_framework']['type'];
 
         #if self.__cloudType == 'openstack':
         #    self.__cloud = MCT_Openstack_Nova(config['cloud_framework']);
@@ -225,11 +220,27 @@ class MCT_Agent(RabbitMQ_Consume):
             ## sary prepare the return status to a generic format;
             message['status'] = self.__convert_status(status, message['code']); 
 
+            ## Return data to MCT_Dispatch.
             self.__publishExt.publish(message, self.__routeExt);
         else:
-            self.__publishInt.publish(message, self.__routeInt);
+            ## Update the database:
+            self.__update_database(message);
 
         return 0;
+
+
+    ##
+    ## BRIEF: updata database with return value.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict message == received message.
+    ##
+    def __update_database(self, message):
+
+        ## Insert the message received into the database.
+        query = "INSERT INTO REQUEST (request_id, status, message) VALUES (%s,%s,%s)";
+        value = (message['reqId'], message['status'], str(message['data']));
+
+        valret = self.__dbConnection.insert_query(query, value);
 
 
     ##
@@ -409,8 +420,11 @@ if __name__ == "__main__":
     ## LOG:
     logger.info('EXECUTION STARTED...');
 
-    mct = MCT_Agent();
-    mct.consume();
+    try:
+        mct = MCT_Agent();
+        mct.consume();
+    except KeyboardInterrupt:
+        pass;
 
     ## LOG:
     logger.info('EXECUTION FINISHED...');
