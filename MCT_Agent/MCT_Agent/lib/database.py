@@ -10,6 +10,7 @@ import mysql.connector;
 import mysql;
 
 from mysql.connector import errorcode;
+from mysql.connector import RefreshOption;
 
 
 
@@ -55,6 +56,7 @@ class MCT_Database(object):
         dname = dbDictionary['base'];
 
         self.__dbConnection = self.__db_connect(dhost, duser, dpass, dname);
+        self.__dbConnection.autocommit = True;
 
 
     ###########################################################################
@@ -140,6 +142,16 @@ class MCT_Database(object):
             print(err);
 
         return 1;
+
+
+    ##
+    ## BRIEF:
+    ## ------------------------------------------------------------------------
+    ##
+    def flush_tables(self):
+        refresh = RefreshOption.TABLES | RefreshOption.THREADS;
+        self.__dbConnection.cmd_refresh(refresh);
+
 
 
     ###########################################################################

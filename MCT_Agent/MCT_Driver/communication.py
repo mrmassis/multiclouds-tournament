@@ -11,7 +11,6 @@ import json;
 import pika;
 import logging;
 
-from multiprocessing     import Process
 from nova.virt.mct.utils import *;
 from pika.exceptions     import AMQPConnectionError, AMQPChannelError;
 
@@ -33,7 +32,7 @@ LOG = logging.getLogger(__name__);
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
-class MCT_Communication(Process):
+class MCT_Communication:
 
     """
     Class MCT_Communication:perform the communication to the MCT_Agent service.
@@ -51,14 +50,12 @@ class MCT_Communication(Process):
     __chnP         = None;
     __chnC         = None;
     __config       = None;
-    __dbConnection = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self, dbConnection):
-        super(MCT_Communication, self).__init__();
+    def __init__(self):
 
         ## LOG:
         LOG.info('[MCT_COMMUNICATION] INITIALIZE COMMUNICATION OBJECT!');
@@ -66,9 +63,6 @@ class MCT_Communication(Process):
         ## Get all configs parameters presents in the config file localized in
         ## CONFIG_FILE path.
         self.__config = get_configs(CONFIG_FILE);
-
-        ## Intance a new object to handler all operation in the local database
-        self.__dbConnection = dbConnection;
 
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
         ## defined in the configuration file.
@@ -81,51 +75,6 @@ class MCT_Communication(Process):
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
     ###########################################################################
-    ##
-    ## Brief: main loop.
-    ## ------------------------------------------------------------------------
-    ##
-    def run(self):
-
-        queue = self.__config['amqp_consume']['queue_name'];
-
-        ## Consume to the broker and binds messages for the consumer_tag to the
-        ## consumer callback. 
-        self.chnC.basic_consume(self.callback, queue, no_ack=False);
-
-        ## Processes I/O events and dispatches timers and basic_consume callba-
-        ## cks until all consumers are cancelled.
-        self.chnC.start_consuming();
-
-
-    ##
-    ## BRIEF: method invoked when the pika receive a message.
-    ## ------------------------------------------------------------------------
-    ## @PARAM pika.Channel              channel    = the communication channel.
-    ## @PARAM pika.spec.Basic.Deliver   method     = 
-    ## @PARAM pika.spec.BasicProperties properties = 
-    ## @PARAM str                       message    = message received.
-    ##
-    def callback(self, channel, method, properties, message):
-
-        ## Send to source an ack msg to ensuring that the message was received.
-        self.chnC.basic_ack(method.delivery_tag);
-
-        ## LOG:
-        LOG.info('[MCT_COMMUNICATION] MESSAGE RECEIVED: %s', message);
-
-        ## Convert the json format to a structure than can handle by the python
-        message = json.loads(message);
-
-        ## Insert the message received into the database.
-        query = "INSERT INTO REQUEST (request_id, status, message) VALUES (%s,%s,%s)";
-        value = (message['reqId'], message['status'], str(message['data']));
-       
-        valret = self.__dbConnection.insert_query(query, value);
- 
-        LOG.info(valret);
-
-
     ##
     ## BRIEF: publish a message by the AMQP to MCT_Agent.
     ## ------------------------------------------------------------------------
@@ -143,7 +92,6 @@ class MCT_Communication(Process):
             'headers'      : message
         }
 
-        ##
         properties = pika.BasicProperties(**propertiesData);
 
         ## Serialize object to a JSON formatted str using this conversion table

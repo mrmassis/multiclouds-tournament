@@ -76,11 +76,8 @@ class MCT_Action(object):
         ## Intance a new object to handler all operation in the local database.
         self.__dbConnection = MCT_Database(self.__cfg['database']); 
 
-        ## Instance the object that will communicate with MCT_Action.Running in
-        ## thread.
-        self.__communication = MCT_Communication(self.__dbConnection);
-        self.__communication.daemon = True;
-        self.__communication.start();
+        ## Communication object:
+        self.__communication = MCT_Communication();
 
 
     ##
@@ -316,14 +313,15 @@ class MCT_Action(object):
     ## @PARAM str requestId = identify of the resquest.
     ##
     def __waiting_return(self, requestId):
+
         count = int(self.__cfg['main']['request_pending_maxtries']);
 
         ## Waiting for the answer arrive. When the status change status get it.
         while True and count > 0:
 
             ## Mount the select query: 
-            dbQuery  = "SELECT status, message FROM REQUEST WHERE ";
-            dbQuery += "request_id='" + requestId + "'";
+            dbQuery  ="SELECT SQL_NO_CACHE status, message FROM REQUEST WHERE ";
+            dbQuery +="request_id='" + requestId + "'";
  
             dataReceived = [] or self.__dbConnection.select_query(dbQuery);
 
@@ -346,6 +344,7 @@ class MCT_Action(object):
             LOG.info("(%s) WAITING FOR REQUEST RETURN: %s", count, requestId);
 
         return {};        
+
 
     ##
     ## BRIEF: create a new index based in a hash.

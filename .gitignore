@@ -4,4 +4,7 @@
 /MCT_Referee/database/model.mwb.bak
 /MCT_Referee/database/database_creation.sql2
 /MCT_Agent/MCT_Agent/lib/__init__.pyc
+/MCT_Agent/MCT_Agent/lib/*.pyc
+/MCT_Agent/MCT_Drive/lib/*.pyc
+/MCT_Referee/lib/*.pyc
 *.pyc
