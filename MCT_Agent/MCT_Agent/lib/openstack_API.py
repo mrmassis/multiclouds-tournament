@@ -354,7 +354,7 @@ class MCT_Openstack_Nova:
 if __name__ == "__main__":
 
     config = {    
-        'auth' : 'http://20.0.0.8:5000/v3',
+        'auth' : 'http://controller:5000/v2',
         'user' : 'mct',
         'pswd' : 'password',
         'proj' : 'mct',

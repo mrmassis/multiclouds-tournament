@@ -29,4 +29,8 @@ if [ -z ${EXIST} ]; then
     nova aggregate-add-host 1 ${HT_NAME}
 fi
 
+
+
+keystone tenant-create --name mct --description "Multi-Clouds Tournament"
+keystone user-create   --name mct --tenant mct --pass password --email mct@mct
 ## EOF.
