@@ -124,6 +124,7 @@ from novaclient                   import client;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
+TIME_TO_WAIT = 2;
 VERSION = 2;
 
 
@@ -154,17 +155,25 @@ class MCT_Openstack_Nova:
     ###########################################################################
     def __init__(self, cfg):
 
+        authUrl = cfg['auth'] + cfg['keystone_version'];
+
         ## If you have PROJECT_NAME instead of a PROJECT_ID, use the string la
         ## bel project_name parameter. Similarly, if your cloud uses keystonv3
         ## and you have a DOMAIN_NAME or DOMAIN_ID, provide it as user_domain_
         ## (name|id) and if you are using a PROJECT_NAME also provide the doma
         ## in information as project_domain_(name|id).
-        auth = v3.Password(auth_url            = cfg['auth'],
-                           username            = cfg['user'],
-                           password            = cfg['pswd'],
-                           project_name        = cfg['proj'],
-                           user_domain_name    = cfg['user_domain_name'],
-                           project_domain_name = cfg['proj_domain_name']);
+        if cfg['keystone_version'] == '3':
+            auth = v3.Password(auth_url            = authUrl,
+                               username            = cfg['user'],
+                               password            = cfg['pswd'],
+                               project_name        = cfg['proj'],
+                               user_domain_name    = cfg['user_domain_name'],
+                               project_domain_name = cfg['proj_domain_name']);
+        else:
+            auth = v2.Password(auth_url            = authUrl,
+                               username            = cfg['user'],
+                               password            = cfg['pswd'],
+                               tenant_name         = cfg['proj']);
 
         ## Ponto de contato para os servicos do OpenStack. Armazena as creden-
         ## ciais e informacoes requeridas para comunicacao.  
@@ -210,7 +219,7 @@ class MCT_Openstack_Nova:
         status = server.status;
 
         while status == 'BUILD':
-            time.sleep(5);
+            time.sleep(TIME_TO_WAIT);
 
             ## Retrieve the server object again so the status field updates:
             server = self.__nova.servers.get(server.id)
@@ -253,7 +262,7 @@ class MCT_Openstack_Nova:
                 except:
                     status = 'HARD_DELETED';
 
-                time.sleep(5);
+                time.sleep(TIME_TO_WAIT);
 
        return (status, '');
 
@@ -287,7 +296,7 @@ class MCT_Openstack_Nova:
                 except:
                     pass;
 
-                time.sleep(5);
+                time.sleep(TIME_TO_WAIT);
 
        return status;
 
@@ -321,7 +330,7 @@ class MCT_Openstack_Nova:
                 except:
                     pass;
 
-                time.sleep(5);
+                time.sleep(TIME_TO_WAIT);
 
        return status;
 
@@ -354,18 +363,19 @@ class MCT_Openstack_Nova:
 if __name__ == "__main__":
 
     config = {    
-        'auth' : 'http://20.0.0.8:5000/v3',
-        'user' : 'mct',
-        'pswd' : 'password',
-        'proj' : 'mct',
-        'user_domain_name':'default',
-        'proj_domain_name':'default'
+        'keystone_version' : 'v2.0',
+        'auth'             : 'http://controller:5000/',
+        'user'             : 'mct',
+        'pswd'             : 'password',
+        'proj'             : 'mct',
+        'user_domain_name' :'default',
+        'proj_domain_name' :'default'
     };
 
     framework = MCT_Openstack_Nova(config);
 
-    vmsL = 'teste';
-    imgL = 'cirros-0.3.4-x86_64';
+    vmsL = 'teste01';
+    imgL = 'cirros-0.3.3-x86_64';
     flvL = 'm1.tiny';
     netL = 'demo-net';
 
@@ -373,8 +383,8 @@ if __name__ == "__main__":
     valret = framework.create_instance(vmsL, imgL, flvL, netL);
 
     print 'CREATE ---------------------------------------------------------- ';
-    print valret[0]
-    print valret[1]
+    print valret[0];
+    print valret[1];
 
     valret =  framework.delete_instance(valret[1]);
 
