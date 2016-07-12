@@ -85,6 +85,17 @@ CREATE  TABLE IF NOT EXISTS `mct`.`INSTANCE` (
 ENGINE = InnoDB;
 
 
+-- -----------------------------------------------------
+-- Table `mct`.`FIELDS`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mct`.`FIELDS` ;
+
+CREATE  TABLE IF NOT EXISTS `mct`.`FIELDS` (
+  `operation` INT NOT NULL,
+  `fields` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`operation`))
+ENGINE = InnoDB;
+
 
 --
 --

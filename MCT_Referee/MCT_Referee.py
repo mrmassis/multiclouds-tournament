@@ -119,8 +119,7 @@ class MCT_Referee(RabbitMQ_Consume):
         elif configs['scheduller']['approach'] == 'bestscores':
             self.__scheduller = Bestscores(configs['scheduller']['restrict']);
 
-        ##
-        self.__lock = Lock();
+        #self.__lock = Lock();
 
 
     ###########################################################################
@@ -161,9 +160,16 @@ class MCT_Referee(RabbitMQ_Consume):
                 division = self.__get_division(message['playerId']);
 
                 ## --------------------------------------------------------- ##
+                ## DIVISION INVALID (-1).                                    ##
+                ## --------------------------------------------------------- ##
+                if division == -1:
+                    message['retId' ] = '';
+                    message['status'] = 0 ;
+
+                ## --------------------------------------------------------- ##
                 ## [0] == GET RESOUCES INF.                                  ##
                 ## --------------------------------------------------------- ##
-                if   int(message['code']) == 0:
+                elif int(message['code']) == 0:
 
                     ## Get all resources available to a division. Check in db.
                     message['data'] = self.__get_resources_inf(division);
@@ -185,6 +191,7 @@ class MCT_Referee(RabbitMQ_Consume):
                 message['retId'] = '';
 
             self.__publish.publish(message, self.__routeDispatch);
+
         return 0;
 
 
@@ -204,9 +211,7 @@ class MCT_Referee(RabbitMQ_Consume):
 
         query = "SELECT fields FROM FIELDS WHERE operation='" + str(key) + "'";
 
-        ##self.__lock.acquire();
         #valRet = [] or self.__db.select_query(query);
-        ##self.__lock.release();
 
         #if valRet != []:
         #    fields = valRet[0][0];
@@ -225,7 +230,6 @@ class MCT_Referee(RabbitMQ_Consume):
     ## BRIEF: get the player's division.
     ## ------------------------------------------------------------------------
     ## @PARAM str playerId == player identifier.
-    ## TODO: testar.
     ##
     def __get_division(self, playerId):
         ## LOG:
@@ -236,9 +240,7 @@ class MCT_Referee(RabbitMQ_Consume):
 
         query = "SELECT division FROM PLAYER WHERE name='" + playerId + "'";
 
-        self.__lock.acquire();
         valRet = [] or self.__db.select_query(query);
-        self.__lock.release();
 
         if valRet != []:
             division = valRet[0][0];
@@ -256,48 +258,60 @@ class MCT_Referee(RabbitMQ_Consume):
         ## 
         timeStamp = str(datetime.datetime.now());
 
+        ## RETURN: If retId !='' the request is return from the player destiny. 
         if message['retId'] != '':
+           
             message['destAdd'] = '';
             message['retId'  ] = '';
 
-            ## TODO: UPDATE DATABASE:
+            ## LOG:
+            logger.info('RETURN FROM REQUEST ADD_INSTNACE IS: ' + str(status));
 
+            ## Here is check the status, and setting the database to record the
+            ## result of action.
+            query  = "INSERT INTO INSTANCE (";
+            query += "player_id, ";
+            query += "request_id, ";
+            query += "status, ";
+            query += "timestamp_received";
+            query += ") VALUES (%s, %s, %s, %s, %s)";
+            value  = (playerId, requestId, actionId, status, timeStamp);
+
+            self.__lock.acquire();
+            valRet = self.__db.insert_query(query, value);
+            self.__lock.release();
+
+        ## SENDTO: If 'retId == empty' the request is go to the player destiny.
         else:
-
-            ## Select one player able to comply a request to create VM.
+            ## Select one player able to comply a request to create VM. Inside
+            ## these method is selected the scheduller approach.
             selectedPlayer = self.__get_player(division, message['playerId']);
 
             if selectedPlayer != {}:
                 name = selectedPlayer['name'];
                 addr = selectedPlayer['addr'];
 
+                ## LOG:
+                logger.info('SELECTED THE PLAYER '+name+'address '+str(addr));
+
                 ## Set the message to be a forward message (perform a map). Send
                 ## it to the destine and waiting the return.
                 message['retId'] = message['reqId'];
-
-                print addr
 
                 ## Set the target address. The target addr is the player's addrs
                 ## tha will accept the request.
                 message['destAdd'] = addr;
 
-                ## TODO: ADD IN DATABASE:
-                #query  = "INSERT INTO INSTANCE (";
-                #query += "player_id, ";
-                #query += "request_id, ";
-                #query += "status, ";
-                #query += "timestamp_received";
-                #query += ") VALUES (%s, %s, %s, %s, %s)";
-                #value  = (playerId, requestId, actionId, 0, timeStamp);
+                ## LOG:
+                logger.info('MESSAGE ' + str(message));
 
-                #self.__lock.acquire();
-                #valRet = self.__db.insert_query(query, value);
-                #self.__lock.release();
-                print message
             else:
-                ## Case the selected player is empty setting status to error and
-                ## retur and return the message to origin.
-                message['status'] = 1; 
+                ## LOG:
+                logger.info('THERE IS NOT PLAYER ABLE TO EXEC THE REQUEST!');
+
+                ## Case not found a player to exec the request setting status
+                ## to error and return the message to origin.
+                message['status'] = 0; 
 
         return message;
  
@@ -305,13 +319,20 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     ## BRIEF: delete an instance.
     ## ------------------------------------------------------------------------
-    ## @PARAM int division ==.
-    ## @PARAM dict message ==.
+    ## @PARAM int division == the player division .
+    ## @PARAM dict message == message with some datas to delete an instance.
     ##
-    def __del_instance_inf(self, division, message):
+    def __del_instance(self, division, message):
         ## LOG:
         logger.info('DELETE MESSAGE: %s', str(message));
 
+        ## tem que olhar na base para saber quem atendeu!
+        ## pegar o address
+        ## mandar um request de apagar
+        ## aguardar.
+        ## retornar para a origin o status;
+
+        ## TODO: melhorar, da para saber quem eh olhando a base das intancias. Dai recupra o address!!!!
         print message;
 
         ## Tem que recuperar quem esta executando a instancia.
