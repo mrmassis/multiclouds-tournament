@@ -282,14 +282,17 @@ class MCT_Dispatch(RabbitMQ_Consume):
         query += "request_id='" + str(requestId) + "' "
         valRet = [] or self.__dbConnection.select_query(query);
 
-        query  = "UPDATE REQUEST SET ";
-        query += "status=1, ";
-        query += "timestamp_finished='" + str(timeStamp) + "' ";
-        query += "WHERE ";
-        query += "player_id='"  + str(valRet[0][0]) + "' and ";
-        query += "request_id='" + str(requestId) + "'";
-        valRet = self.__dbConnection.update_query(query);
-
+        try:
+            query  = "UPDATE REQUEST SET ";
+            query += "status=1, ";
+            query += "timestamp_finished='" + str(timeStamp) + "' ";
+            query += "WHERE ";
+            query += "player_id='"  + str(valRet[0][0]) + "' and ";
+            query += "request_id='" + str(requestId) + "'";
+            valRet = self.__dbConnection.update_query(query);
+        except:
+            pass;
+ 
         ## LOG:
         logger.info('MESSAGE %s REMOVED FROM PENDING!', requestId);
         return 0;

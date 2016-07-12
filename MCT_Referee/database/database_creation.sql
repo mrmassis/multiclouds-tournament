@@ -97,8 +97,8 @@ INSERT INTO RESOURCE (division, vcpu, memory, disk, vcpu_used, memory_used, disk
 INSERT INTO RESOURCE (division, vcpu, memory, disk, vcpu_used, memory_used, disk_used) VALUES (3, 100,  102400,  102400, 0, 0, 0);
 
 -- PLAYER;
-INSERT INTO PLAYER (name, address, division, score, historic) VALUES ('Player1', '10.0.0.30',  3,  0.0, 0);
-INSERT INTO PLAYER (name, address, division, score, historic) VALUES ('Player2', '20.0.0.30',  3,  0.0, 0);
+INSERT INTO PLAYER (name, address, division, score, historic) VALUES ('Player1', '10.3.77.157',  3,  0.0, 0);
+INSERT INTO PLAYER (name, address, division, score, historic) VALUES ('Player2', '10.3.77.160',  3,  0.0, 0);
 
 -- PLAYER;
 INSERT INTO LAST_IDX (division, idx) VALUES (1, 1);

@@ -9,6 +9,8 @@
 import mysql.connector;
 import mysql;
 
+from mysql.connector import errorcode;
+
 
 
 
