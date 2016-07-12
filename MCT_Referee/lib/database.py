@@ -55,6 +55,7 @@ class Database(object):
         dname = dbDictionary['base'];
 
         self.__dbConnection = self.__db_connect(dhost, duser, dpass, dname);
+        self.__dbConnection.autocommit = True;
 
 
     ###########################################################################
