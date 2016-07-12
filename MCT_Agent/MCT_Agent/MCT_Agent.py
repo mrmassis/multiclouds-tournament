@@ -120,8 +120,8 @@ class MCT_Agent(RabbitMQ_Consume):
         ## correct API.
         self.__cloudType = config['cloud_framework']['type'];
 
-        #if self.__cloudType == 'openstack':
-        #    self.__cloud = MCT_Openstack_Nova(config['cloud_framework']);
+        if self.__cloudType == 'openstack':
+            self.__cloud = MCT_Openstack_Nova(config['cloud_framework']);
 
 
     ###########################################################################
@@ -215,9 +215,9 @@ class MCT_Agent(RabbitMQ_Consume):
             elif message['code'] == 4:
                 status = self.__resume_server(message);
 
-            ## --
             ## The MCT_Agent support more than one cloud framework.So is neces-
-            ## sary prepare the return status to a generic format;
+            ## sary prepare the return status to a generic format. Send back to
+            ## dispatch the return for the request.
             message['status'] = self.__convert_status(status, message['code']); 
 
             ## Return data to MCT_Dispatch.
@@ -244,7 +244,11 @@ class MCT_Agent(RabbitMQ_Consume):
 
 
     ##
-    ## BRIEF: create localy a new server.
+    ## BRIEF: create localy a new server. Receive the message, extract the ser-
+    ##        ver information (name, image, flavor, and net) and send to frame-
+    ##        work. So, wait return and check the return status. At finish, if
+    ##        the status == ACTIVE, make a mapping between id received and the
+    ##        local ID. At last, send back the status.
     ## ------------------------------------------------------------------------
     ## @PARAM dict message == received message.
     ##
