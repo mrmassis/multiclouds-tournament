@@ -196,23 +196,19 @@ class MCT_Openstack_Nova:
     def create_instance(self, vmsL, imgL, flvL, netL, key=''):
         zoneName = 'nova';
 
-
-        #imgL = 'cirros-0.3.4-x86_64';
-        #flvL = 'm1.tiny';
-        #netL = 'demo-net';
-
-
         ## The Compute (nova) python bindings enable you to get an artefact obj
         ## by name.
         img = self.__nova.images.find  (name = imgL);
         flv = self.__nova.flavors.find (name = flvL);
-        net = self.__nova.networks.find(label= netL);
+        #net = self.__nova.networks.find(label= netL);
+
+        print vmsL 
 
         ## Create a new server (instance) into the openstack (avoid ...):
         server=self.__nova.servers.create(name             =vmsL,
                                           image            =img.id,
                                           flavor           =flv.id,
-                                          nics             =[{'net-id':net.id}],
+                                          #nics             =[{'net-id':net.id}],
                                           availability_zone=zoneName);
 
         status = server.status;

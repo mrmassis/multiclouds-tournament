@@ -256,7 +256,7 @@ class MCT_Agent(RabbitMQ_Consume):
 
         vmsL = message['data']['name'  ];
         imgL = message['data']['image' ];
-        flvL = message['data']['flavor'];
+        flvL = 'm1.tiny' ; #message['data']['flavor'];
         netL = 'demo-net';
 
         valret = self.__cloud.create_instance(vmsL, imgL, flvL, netL);
@@ -267,7 +267,7 @@ class MCT_Agent(RabbitMQ_Consume):
         if status == 'ACTIVE':
             ## Insert in the MAP table the origin uuid (player source) and the
             ## local instance uuuid.
-            self.__set_map_inst_id(destId, message['data']['reqId']);
+            self.__set_map_inst_id(destId, message['data']['uuid']);
 
         return status;
 
@@ -323,23 +323,25 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict request == received request.
     ##
     def __inspect_request(self, request):
-        error = 0;
+        return 0
+        #error = 0;
 
-        fields = ['status', 'reqId', 'code'   , 'playerId', 
-                  'retId' , 'data' , 'destAdd', 'origAdd'];
+        #fields = ['status', 'reqId', 'code'   , 'playerId', 
+        #          'retId' , 'data' , 'destAdd', 'origAdd'];
 
-        for field in fields:
-            if not request.has_key(field):
-                error += 1;
+        #for field in fields:
+        #    if not request.has_key(field):
+        #        error += 1;
  
-        if error == 0:
+
+        #if error == 0:
             ## LOG:
-            logger.info('ALL FIELDS ARE PRESENTS!');
-            return 0;
-        else:
+        #    logger.info('ALL FIELDS ARE PRESENTS!');
+        #    return 0;
+        #else:
             ## LOG:
-            logger.info('SOME FIELDS ARE MISSING!');
-            return 1;
+        #    logger.info('SOME FIELDS ARE MISSING!');
+        #    return 1;
 
 
     ##
