@@ -119,8 +119,6 @@ class MCT_Referee(RabbitMQ_Consume):
         elif configs['scheduller']['approach'] == 'bestscores':
             self.__scheduller = Bestscores(configs['scheduller']['restrict']);
 
-        #self.__lock = Lock();
-
 
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
@@ -260,7 +258,7 @@ class MCT_Referee(RabbitMQ_Consume):
 
         ## RETURN: If retId !='' the request is return from the player destiny. 
         if message['retId'] != '':
-           
+
             message['destAdd'] = '';
             message['retId'  ] = '';
 
@@ -277,12 +275,11 @@ class MCT_Referee(RabbitMQ_Consume):
             query += ") VALUES (%s, %s, %s, %s, %s)";
             value  = (playerId, requestId, actionId, status, timeStamp);
 
-            self.__lock.acquire();
             valRet = self.__db.insert_query(query, value);
-            self.__lock.release();
 
         ## SENDTO: If 'retId == empty' the request is go to the player destiny.
         else:
+
             ## Select one player able to comply a request to create VM. Inside
             ## these method is selected the scheduller approach.
             selectedPlayer = self.__get_player(division, message['playerId']);
@@ -357,9 +354,7 @@ class MCT_Referee(RabbitMQ_Consume):
         query += "FROM RESOURCE WHERE ";
         query += "division='" + str(division) + "'";
 
-        self.__lock.acquire();
         valRet = [] or self.__db.select_query(query);
-        self.__lock.release();
 
         if valRet != []:
 
@@ -390,9 +385,7 @@ class MCT_Referee(RabbitMQ_Consume):
        query += "division='" + str(division) + "' and ";
        query += "name!='"    + str(playerId) + "'";
        
-       self.__lock.acquire();
        valRet = [] or self.__db.select_query(query);
-       self.__lock.release();
 
        if valRet != []:
            ## Perform the player selection. Utilize the scheduller algorithm se
