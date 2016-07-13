@@ -167,34 +167,38 @@ class MCT_Dispatch(RabbitMQ_Consume):
         ## LOG:
         logger.info('MESSAGE RETURNED OF REFEREE: %s', message);
 
-        if message['retId'] == '':
-            ## Remove the message (put previous) in the pending requests dicti-
-            ## onary.
-            valRet = self.__remove_query(message['reqId']);
+        ## If status is equal the 'MESSAGE_PARSE_ERROR' the request had fields
+        ## missed.
+        if message['status'] == MESSAGE_PARSE_ERROR:
 
-            playerAddress = message['origAdd'];
+            if message['retId'] == '':
+                ## Remove the message (put previous) in the pending requests di
+                ## ctionary.
+                valRet = self.__remove_query(message['reqId']);
 
-        ## Here is make the request forward to player that will accept the req-
-        ## quest.
-        else:
-            playerAddress = message['destAdd'];
+                playerAddress = message['origAdd'];
 
-        ## Create the configuration about the return message.This configuration
-        ## will be used to send the messagem to apropriate player.
-        config = {
-            'identifier': AGENT_IDENTIFIER,
-            'route'     : AGENT_ROUTE,
-            'exchange'  : AGENT_EXCHANGE,
-            'queue_name': AGENT_QUEUE,
-            'address'   : playerAddress,
-            'user'      : self.__rabbitUser,
-            'pass'      : self.__rabbitPass
-        };
+            ## Make the request forward to player that will accept the request.
+            else:
+                playerAddress = message['destAdd'];
 
-        targetPublish = RabbitMQ_Publish(config); 
-        targetPublish.publish(message, AGENT_ROUTE);
+            ## Create the configuration about the return message.This configura
+            ## tion will be used to send the messagem to apropriate player.
+            config = {
+                'identifier': AGENT_IDENTIFIER,
+                'route'     : AGENT_ROUTE,
+                'exchange'  : AGENT_EXCHANGE,
+                'queue_name': AGENT_QUEUE,
+                'address'   : playerAddress,
+                'user'      : self.__rabbitUser,
+                'pass'      : self.__rabbitPass
+            };
 
-        del targetPublish;
+            targetPublish = RabbitMQ_Publish(config); 
+            targetPublish.publish(message, AGENT_ROUTE);
+
+            del targetPublish;
+
         return 0;
 
 
