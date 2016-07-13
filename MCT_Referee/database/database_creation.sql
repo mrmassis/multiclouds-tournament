@@ -97,6 +97,8 @@ CREATE  TABLE IF NOT EXISTS `mct`.`FIELDS` (
 ENGINE = InnoDB;
 
 
+INSERT INTO FIELDS (operation, fields) VALUES (0, 'name mem image vcpus disk uuid');
+
 --
 --
 --

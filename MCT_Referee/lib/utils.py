@@ -19,8 +19,11 @@ import inspect;
 ###############################################################################
 ## DEFINITION                                                                ##
 ###############################################################################
+## Value defined to status when dont find some fields.
+MESSAGE_PARSE_ERROR = -1;
 
-
+##
+DIVISION_INVALID = -1;
 
 
 

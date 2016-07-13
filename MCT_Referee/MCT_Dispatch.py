@@ -29,7 +29,7 @@ AGENT_QUEUE      = 'agent';
 LOG_NAME         = 'MCT_Dispatch';
 LOG_FORMAT       = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
 LOG_FILENAME     = '/var/log/mct/mct_dispatch.log';
-
+MESSAGE_FIELDS   = ['status','origAdd','destAdd','code','playerId','retId','reqId','data'];
 
 
 
@@ -299,15 +299,22 @@ class MCT_Dispatch(RabbitMQ_Consume):
 
 
     ##
-    ## BRIEF: check if all necessary fields are in the request.
+    ## BRIEF: check if reques is valid.
     ## ------------------------------------------------------------------------
     ## @PARAM dict request == received request.
     ##
     def __inspect_request(self, request):
-        ## TODO: DEFINR FORMATO!
-
         ## LOG:
         logger.info('INSPECT REQUEST!');
+
+        for field in MESSAGE_FIELDS:
+            if not request.has_key(field):
+                ## LOG:
+                logger.info('MISSED FIELD: %', str(field));
+                return 1;
+
+        ## LOG:
+        logger.info('FIELDS ARE OK...');
         return 0;
 ## END.
 

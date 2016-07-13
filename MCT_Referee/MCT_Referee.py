@@ -149,47 +149,37 @@ class MCT_Referee(RabbitMQ_Consume):
 
         if valRet == 0:
 
-            ## Check if is a request or a response received from the apropriate
-            ## player. When message['retId'] equal a '' the msg is a request.
-            if message['retId'] == '':
+            ## Get which division than player belong.It is necessary to get the
+            ## player list able to meet the request.
+            division = self.__get_division(message['playerId']);
 
-                ## Get which division than player belong.It is necessary to get
-                ## the player list able to meet the request.
-                division = self.__get_division(message['playerId']);
+            ## Check if division is invalid (-1) -- util.py:
+            if division == DIVISION_INVALID:
+                message['retId' ] = '';
+                message['status'] = 0 ;
 
-                ## --------------------------------------------------------- ##
-                ## DIVISION INVALID (-1).                                    ##
-                ## --------------------------------------------------------- ##
-                if division == -1:
-                    message['retId' ] = '';
-                    message['status'] = 0 ;
+            ## ------------------------------------------------------------- ##
+            ## [0] == GET RESOUCES INF.                                      ##
+            ## ------------------------------------------------------------- ##
+            if   int(message['code']) == 0:
+                message['data'] = self.__get_resources_inf(division);
+ 
+            ## ------------------------------------------------------------- ##
+            ## [1] CREATE A NEW INSTANCE.                                    ##
+            ## ------------------------------------------------------------- ##
+            elif int(message['code']) == 1:
+                message = self.__add_instance(division, message);
 
-                ## --------------------------------------------------------- ##
-                ## [0] == GET RESOUCES INF.                                  ##
-                ## --------------------------------------------------------- ##
-                elif int(message['code']) == 0:
+            ## ------------------------------------------------------------- ##
+            ## [2] DELETE AN INSTANCE.                                       ##
+            ## ------------------------------------------------------------- ##
+            elif int(message['code']) == 2:
+                message = self.__del_instance(division, message);
+        else:
+            ## Error parse:
+            message['status'] = MESSAGE_PARSE_ERROR;
 
-                    ## Get all resources available to a division. Check in db.
-                    message['data'] = self.__get_resources_inf(division);
-
-                ## --------------------------------------------------------- ##
-                ## [1] CREATE A NEW INSTANCE.                                ##
-                ## --------------------------------------------------------- ##
-                elif int(message['code']) == 1:
-                    message = self.__add_instance(division, message);
-
-                ## --------------------------------------------------------- ##
-                ## [2] DELETE AN INSTANCE.                                   ##
-                ## --------------------------------------------------------- ##
-                elif int(message['code']) == 2:
-                    message = self.__del_instance(division, message);
-    
-            else:
-                ## Set the field to forward value:
-                message['retId'] = '';
-
-            self.__publish.publish(message, self.__routeDispatch);
-
+        self.__publish.publish(message, self.__routeDispatch);
         return 0;
 
 
@@ -197,7 +187,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
     ##
-    ## BRIEF: check if reques is valid.
+    ## BRIEF: check if request is valid. Filter by operation.
     ## ------------------------------------------------------------------------
     ## @PARAM dict request == received request.
     ##
@@ -205,22 +195,23 @@ class MCT_Referee(RabbitMQ_Consume):
         ## LOG:
         logger.info('INSPECT REQUEST!');
 
-        key = request['code'];
+        code = request['code'];
 
-        query = "SELECT fields FROM FIELDS WHERE operation='" + str(key) + "'";
+        if int(code) != 0:
+            query = "SELECT fields FROM FIELDS WHERE operation='"+str(code)+"'";
+            valRet = [] or self.__db.select_query(query);
 
-        #valRet = [] or self.__db.select_query(query);
+            if valRet != []:
+                fields = valRet[0][0];
 
-        #if valRet != []:
-        #    fields = valRet[0][0];
+                for field in fields.split(' '):
+                    if not request['data'].has_key(field):
+                        ## LOG:
+                        logger.info('MISSED FIELD: %s', str(field));
+                        return 1;
 
-        #     for field in fields:
-        #         if not request.has_key(field):
-        #             print "LOG: missed field " + key;
-        #             return 1;
-
-        #    return 0;
-
+        ## LOG:
+        logger.info('FIELDS ARE OK...');
         return 0;
 
 
@@ -233,8 +224,8 @@ class MCT_Referee(RabbitMQ_Consume):
         ## LOG:
         logger.info('INSPECT REQUEST!');
 
-        ## Setting 
-        division = -1;
+        ## Setting: 
+        division = DIVISION_INVALID;
 
         query = "SELECT division FROM PLAYER WHERE name='" + playerId + "'";
 
@@ -249,21 +240,25 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     ## BRIEF: create a new instance.
     ## ------------------------------------------------------------------------
-    ## @PARAM int division ==.
-    ## @PARAM dict message ==.
+    ## @PARAM int division == division from player who request.
+    ## @PARAM dict msg     ==.
     ##
-    def __add_instance(self, division, message):
-        ## 
+    def __add_instance(self, division, msg):
+         
         timeStamp = str(datetime.datetime.now());
 
         ## RETURN: If retId !='' the request is return from the player destiny. 
-        if message['retId'] != '':
+        if msg['retId'] != '':
 
-            message['destAdd'] = '';
-            message['retId'  ] = '';
+            msg['destAdd'] = '';
+            msg['retId'  ] = '';
 
             ## LOG:
-            logger.info('RETURN FROM REQUEST ADD_INSTNACE IS: ' + str(status));
+            logger.info('RETURN FROM ADD_INSTNACE IS: ' + str(msg['status']));
+
+            f1 = str(msg['playerId']);
+            f2 = str(msg['reqId'   ]);
+            f3 = str(msg['status'  ]);
 
             ## Here is check the status, and setting the database to record the
             ## result of action.
@@ -272,45 +267,43 @@ class MCT_Referee(RabbitMQ_Consume):
             query += "request_id, ";
             query += "status, ";
             query += "timestamp_received";
-            query += ") VALUES (%s, %s, %s, %s, %s)";
-            value  = (playerId, requestId, actionId, status, timeStamp);
+            query += ") VALUES (%s, %s, %s, %s)";
+            value =  (f1, f2, f3, timeStamp);
 
             valRet = self.__db.insert_query(query, value);
 
         ## SENDTO: If 'retId == empty' the request is go to the player destiny.
         else:
-
             ## Select one player able to comply a request to create VM. Inside
             ## these method is selected the scheduller approach.
-            selectedPlayer = self.__get_player(division, message['playerId']);
+            selectedPlayer = self.__get_player(division, msg['playerId']);
 
             if selectedPlayer != {}:
                 name = selectedPlayer['name'];
                 addr = selectedPlayer['addr'];
 
                 ## LOG:
-                logger.info('SELECTED THE PLAYER '+name+'address '+str(addr));
+                logger.info('SELECTED THE PLAYER '+name+'address '+ str(addr));
 
-                ## Set the message to be a forward message (perform a map). Send
+                ## Set the message to be a forward message (perform a map).Send
                 ## it to the destine and waiting the return.
-                message['retId'] = message['reqId'];
+                msg['retId'] = msg['reqId'];
 
-                ## Set the target address. The target addr is the player's addrs
+                ## Set the target address. The target addr is the player' addrs
                 ## tha will accept the request.
-                message['destAdd'] = addr;
+                msg['destAdd'] = addr;
 
                 ## LOG:
-                logger.info('MESSAGE ' + str(message));
-
+                logger.info('MESSAGE ' + str(msg));
             else:
                 ## LOG:
                 logger.info('THERE IS NOT PLAYER ABLE TO EXEC THE REQUEST!');
 
                 ## Case not found a player to exec the request setting status
                 ## to error and return the message to origin.
-                message['status'] = 0; 
+                msg['status'] = 0; 
 
-        return message;
+        return msg;
  
 
     ##
@@ -398,6 +391,15 @@ class MCT_Referee(RabbitMQ_Consume):
                selectedPlayer = {};
 
        return selectedPlayer;
+
+
+    ##
+    ## BRIEF: get information about an instance.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict message == message with some datas about instance.
+    ##
+    def __get_instance_info(self, message):
+        return 0;
 ## END.
 
 
