@@ -143,12 +143,12 @@ class MCT_Action(object):
 
         ## Mount the requirement:
         data = {
-            'vcpus' : data['instance']['vcpus'    ],
-            'mem'   : data['instance']['memory_mb'],
-            'disk'  : data['instance']['root_gb'  ],
-            'name'  : data['instance']['name'     ],
-            'uuid'  : data['instance']['uuid'     ],
-            'image' : data['image'   ]['name'     ]
+            'vcpus' : data['instance']['vcpus'       ],
+            'mem'   : data['instance']['memory_mb'   ],
+            'disk'  : data['instance']['root_gb'     ],
+            'name'  : data['instance']['display_name'],
+            'uuid'  : data['instance']['uuid'        ],
+            'image' : data['image'   ]['name'        ]
         };
 
         msgToSend['data'] = data;

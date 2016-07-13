@@ -202,7 +202,7 @@ class MCT_Driver(driver.ComputeDriver):
         ## nun_cpu     == (int) the number of virtual CPUs for the instance.
         ## cpu_time_ns == (int) the CPU time used in nano seconds.
         ##
-        intanceInfoObj = {
+        instanceInfoObj = {
             'state'   : self.returnState[instance['pwrs']],
             'mem'     : instance['memo'],
             'num_cpu' : instance['vcpu'],
