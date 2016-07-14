@@ -267,7 +267,7 @@ class MCT_Agent(RabbitMQ_Consume):
         if status == 'ACTIVE':
             ## Insert in the MAP table the origin uuid (player source) and the
             ## local instance uuuid.
-            self.__set_map_inst_id(destId, message['data']['uuid']);
+            self.__set_map_inst_id(destId, message['reqId']);
 
         return status;
 
@@ -280,7 +280,7 @@ class MCT_Agent(RabbitMQ_Consume):
     def __delete_server(self, message):
 
         ## Obtain the local ID from MAP table.
-        destId = self.__get_map_inst_id(message['data']['reqId']);
+        destId = self.__get_map_inst_id(message['reqId']);
 
         ## Delete the server:
         valret = self.__cloud.delete_instance(destId);
@@ -288,7 +288,7 @@ class MCT_Agent(RabbitMQ_Consume):
         status = valret[0];
 
         if status == 'HARD_DELETED':
-            self.__get_map_inst_id(message['data']['reqId'],True);
+            self.__get_map_inst_id(message['reqId'], True);
 
         return status;
 
@@ -378,7 +378,7 @@ class MCT_Agent(RabbitMQ_Consume):
         query += "uuid_dst, ";
         query += "type_obj, ";
         query += "date";
-        query += ") VALUES (%s, %s, %s, %s, %s)";
+        query += ") VALUES (%s, %s, %s, %s)";
         value  = (origId, destId, 'instance', timeStamp);
 
         valRet = self.__dbConnection.insert_query(query, value);
@@ -405,12 +405,11 @@ class MCT_Agent(RabbitMQ_Consume):
 
             if delete:
                 ## Delete the correspondent entry:
-                query  = "DELETE uuid_src FROM MAP WHERE "
-                query += "uuid_src='" + origId + "'";
+                query  = "DELETE FROM MAP WHERE uuid_src='" + origId + "'";
 
                 valRet = self.__dbConnection.delete_query(query); 
 
-        return dstId;
+        return destId;
 ## END.
 
 
