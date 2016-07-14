@@ -6,9 +6,10 @@
 import os;
 import time;
 
-from keystoneclient.auth.identity import v2,v3
+from keystoneclient.auth.identity import v2,v3;
 from keystoneclient               import session;
 from novaclient                   import client;
+
 
 
 
@@ -202,26 +203,31 @@ class MCT_Openstack_Nova:
         flv = self.__nova.flavors.find (name = flvL);
         #net = self.__nova.networks.find(label= netL);
 
-        ## Create a new server (instance) into the openstack (avoid ...):
-        server=self.__nova.servers.create(name             =vmsL,
-                                          image            =img.id,
-                                          flavor           =flv.id,
-                                          #nics             =[{'net-id':net.id}],
-                                          availability_zone=zoneName);
+        ## TODO: tratar limite de quota!
+        try:
+            ## Create a new server (instance) into the openstack (avoid ...):
+            server=self.__nova.servers.create(name             =vmsL,
+                                              image            =img.id,
+                                              flavor           =flv.id,
+                                              #nics             =[{'net-id':net.id}],
+                                              availability_zone=zoneName);
 
-        status = server.status;
-
-        while status == 'BUILD':
-            time.sleep(TIME_TO_WAIT);
-
-            ## Retrieve the server object again so the status field updates:
-            server = self.__nova.servers.get(server.id)
             status = server.status;
+
+            while status == 'BUILD':
+                time.sleep(TIME_TO_WAIT);
+
+                ## Retrieve the server object again so the status field updates:
+                server = self.__nova.servers.get(server.id)
+                status = server.status;
+        except:
+            status = 'ERROR';
 
         try:
             destId = server.id;
         except:
             destId = '';
+        
 
         return (status, destId);
 
@@ -237,7 +243,7 @@ class MCT_Openstack_Nova:
        try:
            server = self.__nova.servers.find(id = instanceId);
            status = server.status;
-       except novaclient.exceptions.NotFound as error:
+       except:
            status = 'ERROR';
 
        ## Case the intance (id) status is "active or not_found". Nothing to do!
@@ -271,7 +277,7 @@ class MCT_Openstack_Nova:
        try:
            server = self.__nova.servers.find(id = instanceId);
            status = server.status;
-       except novaclient.exceptions.NotFound as error:
+       except:
            status = 'ERROR';
 
        ## Case the intance (id) status is "active or not_found". Nothing to do!
@@ -305,7 +311,7 @@ class MCT_Openstack_Nova:
        try:
            server = self.__nova.servers.find(id = instanceId);
            status = server.status;
-       except novaclient.exceptions.NotFound as error:
+       except exceptions.NotFound as error:
            status = 'ERROR';
 
        ## Case the intance (id) status is "active or not_found". Nothing to do!
