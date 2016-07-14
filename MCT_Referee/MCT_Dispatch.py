@@ -169,7 +169,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
 
         ## If status is equal the 'MESSAGE_PARSE_ERROR' the request had fields
         ## missed.
-        if message['status'] == MESSAGE_PARSE_ERROR:
+        if message['status'] != MESSAGE_PARSE_ERROR:
 
             if message['retId'] == '':
                 ## Remove the message (put previous) in the pending requests di
