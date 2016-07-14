@@ -148,7 +148,6 @@ class MCT_Referee(RabbitMQ_Consume):
         valRet = self.__inspect_request(message);
 
         if valRet == 0:
-
             ## Get which division than player belong.It is necessary to get the
             ## player list able to meet the request.
             division = self.__get_division(message['playerId']);
@@ -342,8 +341,15 @@ class MCT_Referee(RabbitMQ_Consume):
         query += "destiny_add, "     ;
         query += "status, "          ;
         query += "timestamp_received";
-        query += ") VALUES (%s, %s, %s, %s, %s, %s)";
-        value =  (f1, f2, f3, f4, f5);
+    
+        ## If the return is a error so finish the request now!
+        if msg['status'] != 0:
+            query += ") VALUES (%s, %s, %s, %s, %s)";
+            value =  (f1, f2, f3, f4, f5);
+        else:
+            query += ",timestamp_finished";
+            query += ") VALUES (%s, %s,%s,%s,%s,%s)";
+            value =  (f1, f2, f3, f4, f5, f5);
 
         valRet = self.__db.insert_query(query, value);
 
