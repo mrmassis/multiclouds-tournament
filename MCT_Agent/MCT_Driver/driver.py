@@ -364,11 +364,11 @@ class MCT_Driver(driver.ComputeDriver):
         valRet = self.mct.create_instance(data);
 
         if valRet != {}:
-            mctState = valRet['status'];
-            pwrState = valRet['status'];
+            mctState = self.returnState[valRet['status']];
+            pwrState = self.returnState[valRet['status']];
         else:
             mctState = 'UNREACHABLE';
-            pwrState = 0;
+            pwrState = self.returnState[0];
 
         ## Update instance data.
         self.__instances.change_mct_state(instance['uuid'], mctState);

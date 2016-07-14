@@ -378,7 +378,7 @@ class MCT_Agent(RabbitMQ_Consume):
         query += "uuid_dst, ";
         query += "type_obj, ";
         query += "date";
-        query += ") VALUES (%s, %s, %s, %s, %s)";
+        query += ") VALUES (%s, %s, %s, %s)";
         value  = (origId, destId, 'instance', timeStamp);
 
         valRet = self.__dbConnection.insert_query(query, value);
@@ -405,8 +405,7 @@ class MCT_Agent(RabbitMQ_Consume):
 
             if delete:
                 ## Delete the correspondent entry:
-                query  = "DELETE uuid_src FROM MAP WHERE "
-                query += "uuid_src='" + origId + "'";
+                query  = "DELETE FROM MAP WHERE uuid_src='" + origId + "'";
 
                 valRet = self.__dbConnection.delete_query(query); 
 
