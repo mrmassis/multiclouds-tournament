@@ -241,67 +241,19 @@ class MCT_Referee(RabbitMQ_Consume):
     ## BRIEF: create a new instance.
     ## ------------------------------------------------------------------------
     ## @PARAM int division == division from player who request.
-    ## @PARAM dict msg     ==.
+    ## @PARAM dict msg     == message data.
     ##
     def __add_instance(self, division, msg):
+        ## LOG:
+        logger.info('CREATE INSTANCE: %s', str(msg['reqId']));
          
-        timeStamp = str(datetime.datetime.now());
+        ## SENDTO: If 'retId == empty' the request is go to the player destiny.
+        if msg['retId'] == '':
+            msg = self.__add_instance_send_destiny(division, msg);
 
         ## RETURN: If retId !='' the request is return from the player destiny. 
-        if msg['retId'] != '':
-
-            msg['destAdd'] = '';
-            msg['retId'  ] = '';
-
-            ## LOG:
-            logger.info('RETURN FROM ADD_INSTNACE IS: ' + str(msg['status']));
-
-            f1 = str(msg['playerId']);
-            f2 = str(msg['reqId'   ]);
-            f3 = str(msg['status'  ]);
-
-            ## Here is check the status, and setting the database to record the
-            ## result of action.
-            query  = "INSERT INTO INSTANCE (";
-            query += "player_id, ";
-            query += "request_id, ";
-            query += "status, ";
-            query += "timestamp_received";
-            query += ") VALUES (%s, %s, %s, %s)";
-            value =  (f1, f2, f3, timeStamp);
-
-            valRet = self.__db.insert_query(query, value);
-
-        ## SENDTO: If 'retId == empty' the request is go to the player destiny.
         else:
-            ## Select one player able to comply a request to create VM. Inside
-            ## these method is selected the scheduller approach.
-            selectedPlayer = self.__get_player(division, msg['playerId']);
-
-            if selectedPlayer != {}:
-                name = selectedPlayer['name'];
-                addr = selectedPlayer['addr'];
-
-                ## LOG:
-                logger.info('SELECTED THE PLAYER '+name+'address '+ str(addr));
-
-                ## Set the message to be a forward message (perform a map).Send
-                ## it to the destine and waiting the return.
-                msg['retId'] = msg['reqId'];
-
-                ## Set the target address. The target addr is the player' addrs
-                ## tha will accept the request.
-                msg['destAdd'] = addr;
-
-                ## LOG:
-                logger.info('MESSAGE ' + str(msg));
-            else:
-                ## LOG:
-                logger.info('THERE IS NOT PLAYER ABLE TO EXEC THE REQUEST!');
-
-                ## Case not found a player to exec the request setting status
-                ## to error and return the message to origin.
-                msg['status'] = 0; 
+            msg = self.__add_instance_recv_destiny(division, msg);
 
         return msg;
  
@@ -312,25 +264,158 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM int division == the player division .
     ## @PARAM dict message == message with some datas to delete an instance.
     ##
-    def __del_instance(self, division, message):
+    def __del_instance(self, division, msg):
         ## LOG:
-        logger.info('DELETE MESSAGE: %s', str(message));
+        logger.info('DELETE INSTANCE: %s', str(msg['reqId']));
 
-        ## tem que olhar na base para saber quem atendeu!
-        ## pegar o address
-        ## mandar um request de apagar
-        ## aguardar.
-        ## retornar para a origin o status;
+        ## SENDTO: If 'retId == empty' the request is go to the player destiny.
+        if msg['retId'] == '':
+            msg = self.__del_instance_send_destiny(division, msg);
 
-        ## TODO: melhorar, da para saber quem eh olhando a base das intancias. Dai recupra o address!!!!
-        print message;
+        ## RETURN: If retId !='' the request is return from the player destiny. 
+        else:
+            msg = self.__del_instance_recv_destiny(division, msg);
 
-        ## Tem que recuperar quem esta executando a instancia.
-        ## Mandar um destroi.
-        ## E retornar. 
-        message['status'] = 1;
+        return msg;
 
-        return message;
+
+    ##
+    ## BRIEF: send add message to destiny.
+    ## ------------------------------------------------------------------------
+    ## @PARAM int division == division from player who request.
+    ## @PARAM dict msg     == message data.
+    ##
+    def __add_instance_send_destiny(self, division, msg):
+        ## Select one player able to comply a request to create VM. Inside the-
+        ## se method is selected the scheduller approach.
+        selectedPlayer = self.__get_player(division, msg['playerId']);
+
+        if selectedPlayer != {}:
+            name = selectedPlayer['name'];
+            addr = selectedPlayer['addr'];
+
+            ## LOG:
+            logger.info('SELECTED THE PLAYER '+name+'address '+ str(addr));
+
+            ## Set the message to be a forward message (perform a map). Send it
+            ## to the destine and waiting the return.
+            msg['retId'] = msg['reqId'];
+
+            ## Set the target address. The target addr is the player' addrs tha
+            ##  will accept the request.
+            msg['destAdd'] = addr;
+
+            ## LOG:
+            logger.info('MESSAGE ' + str(msg));
+        else:
+            ## LOG:
+            logger.info('THERE IS NOT PLAYER ABLE TO EXEC THE REQUEST!');
+
+            ## Case not found a player to execute the request setting status to
+            ## error and return the message to origin.
+            msg['status'] = 0;
+
+        return msg;
+
+
+    ##
+    ## BRIEF: receive add message from destiny. 
+    ## ------------------------------------------------------------------------
+    ## @PARAM int division == division from player who request.
+    ## @PARAM dict msg     == message data.
+    ##
+    def __add_instance_recv_destiny(self, division, msg):
+        ## LOG:
+        logger.info('RETURN FROM ADD_INSTANCE IS: ' + str(msg['status']));
+
+        f1 = str(msg['origAdd']);
+        f2 = str(msg['reqId'  ]);
+        f3 = str(msg['destAdd']);
+        f4 = str(msg['status' ]);
+        f5 = str(datetime.datetime.now());
+
+        ## Here is check the status, and setting the database to record the re-
+        ## sult of action.
+        query  = "INSERT INTO INSTANCE (";
+        query += "origin_add, "      ;
+        query += "origin_id, "       ;
+        query += "destiny_add, "     ;
+        query += "status, "          ;
+        query += "timestamp_received";
+        query += ") VALUES (%s, %s, %s, %s, %s, %s)";
+        value =  (f1, f2, f3, f4, f5);
+
+        valRet = self.__db.insert_query(query, value);
+
+        msg['destAdd'] = '';
+        msg['retId'  ] = '';
+
+        return msg;
+
+
+    ##
+    ## BRIEF: send del message to destiny.
+    ## ------------------------------------------------------------------------
+    ## @PARAM int division == division from player who request.
+    ## @PARAM dict msg     == message data.
+    ##
+    def __del_instance_send_destiny(self, division, msg):
+
+        ## Obtain the information about 'who' is executing the virtual machine
+        ## instance.
+        query  = "SELECT ";
+        query += "destiny_add ";
+        query += "FROM INSTANCE WHERE ";
+        query += "origin_id='" + str(msg['reqId']) + "'";
+
+        valRet = [] or self.__db.select_query(query);
+
+        if valRet != []:
+            ## LOG:
+            logger.info('IDENTIFIED PLAYER ADDRESS ' + str(valRet[0][0]));
+
+            ## Set the message to be a forward message (perform a map). Send it
+            ## to the destine and waiting the return.
+            msg['retId'] = msg['reqId'];
+
+            ## Set the target address. The target addr is the player addrs that
+            ## will accept the request.
+            msg['destAdd'] = valRet[0][0];
+        else:
+            ## LOG:
+            logger.info('THERE IS NOT PLAYER EXECUTING THIS INSTANCE!');
+
+            msg['status'] = 0;
+
+        return msg;
+
+
+    ##
+    ## BRIEF: receive del message from destiny. 
+    ## ------------------------------------------------------------------------
+    ## @PARAM int division == division from player who request.
+    ## @PARAM dict msg     == message data.
+    ##
+    def __del_instance_recv_destiny(self, division, msg):
+
+        ## LOG:
+        logger.info('RETURN FROM ADD_INSTANCE IS: ' + str(msg['status']));
+
+        f1 = str(msg['reqId'  ]);
+        f2 = str(msg['status' ]);
+        f3 = str(datetime.datetime.now());
+
+        query  = "UPDATE INSTANCE SET ";
+        query += "status='"             + str(f2) + "', ";
+        query += "timestamp_finished='" + str(f3) + "' " ;
+        query += "WHERE ";
+        query += "origin_id='"          + str(f1) + "' " ;
+        valRet = self.__dbConnection.update_query(query);
+
+        msg['destAdd'] = '';
+        msg['retId'  ] = '';
+
+        return msg;
 
 
     ##

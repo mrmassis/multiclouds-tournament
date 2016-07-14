@@ -186,17 +186,6 @@ class MCT_Action(object):
         ## to exec de action.
         msgToSend = self.__create_basic_message(2, idx);
 
-        ## Mount the requirement:
-        data = {
-            'vcpus' : data['instance']['vcpus'    ],
-            'mem'   : data['instance']['memory_mb'],
-            'disk'  : data['instance']['root_gb'  ],
-            'name'  : data['instance']['name'     ],
-            'uuid'  : data['instance']['uuid'     ],
-        };
-
-        msgToSend['data'] = data;
-
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
         self.__communication.publish(msgToSend);
 

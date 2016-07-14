@@ -76,11 +76,12 @@ DROP TABLE IF EXISTS `mct`.`INSTANCE` ;
 
 CREATE  TABLE IF NOT EXISTS `mct`.`INSTANCE` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `player_id` VARCHAR(45) NOT NULL,
-  `request_id` VARCHAR(45) NOT NULL,
+  `origin_add` VARCHAR(45) NOT NULL,
+  `origin_id` VARCHAR(45) NOT NULL,
+  `destiny_add` VARCHAR(45) NOT NULL,
+  `status` TINYINT(1) NOT NULL,
   `timestamp_received` TIMESTAMP NULL,
   `timestamp_finished` TIMESTAMP NULL,
-  `status` TINYINT(1) NOT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
