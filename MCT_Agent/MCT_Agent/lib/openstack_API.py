@@ -202,8 +202,6 @@ class MCT_Openstack_Nova:
         flv = self.__nova.flavors.find (name = flvL);
         #net = self.__nova.networks.find(label= netL);
 
-        print vmsL 
-
         ## Create a new server (instance) into the openstack (avoid ...):
         server=self.__nova.servers.create(name             =vmsL,
                                           image            =img.id,
