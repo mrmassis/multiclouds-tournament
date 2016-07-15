@@ -200,19 +200,19 @@ class MCT_Agent(RabbitMQ_Consume):
             ## Select the appropriate action (create instance, delete instance,
             ## suspend instance e resume instance): 
             ## Create:
-            if message['code'] == 1:
+            if   message['code'] == CREATE_INSTANCE:
                 status = self.__create_server(message);
 
             ## Delete:
-            elif message['code'] == 2:
+            elif message['code'] == DELETE_INSTANCE:
                 status = self.__delete_server(message);
 
             ## Suspend:
-            elif message['code'] == 3:
+            elif message['code'] == SUSPND_INSTANCE:
                 status = self.__suspnd_server(message);
 
             ## Resume:
-            elif message['code'] == 4:
+            elif message['code'] == RESUME_INSTANCE:
                 status = self.__resume_server(message);
 
             ## The MCT_Agent support more than one cloud framework.So is neces-
@@ -323,8 +323,7 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict request == received request.
     ##
     def __inspect_request(self, request):
-        return 0
-        #error = 0;
+        error = 0;
 
         #fields = ['status', 'reqId', 'code'   , 'playerId', 
         #          'retId' , 'data' , 'destAdd', 'origAdd'];
@@ -342,6 +341,7 @@ class MCT_Agent(RabbitMQ_Consume):
             ## LOG:
         #    logger.info('SOME FIELDS ARE MISSING!');
         #    return 1;
+        return 0
 
 
     ##
@@ -353,11 +353,12 @@ class MCT_Agent(RabbitMQ_Consume):
     def __convert_status(self, status, code):
 
         if self.__cloudType == 'openstack':
+            ## First colum is an operation {1 = create, 2 = delete, 3 = (...)}.
             genericStatus = {
-                1 : { 'ERROR':0, 'ACTIVE'      :1},
-                2 : { 'ERROR':0, 'HARD_DELETED':1},
-                3 : { 'ERROR':0, 'SUSPENDED'   :1},
-                4 : { 'ERROR':0, 'ACTIVE'      :1}
+                CREATE_INSTANCE : { 'NOSTATE':0, 'ERROR':0, 'ACTIVE':1},
+                DELETE_INSTANCE : { 'NOSTATE':0, 'ERROR':0, 'HARD_DELETED':1},
+                SUSPND_INSTANCE : { 'NOSTATE':0, 'ERROR':0, 'SUSPENDED'   :1},
+                RESUME_INSTANCE : { 'NOSTATE':0, 'ERROR':0, 'ACTIVE'      :1}
             }
 
         return genericStatus[code][status];

@@ -160,19 +160,19 @@ class MCT_Referee(RabbitMQ_Consume):
             ## ------------------------------------------------------------- ##
             ## [0] == GET RESOUCES INF.                                      ##
             ## ------------------------------------------------------------- ##
-            if   int(message['code']) == 0:
+            if   int(message['code']) == GETINF:
                 message['data'] = self.__get_resources_inf(division);
  
             ## ------------------------------------------------------------- ##
             ## [1] CREATE A NEW INSTANCE.                                    ##
             ## ------------------------------------------------------------- ##
-            elif int(message['code']) == 1:
+            elif int(message['code']) == CREATE:
                 message = self.__add_instance(division, message);
 
             ## ------------------------------------------------------------- ##
             ## [2] DELETE AN INSTANCE.                                       ##
             ## ------------------------------------------------------------- ##
-            elif int(message['code']) == 2:
+            elif int(message['code']) == DELETE:
                 message = self.__del_instance(division, message);
         else:
             ## Error parse:

@@ -5,6 +5,7 @@
 
 import os;
 import time;
+import sys;
 
 from keystoneclient.auth.identity import v2,v3;
 from keystoneclient               import session;
@@ -128,6 +129,9 @@ from novaclient                   import client;
 NOVA_VERSION = 2;
 TIME_TO_WAIT = 2;
 
+INSTANCE_UNKNOW_ERROR   = 'NOSTATE'; 
+INSTANCE_LIMITS_REACHED = 'NOSTATE';
+
 
 
 ###############################################################################
@@ -156,6 +160,9 @@ class MCT_Openstack_Nova:
     def __init__(self, cfg):
         authUrl = cfg['auth'] + cfg['keystone_version'];
 
+        ## Settig project ID:
+        self.__project = cfg['proj'];
+
         ## If you have PROJECT_NAME instead of a PROJECT_ID, use the string la
         ## bel project_name parameter. Similarly, if your cloud uses keystonv3
         ## and you have a DOMAIN_NAME or DOMAIN_ID, provide it as user_domain_
@@ -165,7 +172,7 @@ class MCT_Openstack_Nova:
             auth = v3.Password(auth_url            = authUrl,
                                username            = cfg['user'],
                                password            = cfg['pswd'],
-                               project_name        = cfg['proj'],
+                               project_name        = self.__project,
                                user_domain_name    = cfg['user_domain_name'],
                                project_domain_name = cfg['proj_domain_name']);
 
@@ -173,7 +180,7 @@ class MCT_Openstack_Nova:
             auth = v2.Password(auth_url            = authUrl,
                                username            = cfg['user'],
                                password            = cfg['pswd'],
-                               tenant_name         = cfg['proj']);
+                               tenant_name         = self.__project);
 
         ## Ponto de contato para os servicos do OpenStack. Armazena as creden-
         ## ciais e informacoes requeridas para comunicacao.  
@@ -199,35 +206,43 @@ class MCT_Openstack_Nova:
 
         ## The Compute (nova) python bindings enable you to get an artefact obj
         ## by name.
-        img = self.__nova.images.find  (name = imgL);
-        flv = self.__nova.flavors.find (name = flvL);
-        #net = self.__nova.networks.find(label= netL);
+        flv = self.__nova.flavors.find(name = flvL);
+        img = self.__nova.images.find (name = imgL);
 
-        ## TODO: tratar limite de quota!
         try:
-            ## Create a new server (instance) into the openstack (avoid ...):
-            server=self.__nova.servers.create(name             =vmsL,
-                                              image            =img.id,
-                                              flavor           =flv.id,
-                                              #nics             =[{'net-id':net.id}],
-                                              availability_zone=zoneName);
+            ## Check the max vm instances are grant to the project:
+            maxInstQuota=self.__nova.quotas.defaults(self.__project).instances;
+            
+            ## Max instances in executing.
+            totalInstances = len(self.__nova.servers.list());
 
-            status = server.status;
+            ## Check if the instances number disponible has reached to the end.
+            if (totalInstances + 1) <= maxInstQuota:
 
-            while status == 'BUILD':
-                time.sleep(TIME_TO_WAIT);
-
-                ## Retrieve the server object again so the status field updates:
-                server = self.__nova.servers.get(server.id)
+                ## Create a new server instance (virtual machine) into the open
+                ## stack:
+                server=self.__nova.servers.create(name   = vmsL,
+                                                  image  = img.id,
+                                                  flavor = flv.id,
+                                                  availability_zone=zoneName);
                 status = server.status;
-        except:
-            status = 'ERROR';
 
-        try:
+                while status == 'BUILD':
+                    time.sleep(TIME_TO_WAIT);
+
+                    ## Retrieve the server object again so the status field updates:
+                    server = self.__nova.servers.get(server.id)
+                    status = server.status;
+
+            ## The virtual machine instances has reached:
+            else:
+                status = INSTANCE_LIMIT_REACHED;
+
             destId = server.id;
-        except:
+
+        except Exception as error:
+            status = INSTANCE_UNKNOW_ERROR;
             destId = '';
-        
 
         return (status, destId);
 
@@ -372,23 +387,33 @@ if __name__ == "__main__":
     };
 
     framework = MCT_Openstack_Nova(config);
+  
+    try:
+        if sys.argv[1] == 'create':
 
-    vmsL = 'teste';
-    imgL = 'cirros-0.3.3-x86_64';
-    flvL = 'm1.tiny';
-    netL = 'demo-net';
+            vmsL = sys.argv[2];
+            imgL = 'cirros-0.3.3-x86_64';
+            flvL = 'm1.tiny';
+            netL = 'demo-net';
 
-    ##
-    valret = framework.create_instance(vmsL, imgL, flvL, netL);
+            ## create 
+            valret = framework.create_instance(vmsL, imgL, flvL, netL);
 
-    print 'CREATE ---------------------------------------------------------- ';
-    print valret[0]
-    print valret[1]
+            print 'CREATE -------------------------------------------------- ';
+            print valret[0];
+            print valret[1];
 
-    valret =  framework.delete_instance(valret[1]);
+        elif sys.argv[1] == 'delete':
 
-    print 'DELETE ---------------------------------------------------------- ';
-    print valret[0]
-    print valret[1]
+            valret =  framework.delete_instance(sys.argv[2]);
+
+            print 'DELETE --------------------------------------------------- ';
+            print valret[0];
+            print valret[1];
+
+    except:
+        print 'Usage: openstackAPI create <name>'
+        print 'Usage: openstackAPI delete <uuid>'
+        print ''
 ## EOF.
 

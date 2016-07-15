@@ -16,7 +16,12 @@ import inspect;
 ###############################################################################
 ## DEFINITION                                                                ##
 ###############################################################################
-
+## Operation code:
+GETINF_INSTANCE = 0
+CREATE_INSTANCE = 1
+DELETE_INSTANCE = 2
+SUSPND_INSTANCE = 3
+RESUME_INSTANCE = 4
 
 
 
