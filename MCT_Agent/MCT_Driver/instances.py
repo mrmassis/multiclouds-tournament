@@ -190,13 +190,32 @@ class MCT_Instances(object):
 
 
     ##
-    ## BRIEF:
+    ## BRIEF: get vm mct status
     ## ------------------------------------------------------------------------
+    ## @PARAM uuid == vm uuid.
     ##
     def get_mct_state(self, uuid):
 
         ## Select query:
         dbQuery = "SELECT mct_state FROM INSTANCES WHERE uuid='"+str(uuid)+"'";
+
+        dataReceived = [] or self.__dbConnection.select_query(dbQuery);
+
+        if dataReceived != []:
+            return dataReceived[0][0];
+
+        return 'NOT_FOUND';
+
+
+    ##
+    ## BRIEF: get vm pwr state.
+    ## ------------------------------------------------------------------------
+    ## @PARAM uuid == vm uuid.
+    ##
+    def get_pwr_state(self, uuid):
+
+        ## Select query:
+        dbQuery = "SELECT pwr_state FROM INSTANCES WHERE uuid='"+str(uuid)+"'";
 
         dataReceived = [] or self.__dbConnection.select_query(dbQuery);
 

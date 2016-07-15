@@ -43,7 +43,8 @@ from nova.virt.mct.instances import MCT_Instances;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__);
+MCT_UNREACHABLE = -5;
 
 
 
@@ -63,12 +64,12 @@ class MCT_Driver(driver.ComputeDriver):
     ###########################################################################
     capabilities = None;
     instances    = {};
-    __mounts     = {};
-    __interfaces = {};
     mct          = None;
     vcpus        = None;
     memory_mb    = None;
     local_gb     = None;
+    __mounts     = {};
+    __interfaces = {};
     __resourcesStatusBase = None;
     __hostname            = None;
 
@@ -129,9 +130,11 @@ class MCT_Driver(driver.ComputeDriver):
             #'pci_passthrough_devices': jsonutils.dumps(host_stats['pci_passthrough_devices']),
         };
 
+        ## Expose the drive (host) capabilities:
         self.capabilities = {
-            "has_imagecache"   : True,
-            "supports_recreate": True,
+            "has_imagecache"               : False,
+            "supports_recreate"            : False,
+            "supports_migrate_to_same_host": False,
         };
 
         ## Create the object that will store the "MCT instances" in execution,
@@ -343,8 +346,6 @@ class MCT_Driver(driver.ComputeDriver):
     def spawn(self, context, instance, image_meta, injected_files,
               admin_password, network_info=None, block_device_info=None):
 
-        status = 0;
-
         ## Create a new dictionary struct with will be contain the parameter to
         ## intance a new VM.
         data = {
@@ -356,23 +357,22 @@ class MCT_Driver(driver.ComputeDriver):
             'storage' : block_device_info
         }
 
-        ## Add a inew intance in the object list:
-        self.__instances.insert(instance, 'BUILDING', 0);
+        ## Add an instance in the list: the pwr instance initial is not defined.
+        self.__instances.insert(instance, 'BUILDING', power_state.NOSTATE);
 
-        ## Research the more apropriated (by the score) player to accept the VM
-        ## creation.
+        ## Send request to create the remote instance in multicloud tournamment.
         valRet = self.mct.create_instance(data);
 
         if valRet != {}:
-            mctState = self.returnState[valRet['status']];
-            pwrState = self.returnState[valRet['status']];
+            mState = self.returnState[valRet['status']];
+            pState = self.returnState[valRet['status']];
         else:
-            mctState = 'UNREACHABLE';
-            pwrState = self.returnState[0];
+            mState = MCT_UNREACHABLE;
+            pState = self.returnState[0];
 
         ## Update instance data.
-        self.__instances.change_mct_state(instance['uuid'], mctState);
-        self.__instances.change_pwr_state(instance['uuid'], pwrState);
+        self.__instances.change_mct_state(instance['uuid'], mState);
+        self.__instances.change_pwr_state(instance['uuid'], pState);
 
         ## LOG:
         LOG.info("[MCT_DRIVE] INSTANCE SPAWN! STATE: %s", str(valRet));
@@ -395,32 +395,39 @@ class MCT_Driver(driver.ComputeDriver):
     def destroy(self, context, instance, network_info, block_device_info=None,
                 destroy_disks=True, migrate_data=None):
 
-        ## Create a new dictionary struct with will be contain the parameter to
-        ## intance a new VM.
-        data = {
-            'instance': instance,
-            'network' : network_info,
-            'storage' : block_device_info
-        }
+        valRet = {};
 
-        ## Get the instance name to be destroied. The instance object is recei-
-        ## ved from parameter list.
+        ## Get the unique identifier (uuid) belogs the instance to be removed. 
         uuid = instance['uuid'];
 
-        ## Check if:
+        pState = self.__instances.get_pwr_state(uuid); 
+        mState = self.__instances.get_mct_state(uuid);
+
+        ## Check if the instance exist:
         if self.__instances.check_exist(uuid) == True:
 
-            if self.__instances.get_mct_state(uuid) != 'UNREACHABLE':
-                valRet = self.mct.delete_instance(data);
+            ## In both cases (NOSTATE|CRASHED) the vm is not running in the mct.
+            if pState != power_state.NOSTATE and pState != power_state.CRASHED:
 
-            ## Remove instance from object list (check by UUID). Update inter-
-            ## nal database.
-            self.__instances.remove(uuid); 
+                ## TODO: pode acontecer q no ato de criar o MCT nao esteja dis-
+                ##       ponivel. Caso acontececa o valRet retorna vazio, entao
+                ##       nao apaga a vm da lista pq ela ainda esta em execucao.
+                ##
+                if self.__instances.get_mct_state(uuid) != MCT_UNREACHABLE:
+                    valRet = self.mct.delete_instance(uuid);
 
         else:
             LOG.warning("INSTANCES uuid=%s NOT IN LOCAL DICTIONARY!", uuid);
 
-        LOG.info("INSTANCE UUID=%s DESTROYED!", uuid);
+        if valRet != {}:
+            ## Remove instance from list (check by UUID). Update internal dbase.
+            self.__instances.remove(uuid); 
+
+            ## LOG:
+            LOG.info("INSTANCE UUID=%s NOT DESTROYED!", uuid);
+        else:
+            ## LOG:
+            LOG.info("INSTANCE UUID=%s YET DESTROYED!", uuid);
 
 
     ##

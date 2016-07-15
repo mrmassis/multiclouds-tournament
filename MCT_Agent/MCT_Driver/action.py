@@ -171,16 +171,17 @@ class MCT_Action(object):
 
  
     ##
-    ## BRIEF:
+    ## BRIEF: delete remote instance.
     ## ------------------------------------------------------------------------
+    ## @PARAM uuid == vm instance uuid to be removed.
     ##
-    def delete_instance(self, data):
+    def delete_instance(self, uuid):
 
         ## LOG:
         LOG.info('[MCT_ACTION] DELETE - SEND REQUEST TO DELETE AN INSTANCE!');
 
         ## Obtain the request identifier (use the "UUID" created by OpenStack).
-        idx = self.__cfg['main']['player'] + '_' + data['instance']['uuid'];
+        idx = self.__cfg['main']['player'] + '_' + str(uuid);
 
         ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
         ## to exec de action.
