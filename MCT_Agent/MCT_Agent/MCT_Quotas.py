@@ -70,10 +70,11 @@ class MCT_Quotas:
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __route     = None;
-    __publish   = None;
-    __my_ip     = None;
-    __cloud     = None;
+    __route         = None;
+    __publish       = None;
+    __addrExternal  = None;
+    __cloud         = None;
+    __timeToPublish = None;
 
 
     ###########################################################################
@@ -85,14 +86,19 @@ class MCT_Quotas:
         ## CONFIG_FILE path.
         config = get_configs(CONFIG_FILE);
 
-        ## Local address:
-        self.__my_ip = config['main']['my_ip'];
+        ## Local address and name:
+        self.__playerAddr = config['properties']['addr'];
+        self.__playerName = config['properties']['name'];
 
         ## Time to publish the message to dispatch. The time is in "seconds".
-        self.__time_to_publish['main']['time_to_publish'];
+        self.__timeToPublish = config['main']['time_to_publish'];
 
         ## Get which route is used to deliver the msg to the 'correct destine'.
         self.__route = config['amqp_external_publish']['route'];
+
+        ### Credentials:
+        config['amqp_external_publish']['user'] = config['rabbitmq']['user'];
+        config['amqp_external_publish']['pass'] = config['rabbitmq']['pass'];
 
         ## Instantiates an object to perform the publication of AMQP messages.
         self.__publish = RabbitMQ_Publish(config['amqp_external_publish']);
@@ -115,11 +121,11 @@ class MCT_Quotas:
         ## Build the message:
         message = {
             'code'    : SETINF_RESOURCE,
-            'playerId': self.__cfg['main']['player'],
+            'playerId': self.__playerName,
             'status'  : 0,
             'reqId'   : '',
             'retId'   : '',
-            'origAdd' : self.__cfg['main']['address_external'],
+            'origAdd' : self.__playerAddr,
             'destAdd' : '',
             'data'    : ''
         }
@@ -140,8 +146,7 @@ class MCT_Quotas:
             ## sources.
             self.__send_message_dispatch(message, 'MCT_Quota'); 
 
-            time.sleep(self.__time_to_publish);
-
+            time.sleep(float(self.__timeToPublish));
 
         return 0;
 
@@ -207,7 +212,7 @@ if __name__ == "__main__":
 
     try:
         mct = MCT_Quotas();
-        mct.consume();
+        mct.publish_quota();
     except KeyboardInterrupt:
         pass;
 

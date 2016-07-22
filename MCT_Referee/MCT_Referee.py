@@ -81,7 +81,7 @@ class MCT_Referee(RabbitMQ_Consume):
     __threadsId     = None;
     __allQueues     = None;
     __routeDispatch = None;
-    __dbConnection  = None;
+    __db            = None;
     __scheduller    = None;
 
 
@@ -443,7 +443,7 @@ class MCT_Referee(RabbitMQ_Consume):
         query += "timestamp_finished='" + str(f3) + "' " ;
         query += "WHERE ";
         query += "origin_id='"          + str(f1) + "' " ;
-        valRet = self.__dbConnection.update_query(query);
+        valRet = self.__db.update_query(query);
 
         ## Update all values of used resources. The table used is the "PLAYER"p.
         ## the table has all resources offer and used by the player.:
@@ -461,7 +461,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM int division.
     ##
     def __get_resources_inf(self, division):
-        resouces = {};
+        resources = {};
 
         ## Mount the database query: 
         query  = "SELECT ";
@@ -512,12 +512,12 @@ class MCT_Referee(RabbitMQ_Consume):
 
         ## Update the exposed player resources.
         query  = "UPDATE PLAYER SET ";
-        query += "vcpus='" + str(f2) + "', ";
+        query += "vcpu='"  + str(f2) + "', ";
         query += "memory='"+ str(f3) + "', ";
-        query += "disk='"  + str(f4) + "', ";
+        query += "disk='"  + str(f4) + "'  ";
         query += "WHERE ";
         query += "name='"  + str(f1) + "' " ;
-        valRet = self.__dbConnection.update_query(query);
+        valRet = self.__db.update_query(query);
 
         return {};
 
@@ -568,7 +568,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM int  action  == increment (0) or decrement (1) usage.
     ## @PARAM dict message == message with some datas about instance.
     ##
-    def __update_used_values(self, action, msg);
+    def __update_used_values(self, action, msg):
 
         query  = "SELECT ";
         query += "vcpu_used, memory_used, disk_used ";
@@ -601,7 +601,7 @@ class MCT_Referee(RabbitMQ_Consume):
                 v1 -= msg['data']['memory'];
                 v2 -= msg['data']['disk'  ];
 
-       return 0;
+        return 0;
 ## END.
 
 

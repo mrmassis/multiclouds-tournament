@@ -139,14 +139,16 @@ class MCT_Action(object):
 
         ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
         ## to exec de action.
-        msgToSend = self.__create_basic_message(GETINF_INSTANCE, idx);
+        #msgToSend = self.__create_basic_message(GETINF_INSTANCE, idx);
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        self.__communication.publish(msgToSend);
+        #self.__communication.publish(msgToSend);
 
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
-        dataReceived = self.__waiting_return(idx);
+        #dataReceived = self.__waiting_return(idx);
+     
+        dataReceived = {};
 
         ## LOG:
         LOG.info('[MCT_ACTION] DATA RECEIVED: %s', dataReceived);

@@ -90,7 +90,7 @@ ENGINE = InnoDB;
 INSERT INTO FIELDS (operation, fields) VALUES (0, 'name mem image vcpus disk uuid');
 
 -- PLAYER;
-INSERT INTO PLAYER (name, address, division, score, historic, vcpu, memory, disk, vcpu_used, memory_used, disk_used) VALUES ('Player1', '10.3.77.157',  3,  0.0, 0,  0, 0, 1048576, 0, 0, 0);
+INSERT INTO PLAYER (name, address, division, score, historic, vcpu, memory, disk, vcpu_used, memory_used, disk_used) VALUES ('Player1', '10.3.77.157',  3,  0.0, 0,  0, 0, 0, 0, 0, 0);
 INSERT INTO PLAYER (name, address, division, score, historic, vcpu, memory, disk, vcpu_used, memory_used, disk_used) VALUES ('Player2', '10.3.77.160',  3,  0.0, 0,  0, 0, 0, 0, 0, 0);
 
 -- PLAYER;
