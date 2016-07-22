@@ -201,7 +201,7 @@ class MCT_Driver(driver.ComputeDriver):
         instance = self.__instances.get_instance(instance['uuid']);
 
         ## Send get instance info request to the MCT:
-        valRet = self.mct.get_instance_information(uuid); 
+        valRet = self.mct.get_instance_information(instance['uuid']); 
 
         if valRet != {}:
             instanceInfoObj = {};
