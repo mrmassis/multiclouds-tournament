@@ -214,11 +214,19 @@ class MCT_Action(object):
         LOG.info('[MCT_ACTION] DELETE - SEND REQUEST TO DELETE AN INSTANCE!');
 
         ## Obtain the request identifier (use the "UUID" created by OpenStack).
-        idx = iself.__cfg['main']['player'] + '_' + data['instance']['uuid'];
+        idx = self.__cfg['main']['player'] + '_' + data['instance']['uuid'];
 
         ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
         ## to exec de action.
         msgToSend = self.__create_basic_message(DELETE_INSTANCE, idx);
+
+        data = {
+            'vcpus' : data['instance']['vcpus'       ],
+            'mem'   : data['instance']['memory_mb'   ],
+            'disk'  : data['instance']['root_gb'     ]
+        };
+
+        msgToSend['data'] = data;
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
         self.__communication.publish(msgToSend);

@@ -592,14 +592,23 @@ class MCT_Referee(RabbitMQ_Consume):
                 ##       haver casos onde uma image que antenda tem mais cpus #
                 ##       que o requisitado.                                   #
                 ###############################################################
-                if message['status'] != 0: 
+                if msg['status'] != 0: 
                     v0 += msg['data']['vcpus' ];
-                    v1 += msg['data']['memory'];
+                    v1 += msg['data']['mem'   ];
                     v2 += msg['data']['disk'  ];
             else:
                 v0 -= msg['data']['vcpus' ];
-                v1 -= msg['data']['memory'];
+                v1 -= msg['data']['mem'   ];
                 v2 -= msg['data']['disk'  ];
+
+            ## Update the exposed player resources.
+            query  = "UPDATE PLAYER SET ";
+            query += "vcpu_used='"  + str(v0) + "', ";
+            query += "memory_used='"+ str(v1) + "', ";
+            query += "disk_used='"  + str(v2) + "'  ";
+            query += "WHERE ";
+            query += "name='"  + str(msg['playerId']) + "' " ;
+            valRet = self.__db.update_query(query);
 
         return 0;
 ## END.
