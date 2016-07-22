@@ -81,7 +81,7 @@ class MCT_Referee(RabbitMQ_Consume):
     __threadsId     = None;
     __allQueues     = None;
     __routeDispatch = None;
-    __dbConnection  = None;
+    __db            = None;
     __scheduller    = None;
 
 
@@ -443,7 +443,7 @@ class MCT_Referee(RabbitMQ_Consume):
         query += "timestamp_finished='" + str(f3) + "' " ;
         query += "WHERE ";
         query += "origin_id='"          + str(f1) + "' " ;
-        valRet = self.__dbConnection.update_query(query);
+        valRet = self.__db.update_query(query);
 
         ## Update all values of used resources. The table used is the "PLAYER"p.
         ## the table has all resources offer and used by the player.:
@@ -492,7 +492,6 @@ class MCT_Referee(RabbitMQ_Consume):
                 'disk_mb_used'  : v5
             };
 
-        print resources
         return resources;
 
 
@@ -513,12 +512,12 @@ class MCT_Referee(RabbitMQ_Consume):
 
         ## Update the exposed player resources.
         query  = "UPDATE PLAYER SET ";
-        query += "vcpus='" + str(f2) + "', ";
+        query += "vcpu='"  + str(f2) + "', ";
         query += "memory='"+ str(f3) + "', ";
-        query += "disk='"  + str(f4) + "', ";
+        query += "disk='"  + str(f4) + "'  ";
         query += "WHERE ";
         query += "name='"  + str(f1) + "' " ;
-        valRet = self.__dbConnection.update_query(query);
+        valRet = self.__db.update_query(query);
 
         return {};
 
