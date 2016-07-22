@@ -192,16 +192,20 @@ class MCT_Driver(driver.ComputeDriver):
         ## LOG:
         LOG.info("GET INSTANCE %s INFORMATION!", instance['uuid']);
 
+        uuid = instance['uuid'];
+
         ## Check if the instance exist. The openstack will be compare the dbase
         ## with local intances dbase.
-        if self.__instances.check_exist(instance['uuid']) == False:
-            raise exception.InstanceNotFound(instance_id=instance['name']);
+        if self.__instances.check_exist(uuid) == False:
+            raise exception.InstanceNotFound(instance_id=uuid);
 
         ## Get update instance:
-        instance = self.__instances.get_instance(instance['uuid']);
+        instance = self.__instances.get_instance(uuid);
+        LOG.info(instance);
 
         ## Send get instance info request to the MCT:
-        valRet = self.mct.get_instance_information(uuid); 
+        #valRet = self.mct.get_instance_information(uuid); 
+        valRet = {};
 
         if valRet != {}:
             instanceInfoObj = {};
