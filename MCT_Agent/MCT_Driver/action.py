@@ -108,7 +108,38 @@ class MCT_Action(object):
 
         ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
         ## to exec de action.
-        msgToSend = self.__create_basic_message(0, idx);
+        msgToSend = self.__create_basic_message(GETINF_RESOURCE, idx);
+
+        ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
+        self.__communication.publish(msgToSend);
+
+        ## Waiting for the answer is ready in database.The answer is ready when
+        ## MCT_Agent send the return.
+        dataReceived = self.__waiting_return(idx);
+
+        ## LOG:
+        LOG.info('[MCT_ACTION] DATA RECEIVED: %s', dataReceived);
+
+        ## Return the all datas about resouces avaliable in player's division.
+        return dataReceived;
+
+
+    ##
+    ## BRIEF: get instance info.
+    ## ------------------------------------------------------------------------
+    ## @PARAM data == data received from MCT_Drive (OpenStack).
+    ##
+    def get_instance_information(self, data):
+
+        ## LOG:
+        LOG.info('[MCT_ACTION] GET INSTANCE INFORMATION FROM MCT!');
+
+        ## Obtain the request identifier (use the "UUID" created by OpenStack).
+        idx = self.__cfg['main']['player'] + '_' + data['instance']['uuid'];
+
+        ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
+        ## to exec de action.
+        msgToSend = self.__create_basic_message(GETINF_INSTANCE, idx);
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
         self.__communication.publish(msgToSend);
@@ -139,7 +170,7 @@ class MCT_Action(object):
 
         ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
         ## to exec de action.
-        msgToSend = self.__create_basic_message(1, idx);
+        msgToSend = self.__create_basic_message(CREATE_INSTANCE, idx);
 
         ## Mount the requirement:
         data = {
@@ -173,19 +204,19 @@ class MCT_Action(object):
     ##
     ## BRIEF: delete remote instance.
     ## ------------------------------------------------------------------------
-    ## @PARAM uuid == vm instance uuid to be removed.
+    ## @PARAM data == data received from MCT_Drive (OpenStack).
     ##
-    def delete_instance(self, uuid):
+    def delete_instance(self, data):
 
         ## LOG:
         LOG.info('[MCT_ACTION] DELETE - SEND REQUEST TO DELETE AN INSTANCE!');
 
         ## Obtain the request identifier (use the "UUID" created by OpenStack).
-        idx = self.__cfg['main']['player'] + '_' + str(uuid);
+        idx = iself.__cfg['main']['player'] + '_' + data['instance']['uuid'];
 
         ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
         ## to exec de action.
-        msgToSend = self.__create_basic_message(2, idx);
+        msgToSend = self.__create_basic_message(DELETE_INSTANCE, idx);
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
         self.__communication.publish(msgToSend);
@@ -202,7 +233,7 @@ class MCT_Action(object):
 
 
     ##
-    ## BRIEF:
+    ## BRIEF: power off instance.
     ## ------------------------------------------------------------------------
     ## @PARAM data == data received from MCT_Drive (OpenStack).
     ##
@@ -212,11 +243,11 @@ class MCT_Action(object):
         LOG.info('[MCT_ACTION] POWER OFF AN REMOTE INSTANCE!');
 
         ## Obtain the request identifier (use the "UUID" created by OpenStack).
-        idx = data['instance']['uuid'];
+        idx = iself.__cfg['main']['player'] + '_' + data['instance']['uuid'];
 
         ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
         ## to exec de action.
-        msgToSend = self.__create_basic_message(3, idx);
+        msgToSend = self.__create_basic_message(SUSPND_INSTANCE, idx);
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
         self.__communication.publish(msgToSend);
@@ -233,7 +264,7 @@ class MCT_Action(object):
 
 
     ##
-    ## BRIEF:
+    ## BRIEF: power on intance.
     ## ------------------------------------------------------------------------
     ## @PARAM data == data received from MCT_Drive (OpenStack).
     ##
@@ -241,13 +272,12 @@ class MCT_Action(object):
         ## LOG:
         LOG.info('[MCT_ACTION] POWER OFF AN REMOTE INSTANCE!');
 
-
         ## Obtain the request identifier (use the "UUID" created by OpenStack).
-        idx = data['instance']['uuid'];
+        idx = self.__cfg['main']['player'] + '_'  + data['instance']['uuid'];
 
         ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
         ## to exec de action.
-        msgToSend = self.__create_basic_message(4, idx);
+        msgToSend = self.__create_basic_message(RESUME_INSTANCE, idx);
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
         self.__communication.publish(msgToSend);
@@ -264,7 +294,7 @@ class MCT_Action(object):
 
 
     ##
-    ## BRIEF:
+    ## BRIEF: reset the instance.
     ## ------------------------------------------------------------------------
     ## @PARAM data == data received from MCT_Drive (OpenStack).
     ##
@@ -272,13 +302,12 @@ class MCT_Action(object):
         ## LOG:
         LOG.info('[MCT_ACTION] POWER OFF AN REMOTE INSTANCE!');
 
-
         ## Obtain the request identifier (use the "UUID" created by OpenStack).
-        idx = data['instance']['uuid'];
+        idx = self.__cfg['main']['player'] + '_' + data['instance']['uuid'];
 
         ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
         ## to exec de action.
-        msgToSend = self.__create_basic_message(5, idx);
+        msgToSend = self.__create_basic_message(RESETT_INSTANCE, idx);
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
         self.__communication.publish(msgToSend);

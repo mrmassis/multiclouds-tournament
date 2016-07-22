@@ -189,6 +189,8 @@ class MCT_Driver(driver.ComputeDriver):
     ##                    instance.
     ##
     def get_info(self, instance):
+        ## LOG:
+        LOG.info("GET INSTANCE %s INFORMATION!", instance['uuid']);
 
         ## Check if the instance exist. The openstack will be compare the dbase
         ## with local intances dbase.
@@ -198,22 +200,80 @@ class MCT_Driver(driver.ComputeDriver):
         ## Get update instance:
         instance = self.__instances.get_instance(instance['uuid']);
 
-        ## instanceinfo object:
-        ## state       == the running sate, one of the power_state codes.
-        ## max_mem_kb  == (int) the maximum memory in KBytes allowed.
-        ## mem_kb      == (int) the memory in KBytes for the instance.
-        ## nun_cpu     == (int) the number of virtual CPUs for the instance.
-        ## cpu_time_ns == (int) the CPU time used in nano seconds.
-        ##
-        instanceInfoObj = {
-            'state'   : self.returnState[instance['pwrs']],
-            'mem'     : instance['memo'],
-            'num_cpu' : instance['vcpu'],
-            'max_mem' : 0,
-            'cpu_time': 0
-        };
+        ## Send get instance info request to the MCT:
+        valRet = self.mct.get_instance information(uuid); 
+
+        if valRet != {}:
+            instanceInfoObj = {};
+        else:
+            ## instanceinfo object:
+            ## state       == the running sate, one of the power_state codes.
+            ## max_mem_kb  == (int) the maximum memory in KBytes allowed.
+            ## mem_kb      == (int) the memory in KBytes for the instance.
+            ## nun_cpu     == (int) the number of virtual CPUs for the instance.
+            ## cpu_time_ns == (int) the CPU time used in nano seconds.
+            ##
+            instanceInfoObj = {
+                'state'   : self.returnState[instance['pwrs']],
+                'mem'     : instance['memo'],
+                'num_cpu' : instance['vcpu'], ## defined by the flavor, can the flavor is diferente in destiny
+                'max_mem' : 0,
+                'cpu_time': 0
+            };
 
         return instanceInfoObj;
+
+
+    ##
+    ## BRIEF: get diagnostic about the given instance.
+    ## ------------------------------------------------------------------------
+    ## @PARAM intance_name ==
+    ##
+    def get_instance_diagnostics(self, instance_name):
+
+        diags = diagnostics.Diagnostics(state='running', driver='fake', hypervisor_os='fake-os', uptime=46664, config_drive=True);
+
+        diags.add_cpu(time=17300000000);
+
+        diags.add_nic(mac_address='01:23:45:67:89:ab',
+                      rx_packets=26701,
+                      rx_octets=2070139,
+                      tx_octets=140208,
+                      tx_packets = 662);
+
+        diags.add_disk(id='fake-disk-id',
+                       read_bytes=262144,
+                       read_requests=112,
+                       write_bytes=5778432,
+                       write_requests=488)
+
+        diags.memory_details.maximum = 524288;
+
+        return diags;
+
+
+    ##
+    ## BRIEF:
+    ## ------------------------------------------------------------------------ 
+    ## @PARAM instance_name ==
+    ##
+    def get_diagnostics(self, instance_name):
+        return {'cpu0_time': 17300000000,
+                'memory': 524288,
+                'vda_errors': -1,
+                'vda_read': 262144,
+                'vda_read_req': 112,
+                'vda_write': 5778432,
+                'vda_write_req': 488,
+                'vnet1_rx': 2070139,
+                'vnet1_rx_drop': 0,
+                'vnet1_rx_errors': 0,
+                'vnet1_rx_packets': 26701,
+                'vnet1_tx': 140208,
+                'vnet1_tx_drop': 0,
+                'vnet1_tx_errors': 0,
+                'vnet1_tx_packets': 662,
+        }
 
 
     ##
@@ -397,6 +457,12 @@ class MCT_Driver(driver.ComputeDriver):
 
         valRet = {};
 
+        ## Create a new dictionary struct with will be contain the parameter to
+        ## intance a new VM.
+        data = {
+            'instance': instance
+        }
+
         ## Get the unique identifier (uuid) belogs the instance to be removed. 
         uuid = instance['uuid'];
 
@@ -414,7 +480,7 @@ class MCT_Driver(driver.ComputeDriver):
                 ##       nao apaga a vm da lista pq ela ainda esta em execucao.
                 ##
                 if self.__instances.get_mct_state(uuid) != MCT_UNREACHABLE:
-                    valRet = self.mct.delete_instance(uuid);
+                    valRet = self.mct.delete_instance(data);
 
         else:
             LOG.warning("INSTANCES uuid=%s NOT IN LOCAL DICTIONARY!", uuid);
@@ -831,40 +897,7 @@ class MCT_Driver(driver.ComputeDriver):
 
 
 
-    def get_diagnostics(self, instance_name):
-        return {'cpu0_time': 17300000000,
-                'memory': 524288,
-                'vda_errors': -1,
-                'vda_read': 262144,
-                'vda_read_req': 112,
-                'vda_write': 5778432,
-                'vda_write_req': 488,
-                'vnet1_rx': 2070139,
-                'vnet1_rx_drop': 0,
-                'vnet1_rx_errors': 0,
-                'vnet1_rx_packets': 26701,
-                'vnet1_tx': 140208,
-                'vnet1_tx_drop': 0,
-                'vnet1_tx_errors': 0,
-                'vnet1_tx_packets': 662,
-        }
 
-    def get_instance_diagnostics(self, instance_name):
-        diags = diagnostics.Diagnostics(state='running', driver='fake',
-                hypervisor_os='fake-os', uptime=46664, config_drive=True)
-        diags.add_cpu(time=17300000000)
-        diags.add_nic(mac_address='01:23:45:67:89:ab',
-                      rx_packets=26701,
-                      rx_octets=2070139,
-                      tx_octets=140208,
-                      tx_packets = 662)
-        diags.add_disk(id='fake-disk-id',
-                       read_bytes=262144,
-                       read_requests=112,
-                       write_bytes=5778432,
-                       write_requests=488)
-        diags.memory_details.maximum = 524288
-        return diags
 
     def get_all_bw_counters(self, instances):
         """Return bandwidth usage counters for each interface on each

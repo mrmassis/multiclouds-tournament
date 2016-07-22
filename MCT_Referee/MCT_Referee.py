@@ -158,22 +158,34 @@ class MCT_Referee(RabbitMQ_Consume):
                 message['status'] = 0 ;
 
             ## ------------------------------------------------------------- ##
-            ## [0] == GET RESOUCES INF.                                      ##
+            ## GET RESOUCES INF.                                             ##
             ## ------------------------------------------------------------- ##
-            if   int(message['code']) == GETINF:
+            if   int(message['code']) == GETINF_RESOURCE:
                 message['data'] = self.__get_resources_inf(division);
  
             ## ------------------------------------------------------------- ##
-            ## [1] CREATE A NEW INSTANCE.                                    ##
+            ## SET RESOUCES INF.                                             ##
             ## ------------------------------------------------------------- ##
-            elif int(message['code']) == CREATE:
+            elif int(message['code']) == SETINF_RESOURCE:
+                message['data'] = self.__set_resources_inf(division, message);
+
+            ## ------------------------------------------------------------- ##
+            ## CREATE A NEW INSTANCE.                                        ##
+            ## ------------------------------------------------------------- ##
+            elif int(message['code']) == CREATE_INSTANCE:
                 message = self.__add_instance(division, message);
 
             ## ------------------------------------------------------------- ##
-            ## [2] DELETE AN INSTANCE.                                       ##
+            ## DELETE AN INSTANCE.                                           ##
             ## ------------------------------------------------------------- ##
-            elif int(message['code']) == DELETE:
+            elif int(message['code']) == DELETE_INSTANCE:
                 message = self.__del_instance(division, message);
+
+            ## ------------------------------------------------------------- ##
+            ## DELETE AN INSTANCE.                                           ##
+            ## ------------------------------------------------------------- ##
+            elif int(message['code']) == GETINF_INSTANCE:
+                message = self._inf_instance(division, message);
         else:
             ## Error parse:
             message['status'] = MESSAGE_PARSE_ERROR;
@@ -234,6 +246,17 @@ class MCT_Referee(RabbitMQ_Consume):
             division = valRet[0][0];
 
         return division;
+
+   
+    ##
+    ## BRIEF: get info instance.
+    ## ------------------------------------------------------------------------
+    ## @PARAM int division == division from player who request.
+    ## @PARAM dict msg     == message data.
+    ##
+    def __inf_instance(self, division, msg):
+        logger.info("TODO!!!!");
+        return msg;
 
 
     ##
@@ -353,6 +376,10 @@ class MCT_Referee(RabbitMQ_Consume):
 
         valRet = self.__db.insert_query(query, value);
 
+        ## Update all values of used resources. The table used is the "PLAYER"p.
+        ## the table has all resources offer and used by the player.:
+        self.__update_used_values(0, msg);
+
         msg['destAdd'] = '';
         msg['retId'  ] = '';
 
@@ -418,6 +445,10 @@ class MCT_Referee(RabbitMQ_Consume):
         query += "origin_id='"          + str(f1) + "' " ;
         valRet = self.__dbConnection.update_query(query);
 
+        ## Update all values of used resources. The table used is the "PLAYER"p.
+        ## the table has all resources offer and used by the player.:
+        self.__update_used_values(1, msg);
+
         msg['destAdd'] = '';
         msg['retId'  ] = '';
 
@@ -435,23 +466,60 @@ class MCT_Referee(RabbitMQ_Consume):
         ## Mount the database query: 
         query  = "SELECT ";
         query += "vcpu, memory, disk, vcpu_used, memory_used, disk_used ";
-        query += "FROM RESOURCE WHERE ";
+        query += "FROM PLAYER WHERE ";
         query += "division='" + str(division) + "'";
 
         valRet = [] or self.__db.select_query(query);
 
         if valRet != []:
+            v0 = 0; v1 = 0; v2 = 0; v3 = 0; v4 = 0; v5 = 0;
+
+            ## Sum all results found in the database to specifc division:
+            for result in valRet:
+                v0 += result[0]; 
+                v1 += result[1]; 
+                v2 += result[2]; 
+                v3 += result[3]; 
+                v4 += result[4]; 
+                v5 += result[5]; 
 
             resources = {
-                'vcpu'          : valRet[0][0],
-                'memory_mb'     : valRet[0][1],
-                'disk_mb'       : valRet[0][2],
-                'vcpu_used'     : valRet[0][3],
-                'memory_mb_used': valRet[0][4],
-                'disk_mb_used'  : valRet[0][5]
-            }
+                'vcpu'          : v0,
+                'memory_mb'     : v1,
+                'disk_mb'       : v2,
+                'vcpu_used'     : v3,
+                'memory_mb_used': v4,
+                'disk_mb_used'  : v5
+            };
 
         return resources;
+
+
+    ##
+    ## BRIEF: set the resources info to specfic division.
+    ## ------------------------------------------------------------------------
+    ## @PARAM int division ==.
+    ## @PARAM dict msg     == message data.
+    ##
+    def __set_resources_inf(self, division, msg):
+
+        ## Get all data from the message. Vcpus, memory and disk avaliable in
+        ## the player:
+        f1 = msg['playerId']; 
+        f2 = msg['data']['vcpus' ];
+        f3 = msg['data']['memory'];
+        f4 = msg['data']['disk'  ];
+
+        ## Update the exposed player resources.
+        query  = "UPDATE PLAYER SET ";
+        query += "vcpus='" + str(f2) + "', ";
+        query += "memory='"+ str(f3) + "', ";
+        query += "disk='"  + str(f4) + "', ";
+        query += "WHERE ";
+        query += "name='"  + str(f1) + "' " ;
+        valRet = self.__dbConnection.update_query(query);
+
+        return {};
 
 
     ##
@@ -490,7 +558,50 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM dict message == message with some datas about instance.
     ##
     def __get_instance_info(self, message):
+        ## TODO: if the instance is not running decrement table values!
         return 0;
+
+
+    ##
+    ## BRIEF: update all values of offer and used resources by division. 
+    ## ------------------------------------------------------------------------
+    ## @PARAM int  action  == increment (0) or decrement (1) usage.
+    ## @PARAM dict message == message with some datas about instance.
+    ##
+    def __update_used_values(self, action, msg);
+
+        query  = "SELECT ";
+        query += "vcpu_used, memory_used, disk_used ";
+        query += "FROM PLAYER WHERE ";
+        query += "name='" + str(msg['playerId']) + "'";
+
+        valRet = [] or self.__db.select_query(query);
+
+        if valRet != []:
+            v0 = valRet[0][0];
+            v1 = valRet[0][1];
+            v2 = valRet[0][2];
+ 
+            ## When action is equal the 0 meaning that the values will be incre
+            ## mented. 1 is decremented!
+            if action == 0:
+                ## look the message status, equal 0 is error to create instance!
+
+                ###############################################################
+                ## TODO: esses valores tem que ser setado no destino pois pode#
+                ##       haver casos onde uma image que antenda tem mais cpus #
+                ##       que o requisitado.                                   #
+                ###############################################################
+                if message['status'] != 0: 
+                    v0 += msg['data']['vcpus' ];
+                    v1 += msg['data']['memory'];
+                    v2 += msg['data']['disk'  ];
+            else:
+                v0 -= msg['data']['vcpus' ];
+                v1 -= msg['data']['memory'];
+                v2 -= msg['data']['disk'  ];
+
+       return 0;
 ## END.
 
 

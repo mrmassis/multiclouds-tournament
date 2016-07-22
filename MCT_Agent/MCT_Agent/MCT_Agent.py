@@ -201,6 +201,8 @@ class MCT_Agent(RabbitMQ_Consume):
             ## suspend instance e resume instance): 
             ## Create:
             if   message['code'] == CREATE_INSTANCE:
+
+                ## TODO: update the data (vcpu, memory and disk allocated)!!!!!!!!!!!!!!!!!!!!!!!!!
                 status = self.__create_server(message);
 
             ## Delete:
@@ -235,6 +237,8 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict message == received message.
     ##
     def __update_database(self, message):
+        if message['code'] == SETINF_RESOURCE: 
+            return 0;
 
         ## Insert the message received into the database.
         query = "INSERT INTO REQUEST (request_id, status, message) VALUES (%s,%s,%s)";

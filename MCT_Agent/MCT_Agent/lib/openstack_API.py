@@ -362,6 +362,29 @@ class MCT_Openstack_Nova:
             addresses= instance.addresses;
             instStats= instance.status;
             taskStats= getattr(instance, 'OS-EXT-STS:task_state');
+
+
+    ##
+    ## Brief: get the quota to project.
+    ## ------------------------------------------------------------------------
+    ## 
+    def get_quota(self):
+
+        defaultQuotas = {};
+
+        try:
+            valRet = self.__nova.quotas.defaults(self.__project).to_dict();
+
+            defaultQuotas['vcpus' ] = valRet['cores'];
+            defaultQuotas['memory'] = valRet['ram'  ];
+            defaultQuotas['disk'  ] = 0;
+
+        except:
+            defaultQuotas['vcpus' ] = 0;
+            defaultQuotas['memory'] = 0;
+            defaultQuotas['disk'  ] = 0;
+
+        return defaultQuotas;
 ## END.       
 
 
