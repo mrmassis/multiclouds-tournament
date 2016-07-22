@@ -461,7 +461,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM int division.
     ##
     def __get_resources_inf(self, division):
-        resouces = {};
+        resources = {};
 
         ## Mount the database query: 
         query  = "SELECT ";
@@ -492,6 +492,7 @@ class MCT_Referee(RabbitMQ_Consume):
                 'disk_mb_used'  : v5
             };
 
+        print resources
         return resources;
 
 
@@ -568,7 +569,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM int  action  == increment (0) or decrement (1) usage.
     ## @PARAM dict message == message with some datas about instance.
     ##
-    def __update_used_values(self, action, msg);
+    def __update_used_values(self, action, msg):
 
         query  = "SELECT ";
         query += "vcpu_used, memory_used, disk_used ";
@@ -601,7 +602,7 @@ class MCT_Referee(RabbitMQ_Consume):
                 v1 -= msg['data']['memory'];
                 v2 -= msg['data']['disk'  ];
 
-       return 0;
+        return 0;
 ## END.
 
 
