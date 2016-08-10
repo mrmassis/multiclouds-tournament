@@ -110,10 +110,15 @@ class MCT_Bid:
         s.listen(5);
 
         while True:
+           ## LOG:
+           logger.info("WAIT FOR A REQUEST BY NEW REQUEST!!!");
 
            ## Wait new connections from the MCT_Agents. Wait for new request by
            ## authentication.
            connection, address = s.accept();
+
+           ## LOG:
+           logger.info("NEW RESQUEST FROM: " + str(address));
 
            ## Get messagem from MCT_Agents that wish authenticate and enter in
            ## multiclouds tournament.
@@ -147,9 +152,9 @@ class MCT_Bid:
 
        ## LOG:
        logger.info('MESSAGE RECEIVED FROM AGENT: %s', message);
- 
+
        playerId = message['playerId'];
-       address  = message['address' ];
+       address  = message['origAdd' ];
 
        ## Check if the player always registered in the BID:
        valRet = self.__check_player(playerId);
@@ -159,7 +164,8 @@ class MCT_Bid:
            ## the multiclouds tournament).
            valRet = self.__register_player(playerId, address);
 
-       message['status'] = valRet;
+       message['status'] = 1;
+
        return message;
 
 
@@ -172,8 +178,7 @@ class MCT_Bid:
 
         ## Check if the line that represent the request already in db. Perform
         ## a select.
-        query  = "SELECT status FROM PLAYER WHERE ";
-        query += "player_id='" + str(playerId) + "'";
+        query  = "SELECT * FROM PLAYER WHERE name='" + str(playerId) + "'";
         valRet = [] or self.__dbConnection.select_query(query)
 
         ## Verifies that the request already present in the requests 'database'
@@ -190,26 +195,27 @@ class MCT_Bid:
     ## BRIEF: register a player in de bid.
     ## ------------------------------------------------------------------------
     ## @PARAM str playerId  == identifier of the player.
+    ## @PARAM str address   == player address.
     ##
-    def __register_player(self, playerId):
+    def __register_player(self, playerId, address):
 
         try: 
-            ## a request finished or in execution.
             query  = "INSERT INTO PLAYER (";
             query += "name, ";
             query += "address, ";
             query += "division, ";
             query += "score, ";
-            query += "historic";
-            query += "vcpu";
-            query += "memory";
-            query += "disk";
-            query += "vcpu_used";
-            query += "memory_used";
+            query += "historic, ";
+            query += "vcpu, ";
+            query += "memory, ";
+            query += "disk, ";
+            query += "vcpu_used, ";
+            query += "memory_used, ";
             query += "disk_used";
             query += ") VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)";
-            value  = (playerId, address, MIN_DIV,0.0,0,0,0,0,0,0,0);
+            value  = (playerId, address, MIN_DIVISION,0.0,0,0,0,0,0,0,0);
             valRet = self.__dbConnection.insert_query(query, value)
+
         except:
             return 1;
  
