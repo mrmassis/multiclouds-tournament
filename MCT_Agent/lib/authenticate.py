@@ -14,6 +14,7 @@ __all__ = ['MCT_Authenticate'];
 
 import socket;
 import time;
+import json;
 
 
 
@@ -77,12 +78,13 @@ class MCT_Authenticate(object):
     ## -----------------------------------------------------------------------
     ## 
     def authenticate(self):
+        messageDictRecv = {'status' : 0};
         count = 0;
 
         while count < TRIES:
             try:
                 connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
-                connection.connect((self.__serverAddr, int(self.serverPort)));
+                connection.connect((self.__serverAddr,int(self.__serverPort)));
 
                 messageDictSend = {
                     'code'    : -1,
@@ -105,6 +107,7 @@ class MCT_Authenticate(object):
                 ## Wait the response from MCT server and convert the json messa
                 ## ge to the python dictionary format.
                 messageJsonRecv = connection.recv(1024);
+                
                 messageDictRecv = json.loads(messageJsonRecv);
 
                 connection.close();
@@ -116,6 +119,29 @@ class MCT_Authenticate(object):
             time.sleep(TIME_TO_WAIT);
             count += 1;
 
-        return int(message['status']);
+        return int(messageDictRecv['status']);
+## END CLASS;
+
+
+
+
+
+
+
+
+###############################################################################
+## MAIN                                                                      ##
+###############################################################################
+if __name__ == "__main__":
+
+    sAddr = '10.3.77.156';
+    sPort = '2000'; 
+
+    cName = 'vPlayer0';
+    cAddr = '10.3.77.162'
+
+    mct_authenticate = MCT_Authenticate(cAddr, cName, sAddr, sPort);
+    mct_authenticate.authenticate();
+
 ## END.
 
