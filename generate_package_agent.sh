@@ -6,15 +6,15 @@
 ###############################################################################
 ## DEFINITION                                                                ##
 ###############################################################################
-BASE="package"
+BASE="package-agent"
 
 LIB_SRC="lib"
 LIB_DST="${BASE}/usr/lib/python2.7/dist-packages/mct/lib/"
 
-MCT_SRC="mct"
+MCT_SRC="MCT_Agent/mct"
 MCT_DST="${BASE}/usr/lib/python2.7/dist-packages/mct/"
 
-DRV_SRC="openstack_driver"
+DRV_SRC="MCT_Agent/openstack_driver"
 DRV_DST="${BASE}/usr/lib/python2.7/dist-packages/nova/virt/mct/"
 
 

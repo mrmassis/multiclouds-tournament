@@ -15,8 +15,8 @@ import json;
 import pika;
 import logging;
 
-from nova.virt.mct.utils import *;
-from pika.exceptions     import AMQPConnectionError, AMQPChannelError;
+from mct.lib.utils    import *;
+from pika.exceptions  import AMQPConnectionError, AMQPChannelError;
 
 
 
