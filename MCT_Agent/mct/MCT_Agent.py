@@ -433,7 +433,7 @@ if __name__ == "__main__":
 
     try:
         ## Initialized the object responsable to authenticate the 'MCT_Agent'.
-        mct_auth = MCT_Authenticate(cAddr, sPort, cName, cAddr);
+        mct_auth = MCT_Authenticate(cAddr, cName, sAddr, sPort);
 
         if mct_auth.authenticate() == 1:
             mct = MCT_Agent();

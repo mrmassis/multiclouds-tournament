@@ -16,6 +16,12 @@ import inspect;
 ###############################################################################
 ## DEFINITION                                                                ##
 ###############################################################################
+## Value defined to status when dont find some fields.
+MESSAGE_PARSE_ERROR = -10;
+
+## Invalid division:
+DIVISION_INVALID = -1;
+
 ## Operation code:
 GETINF_RESOURCE = 0
 SETINF_RESOURCE = 8
