@@ -56,11 +56,11 @@ ENGINE = InnoDB
 PACK_KEYS = DEFAULT;
 
 
---- ---------------------------------------------------------------------------
---- CREATE USER
---- ---------------------------------------------------------------------------
+-- ---------------------------------------------------------------------------
+-- CREATE USER
+-- ---------------------------------------------------------------------------
 CREATE USER 'mct'@'localhost' IDENTIFIED BY 'password';
-GRANT ALL PRIVILEGES ON 'mct' . * TO 'mct'@'localhost';
+GRANT ALL PRIVILEGES ON mct.* TO 'mct'@'localhost';
 FLUSH PRIVILEGES;
 
 SET SQL_MODE=@OLD_SQL_MODE;
