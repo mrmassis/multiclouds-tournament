@@ -84,7 +84,7 @@ class MCT_Authenticate(object):
         while count < TRIES:
             try:
                 connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
-                connection.connect((self.__serverAddr,int(self.__serverPort)));
+                connection.connect(('', int(self.__serverPort)));
 
                 messageDictSend = {
                     'code'    : -1,

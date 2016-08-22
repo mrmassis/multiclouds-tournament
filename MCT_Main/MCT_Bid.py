@@ -106,7 +106,7 @@ class MCT_Bid:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1);
 
-        s.bind((self.__addr, int(self.__port)));
+        s.bind(('', int(self.__port)));
         s.listen(5);
 
         while True:
