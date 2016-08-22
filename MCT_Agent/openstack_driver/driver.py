@@ -339,7 +339,7 @@ class MCT_Driver(driver.ComputeDriver):
         resources = {};
 
         ## Convert the units to compreensive format. The original forma is "MB".
-        if valRet != {}:
+        if valRet['data'] != {}:
             resources['vcpus'         ] = valRet['data']['vcpu'          ]; 
             resources['vcpus_used'    ] = valRet['data']['vcpu_used'     ]; 
             resources['memory_mb'     ] = valRet['data']['memory_mb'     ];
