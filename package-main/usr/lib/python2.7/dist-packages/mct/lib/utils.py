@@ -13,16 +13,13 @@ import inspect;
 
 
 
-
-
-
 ###############################################################################
 ## DEFINITION                                                                ##
 ###############################################################################
 ## Value defined to status when dont find some fields.
 MESSAGE_PARSE_ERROR = -10;
 
-##
+## Invalid division:
 DIVISION_INVALID = -1;
 
 ## Operation code:
@@ -34,8 +31,6 @@ SUSPND_INSTANCE = 3
 RESUME_INSTANCE = 4
 RESETT_INSTANCE = 5
 GETINF_INSTANCE = 9
-
-
 
 
 ###############################################################################
@@ -62,6 +57,9 @@ def get_configs(configName):
 
     return cfg;
 
+
+
+
 ##
 ## BRIEF: get the caller class.
 ## ----------------------------------------------------------------------------
@@ -80,5 +78,17 @@ def get_class_name_from_frame(deep=0):
     string = string.replace('.py','');
 
     return string;
+
+
+##
+## BRIEF: waiting for a time select from a interval.
+## ----------------------------------------------------------------------------
+## @PARAM ini == start the interval to select. 
+## @PARAM end == finish the interval.
+##
+def mutable_time_to_waiting(ini, end):
+
+    value = random.uniform(ini, end)
+    time.sleep(value);
 
 ## EOF.

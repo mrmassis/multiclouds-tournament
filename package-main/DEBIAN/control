@@ -1,0 +1,8 @@
+Package: mct-main
+Priority: optional
+Section: admin
+Maintainer: Marcio Assis <marcio.miranda.assis@gmail.com>
+Architecture: i386
+Version: 0.0.1-0
+Depends: python-pika, rabbitmq-server, python-mysql.connector
+Description: The MultiClouds Tournament Main Services.

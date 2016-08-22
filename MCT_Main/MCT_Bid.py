@@ -7,8 +7,8 @@ import logging;
 import logging.handlers;
 import socket;
 
-from lib.utils    import *;
-from lib.database import Database;
+from mct.lib.utils    import *;
+from mct.lib.database import MCT_Database;
 
 
 
@@ -91,7 +91,7 @@ class MCT_Bid:
         self.__port = configs['connection']['port'];
 
         ## Intance a new object to handler all operation in the local database.
-        self.__dbConnection = Database(configs['database']);
+        self.__dbConnection = MCT_Database(configs['database']);
 
 
     ###########################################################################

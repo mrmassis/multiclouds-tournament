@@ -3,15 +3,25 @@
 
 
 
+
+
+
+
 ###############################################################################
 ## IMPORT                                                                    ##
 ###############################################################################
+__all__ = ['RabbitMQ_Publish', 'RabbitMQ_Consume'];
+
 import logging;
 import json;
 import pika;
 import time;
 
-from .utils import *;
+from mct.lib.utils import *;
+
+
+
+
 
 
 
@@ -25,6 +35,10 @@ EXCHANGE_TYPE = 'direct';
 
 
 
+
+
+
+
 ###############################################################################
 ## LOG CONFIGURATION                                                         ##
 ###############################################################################
@@ -34,6 +48,10 @@ EXCHANGE_TYPE = 'direct';
 logName = get_class_name_from_frame(deep=2);
 
 LOG = logging.getLogger(logName);
+
+
+
+
 
 
 
@@ -57,6 +75,7 @@ class RabbitMQ_Publish(object):
     __appId      = None;
     __connection = None;
     __data       = {};
+    __identifier = None;
 
 
     ###########################################################################

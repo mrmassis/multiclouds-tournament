@@ -10,11 +10,11 @@ import json;
 import logging;
 import logging.handlers;
 
-from lib.database     import Database;
-from multiprocessing  import Process, Queue, Lock;
-from lib.scheduller   import *;
-from lib.amqp         import RabbitMQ_Publish, RabbitMQ_Consume;
-from lib.utils        import *;
+from multiprocessing     import Process, Queue, Lock;
+from mct.lib.scheduller  import *;
+from mct.lib.amqp        import RabbitMQ_Publish, RabbitMQ_Consume;
+from mct.lib.utils       import *;
+from mct.lib.database    import MCT_Database;
 
 
 
@@ -109,7 +109,7 @@ class MCT_Referee(RabbitMQ_Consume):
         self.__publish=RabbitMQ_Publish(configs['amqp_publish']);
 
         ## Intance a new object to handler all operation in the local database
-        self.__db = Database(configs['database']);
+        self.__db = MCT_Database(configs['database']);
 
         ## Select the scheduller algorithm responsible for selection of the be-
         ## st player in a division.

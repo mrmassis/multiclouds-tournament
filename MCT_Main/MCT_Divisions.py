@@ -9,9 +9,9 @@ import ConfigParser;
 import logging;
 import logging.handlers;
 
-from lib.database    import Database;
-from multiprocessing import Process, Queue, Lock;
-from lib.utils       import *;
+from mct.lib.utils    import *;
+from mct.lib.database import MCT_Database;
+from multiprocessing  import Process, Queue, Lock;
 
 
 
@@ -272,7 +272,7 @@ class MCT_Divisions:
         configs = get_configs(CONFIG_FILE);
 
         ## Intance a new object to handler all operation in the local database
-        self.__db = Database(configs['database']);
+        self.__db = MCT_Database(configs['database']);
 
         ## Get a new lock from package process. This lock is to be used inside
         ## the thread division.
