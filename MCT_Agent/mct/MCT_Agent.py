@@ -426,10 +426,10 @@ if __name__ == "__main__":
 
     config = get_configs(CONFIG_FILE);
 
-    sAddr = config['authtenticate']['sAddr'];
-    sPort = config['authtenticate']['sPort']
-    cName = config['authtenticate']['cName']
-    cAddr = config['authtenticate']['cAddr']
+    sAddr = config['authenticate']['sAddr'];
+    sPort = config['authenticate']['sPort']
+    cName = config['authenticate']['cName']
+    cAddr = config['authenticate']['cAddr']
 
     try:
         ## Initialized the object responsable to authenticate the 'MCT_Agent'.
