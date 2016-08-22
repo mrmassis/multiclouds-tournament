@@ -424,9 +424,16 @@ if __name__ == "__main__":
     ## LOG:
     logger.info('EXECUTION STARTED...');
 
+    config = get_configs(CONFIG_FILE);
+
+    sAddr = config['authtenticate']['sAddr'];
+    sPort = config['authtenticate']['sPort']
+    cName = config['authtenticate']['cName']
+    cAddr = config['authtenticate']['cAddr']
+
     try:
         ## Initialized the object responsable to authenticate the 'MCT_Agent'.
-        mct_auth = MCT_Authenticate();
+        mct_auth = MCT_Authenticate(cAddr, sPort, cName, cAddr);
 
         if mct_auth.authenticate() == 1:
             mct = MCT_Agent();
