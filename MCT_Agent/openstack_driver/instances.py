@@ -12,9 +12,9 @@
 ###############################################################################
 import ConfigParser;
 
-from nova.openstack.common  import log as logging
-from nova.virt.mct.database import MCT_Database;
-from nova.virt.mct.utils    import *;
+from nova.openstack.common import log as logging
+from mct.lib.database      import MCT_Database;
+from mct.lib.utils         import *;
 
 
 

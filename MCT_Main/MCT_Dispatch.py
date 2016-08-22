@@ -7,9 +7,9 @@ import datetime;
 import logging;
 import logging.handlers;
 
-from lib.utils    import *;
-from lib.database import Database;
-from lib.amqp     import RabbitMQ_Publish, RabbitMQ_Consume;
+from mct.lib.utils    import *;
+from mct.lib.database import MCT_Database;
+from mct.lib.amqp     import RabbitMQ_Publish, RabbitMQ_Consume;
 
 
 
@@ -120,7 +120,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
         self.__publish=RabbitMQ_Publish(configs['amqp_publish']);
 
         ## Intance a new object to handler all operation in the local database.
-        self.__dbConnection = Database(configs['database']);
+        self.__dbConnection = MCT_Database(configs['database']);
 
 
     ###########################################################################

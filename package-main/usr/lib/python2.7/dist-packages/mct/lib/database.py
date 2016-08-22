@@ -3,13 +3,23 @@
 
 
 
+
+
+
+
 ###############################################################################
 ## IMPORT                                                                    ##
 ###############################################################################
+__all__ = ['MCT_Database']
+
 import mysql.connector;
 import mysql;
 
 from mysql.connector import errorcode;
+from mysql.connector import RefreshOption;
+
+
+
 
 
 
@@ -22,10 +32,14 @@ from mysql.connector import errorcode;
 
 
 
+
+
+
+
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
-class Database(object):
+class MCT_Database(object):
 
     """
     Class that handle the mysql database.
@@ -143,6 +157,16 @@ class Database(object):
         return 1;
 
 
+    ##
+    ## BRIEF:
+    ## ------------------------------------------------------------------------
+    ##
+    def flush_tables(self):
+        refresh = RefreshOption.TABLES | RefreshOption.THREADS;
+        self.__dbConnection.cmd_refresh(refresh);
+
+
+
     ###########################################################################
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
@@ -186,3 +210,4 @@ class Database(object):
         return connection;
 
 ## END.
+

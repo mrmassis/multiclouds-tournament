@@ -204,12 +204,7 @@ class MCT_Driver(driver.ComputeDriver):
         LOG.info(instance);
 
         ## Send get instance info request to the MCT:
-<<<<<<< HEAD
         valRet = self.mct.get_instance_information(instance['uuid']); 
-=======
-        #valRet = self.mct.get_instance_information(uuid); 
-        valRet = {};
->>>>>>> f509b9fea73c54d497522b85885032cfc62642af
 
         if valRet != {}:
             instanceInfoObj = {};

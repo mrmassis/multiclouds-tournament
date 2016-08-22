@@ -17,8 +17,8 @@ import ast;
 import logging;
 
 from nova.virt.mct.communication import MCT_Communication;
-from nova.virt.mct.database      import MCT_Database;
-from nova.virt.mct.utils         import *;
+from mct.lib.database            import MCT_Database;
+from mct.lib.utils               import *;
 
 
 

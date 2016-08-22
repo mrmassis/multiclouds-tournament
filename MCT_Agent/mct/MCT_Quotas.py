@@ -9,9 +9,9 @@ import logging.handlers;
 import pika;
 import datetime;
 
-from mct.lib.utils         import *;
-from mct.lib.openstack_API import MCT_Openstack_Nova;
-from mct.lib.amqp          import RabbitMQ_Publish;
+from mct.lib.utils     import *;
+from mct.lib.openstack import MCT_Openstack_Nova;
+from mct.lib.amqp      import RabbitMQ_Publish;
 
 
 
