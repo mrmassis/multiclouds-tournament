@@ -9,11 +9,12 @@ import logging.handlers;
 import pika;
 import datetime;
 
-from mct.lib.utils     import *;
-from mct.lib.openstack import MCT_Openstack_Nova;
-from mct.lib.emulator  import MCT_Emulator;
-from mct.lib.amqp      import RabbitMQ_Publish, RabbitMQ_Consume;
-from mct.lib.database  import MCT_Database;
+from mct.lib.utils        import *;
+from mct.lib.openstack    import MCT_Openstack_Nova;
+from mct.lib.emulator     import MCT_Emulator;
+from mct.lib.amqp         import RabbitMQ_Publish, RabbitMQ_Consume;
+from mct.lib.database     import MCT_Database;
+from mct.lib.authenticate import MCT_Authenticate;
 
 
 
@@ -250,10 +251,10 @@ class MCT_Agent(RabbitMQ_Consume):
         ## Insert the message received into the database.
         query  = "INSERT INTO REQUEST (player_id, request_id, status, message) ";
         query += "VALUES (%s,%s,%s,%s)";
-        value  = (message['playerId'], 
-                  message['reqId'   ], 
-                  message['status'  ],
-                  message['data'    ]);
+        value  = (str(message['playerId']), 
+                  str(message['reqId'   ]), 
+                  int(message['status'  ]),
+                  str(message['data'    ]));
 
         valret = self.__dbConnection.insert_query(query, value);
 
@@ -338,25 +339,7 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict request == received request.
     ##
     def __inspect_request(self, request):
-        error = 0;
-
-        #fields = ['status', 'reqId', 'code'   , 'playerId', 
-        #          'retId' , 'data' , 'destAdd', 'origAdd'];
-
-        #for field in fields:
-        #    if not request.has_key(field):
-        #        error += 1;
- 
-
-        #if error == 0:
-            ## LOG:
-        #    logger.info('ALL FIELDS ARE PRESENTS!');
-        #    return 0;
-        #else:
-            ## LOG:
-        #    logger.info('SOME FIELDS ARE MISSING!');
-        #    return 1;
-        return 0
+        return 0;
 
 
     ##
@@ -441,9 +424,23 @@ if __name__ == "__main__":
     ## LOG:
     logger.info('EXECUTION STARTED...');
 
+    config = get_configs(CONFIG_FILE);
+
+    sAddr = config['authenticate']['saddr'];
+    sPort = config['authenticate']['sport']
+    cName = config['authenticate']['cname']
+    cAddr = config['authenticate']['caddr']
+
     try:
-        mct = MCT_Agent();
-        mct.consume();
+        ## Initialized the object responsable to authenticate the 'MCT_Agent'.
+        mct_auth = MCT_Authenticate(cAddr, cName, sAddr, sPort);
+
+        if mct_auth.authenticate() == 1:
+            mct = MCT_Agent();
+            mct.consume();
+        else:
+            logger.error('IT WAS NOT POSSIBLE TO AUTHENTICATE!');
+
     except KeyboardInterrupt:
         pass;
 

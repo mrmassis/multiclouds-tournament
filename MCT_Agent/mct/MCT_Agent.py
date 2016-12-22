@@ -27,6 +27,7 @@ from mct.lib.authenticate import MCT_Authenticate;
 ## DEFINITIONS                                                               ##
 ###############################################################################
 CONFIG_FILE  = '/etc/mct/mct_agent.ini';
+VAGENT_FILE  = '/etc/mct/mct_emulator.ini';
 LOG_NAME     = 'MCT_Agent';
 LOG_FORMAT   = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
 LOG_FILENAME = '/var/log/mct/mct_agent.log';
@@ -426,20 +427,26 @@ if __name__ == "__main__":
 
     config = get_configs(CONFIG_FILE);
 
-    sAddr = config['authtenticate']['sAddr'];
-    sPort = config['authtenticate']['sPort']
-    cName = config['authtenticate']['cName']
-    cAddr = config['authtenticate']['cAddr']
+    ## Case this agent is virtual (to emulate), open the file with vagents spe-
+    ## cification.
+    if config['main']['emulate'] == 'true':
+        agents = get_configs(VAGENT_FILE);
+    else:
+        agents = config['authenticate'];
 
     try:
         ## Initialized the object responsable to authenticate the 'MCT_Agent'.
-        mct_auth = MCT_Authenticate(cAddr, sPort, cName, cAddr);
+        for agent in agents:
+            sAddr = agent['authenticate_address'];
+            sPort = agent['authenticate_port'   ];
+            aAddr = agent['agent_address'       ];
+            aName = agent['name'                ];
 
-        if mct_auth.authenticate() == 1:
-            mct = MCT_Agent();
-            mct.consume();
-        else:
-            logger.error('IT WAS NOT POSSIBLE TO AUTHENTICATE!');
+            mct_auth = MCT_Authenticate(aAddr, aName, sAddr, sPort);
+
+         ## TODO: make a better designe: 
+         mct = MCT_Agent();
+         mct.consume();
 
     except KeyboardInterrupt:
         pass;

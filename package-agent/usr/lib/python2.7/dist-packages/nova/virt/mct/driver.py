@@ -204,12 +204,7 @@ class MCT_Driver(driver.ComputeDriver):
         LOG.info(instance);
 
         ## Send get instance info request to the MCT:
-<<<<<<< HEAD
         valRet = self.mct.get_instance_information(instance['uuid']); 
-=======
-        #valRet = self.mct.get_instance_information(uuid); 
-        valRet = {};
->>>>>>> f509b9fea73c54d497522b85885032cfc62642af
 
         if valRet != {}:
             instanceInfoObj = {};
@@ -344,7 +339,7 @@ class MCT_Driver(driver.ComputeDriver):
         resources = {};
 
         ## Convert the units to compreensive format. The original forma is "MB".
-        if valRet != {}:
+        if valRet['data'] != {}:
             resources['vcpus'         ] = valRet['data']['vcpu'          ]; 
             resources['vcpus_used'    ] = valRet['data']['vcpu_used'     ]; 
             resources['memory_mb'     ] = valRet['data']['memory_mb'     ];
