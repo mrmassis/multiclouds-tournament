@@ -10,7 +10,7 @@ import pika;
 import datetime;
 
 from mct.lib.utils        import *;
-from mct.lib.openstack    import MCT_Openstack_Nova;
+#from mct.lib.openstack    import MCT_Openstack_Nova;
 from mct.lib.emulator     import MCT_Emulator;
 from mct.lib.amqp         import RabbitMQ_Publish, RabbitMQ_Consume;
 from mct.lib.database     import MCT_Database;
@@ -26,11 +26,10 @@ from mct.lib.authenticate import MCT_Authenticate;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE  = '/etc/mct/mct_agent.ini';
-VAGENT_FILE  = '/etc/mct/mct_emulator.ini';
-LOG_NAME     = 'MCT_Agent';
+CONFIG_FILE  = '/etc/mct/mct-simulation.ini';
+LOG_NAME     = 'MCT_Agent_Simulation';
 LOG_FORMAT   = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
-LOG_FILENAME = '/var/log/mct/mct_agent.log';
+LOG_FILENAME = '/var/log/mct/mct_agent_simulation.log';
 DISPATCH_NAME= 'MCT_Dispatch';
 
 
@@ -98,11 +97,7 @@ class MCT_Agent(RabbitMQ_Consume):
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self):
-
-        ## Get all configs parameters presents in the config file localized in
-        ## CONFIG_FILE path.
-        config = get_configs(CONFIG_FILE);
+    def __init__(self, config):
 
         ## Local address:
         self.__my_ip = config['main']['my_ip'];
@@ -123,16 +118,6 @@ class MCT_Agent(RabbitMQ_Consume):
 
         ## Intance a new object to handler all operation in the local database.
         self.__dbConnection = MCT_Database(config['database']);
-
-        ## Check the type of framework utilized to build the cloud.Intance the
-        ## correct API.
-        self.__cloudType = config['cloud_framework']['type'];
-
-        if   self.__cloudType == 'openstack':
-            self.__cloud = MCT_Openstack_Nova(config['cloud_framework']);
-
-        elif self.__cloudType == 'emulation':
-            self.__cloud = MCT_Emulator();
 
 
     ###########################################################################
@@ -179,9 +164,11 @@ class MCT_Agent(RabbitMQ_Consume):
         ## LOG:
         logger.info('MESSAGE SEND TO DISPATCH: %s', message);
 
+        print message
         ## Publish the message to MCT_Dispatch via AMQP. The MCT_Dispatch is in
         ## the remote server. 
         valRet = self.__publishExt.publish(message, self.__routeExt);
+        print valRet
 
         if valRet == False:
             ## LOG:
@@ -212,7 +199,7 @@ class MCT_Agent(RabbitMQ_Consume):
             ## suspend instance e resume instance): 
             ## Create:
             if   message['code'] == CREATE_INSTANCE:
-                status = self.__emul_create_server(message);
+                status = self.__create_server(message);
 
             ## Delete:
             elif message['code'] == DELETE_INSTANCE:
@@ -427,26 +414,29 @@ if __name__ == "__main__":
 
     config = get_configs(CONFIG_FILE);
 
-    ## Case this agent is virtual (to emulate), open the file with vagents spe-
-    ## cification.
-    if config['main']['emulate'] == 'true':
-        agents = get_configs(VAGENT_FILE);
-    else:
-        agents = config['authenticate'];
-
     try:
-        ## Initialized the object responsable to authenticate the 'MCT_Agent'.
-        for agent in agents:
-            sAddr = agent['authenticate_address'];
-            sPort = agent['authenticate_port'   ];
-            aAddr = agent['agent_address'       ];
-            aName = agent['name'                ];
+        ## Case this agent is virtual (to emulate), open the file with vagents
+        ## specification.
+        for i in range(int(config['main']['vplayers'])):
+            vName = 'vplayer' + str(i);
 
-            mct_auth = MCT_Authenticate(aAddr, aName, sAddr, sPort);
+            ## Get configuration options to the virtual player (amqp,quote etc)
+            vCfg = config[vName];
+    
+            try:
+                sAddr = vCfg['authenticate_address'];
+                sPort = vCfg['authenticate_port'   ];
+                aAddr = vCfg['agent_address'       ];
+                aName = vCfg['name'                ];
 
-         ## TODO: make a better designe: 
-         mct = MCT_Agent();
-         mct.consume();
+                #mct_auth = MCT_Authenticate(aAddr, aName, sAddr, sPort);
+                #mct_auth.authenticate();
+            except:
+                pass;
+
+        ## TODO: make a better designe: 
+        mct = MCT_Agent(config);
+        mct.consume();
 
     except KeyboardInterrupt:
         pass;

@@ -172,7 +172,7 @@ class MCT_Quotas:
         
         if quota == {}:
             quota = {
-                'cores' : 0,
+                'vcpus' : 0,
                 'memory': 0,
                 'disk'  : 0
             };

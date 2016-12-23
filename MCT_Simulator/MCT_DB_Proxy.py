@@ -17,6 +17,8 @@ import ast;
 import logging;
 import logging.handlers;
 import sys;
+import socket;
+import json;
 
 from mct.lib.database  import MCT_Database;
 from mct.lib.utils     import *;
@@ -31,11 +33,22 @@ from mct.lib.utils     import *;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE   = 'mct_db_proxy.ini';
-LOG_NAME      = 'MCT_Db_Proxy';
-LOG_FORMAT    = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
-LOG_FILENAME  = '/var/log/mct/mct_emulator.log';
-
+CONFIG_FILE      = '/etc/mct/mct-db-proxy.ini';
+LOG_NAME         = 'MCT_Db_Proxy';
+LOG_FORMAT       = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
+LOG_FILENAME     = '/var/log/mct/mct_db_proxy.log';
+SIMULATION_TABLE = 'SIMULATION'
+ADD_VM_INSTANCE  = 0
+DEL_VM_INSTANCE  = 1
+INF_VM_INSTANCE  = 2
+SOCKET_PORT      = 10000
+T_T_MIN          = 0.0
+T_T_MAX          = 0.3
+T_S_MIN          = 0.3
+T_S_MAX          = 0.6
+T_B_MIN          = 0.6
+T_B_MAX          = 1.1
+TIME_BASE        = 3277 ## 3277837725 microseconds: timestamp from first entry.
 
 
 
@@ -73,7 +86,7 @@ logger.addHandler(handler);
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
-class MCT_DB_Proxy_Server:
+class MCT_DB_Proxy:
 
     """
     Class MCT_DB_Proxy_Server: 
@@ -84,10 +97,11 @@ class MCT_DB_Proxy_Server:
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __count        = 0;
+    __count        = 1;
     __dbConnection = None;
     __state        = {};
     __tmpTable     = None;
+    __port         = SOCKET_PORT
 
 
     ###########################################################################
@@ -96,7 +110,7 @@ class MCT_DB_Proxy_Server:
     def __init__(self, cfg):
 
         ## LOG:
-        LOG.info('[MCT_DB_PROXY] INITIALIZE PROXY DB SERVER!');
+        logger.info('[MCT_DB_PROXY] INITIALIZE PROXY DB SERVER!');
        
         ## Get all configs parameters presents in the config file localized in
         ## CONFIG_FILE path.
@@ -104,12 +118,6 @@ class MCT_DB_Proxy_Server:
 
         ## Intance a new object to handler all operation in the local database.
         self.__dbConnection = MCT_Database(config['database']);
-
-        ## Create the name of temp table to this simulation:
-        self.__tmpTable = 'SIMULATION_DATA' + time.strftime('_%a_%H:%M:%S');
-
-        ## Create a new temporary table and copy SIMULATION table values to its
-        self.__dbConnectin.dump_table(config['simulation'], self.__tmpTable);
 
 
     ###########################################################################
@@ -148,16 +156,17 @@ class MCT_DB_Proxy_Server:
            ## Get an action:
            messageDictSend = self.__get_action(messageDictRecv['player']);
 
-           ## Exit condition:
-           if messageDictSend == {}:
-              break;
-
            ## Convert the return value of the authentication from simple dictio
            ## nary format to json format.
            messageJsonSend = json.dumps(messageDictSend, ensure_ascii=False);
 
            connection.sendall(messageJsonSend);
            connection.close();
+
+           if messageDictSend['valid'] == 2:
+               ## LOG:
+               logger.info("THE ACTIONS FINISH, DATABASE EMPTY!!!");
+               break;
 
         return 0;
 
@@ -167,8 +176,9 @@ class MCT_DB_Proxy_Server:
     ## ------------------------------------------------------------------------
     ##
     def finish(self):
-        ## Delete de temporary simulation table:
-        self.__dbConnection.del_table(self.__tmpTable);
+        ## LOG:
+        logger.info("FINISHING...");
+        return 0
 
 
     ###########################################################################
@@ -185,41 +195,47 @@ class MCT_DB_Proxy_Server:
         ## yer. If dont exist, create a new one.
         self.__list_player(player);
 
-        ## Get action data from database simulation:
-        data = self.__get_next_action(self.__state[player]['count']);
+        while True:
 
-        while data['valid'] != 0:
+            ## Obtain a new action data from dbase through MCT_DB_Proxy service.
+            data = self.__get_next_action(self.__state[player]['count']);
 
-            ## Set the 'global start counter' to first valid entry in database.
-            self.__count += 1;
+            ## After to obtain the new action from database increment the count.
+            self.__state[player]['count'] += 1;
 
-            while True:
+            ## Accept only two actions: create a new instance and delete a exis
+            ## tent instance in MCT.
+            if data['valid'] == 0 and data['action'] != INF_VM_INSTANCE:
+
+                ## The machineID received from database through 'MCT_DB_Proxy'.
+                machineId = data['machineID'];
 
                 ## Case the action is to create a VM, return the action's data.
-                if data['action'] == CREATE_INSTANCE:
-                    self.__state[name]['jobID'].append(actionData['jobID']);
+                if data['action'] == ADD_VM_INSTANCE:
 
-                    ## Invalid the used action!
-                    self.__invalid_action(self.__state[player]['count']);
-                    return data;
+                    ## Invalid (set with valid = 1) the used action that id is:
+                    self.__invalid_action(self.__state[player]['count']-1);
+
+                    ## Insert the "machine ID" value to the "state dictionary".
+                    self.__state[player]['machineID'].append(machineId);
+                    break;
 
                 ## Case the action is not to create a new instance,check if the
                 ## action is about a job present in the player's state. If yes,
                 ## return the action. Otherwise, request a new action.
-                if data['jobID'] in self.__state[player]['jobID']:
+                if machineId in self.__state[player]['machineID']:
 
-                    ## Invalid the used action!
-                    self.__invalid_action(self.__state[player]['count']);
-                    return data;
+                    ## Invalid (set with valid = 1) the used action that id is:
+                    self.__invalid_action(self.__state[player]['count']-1);
+        
+                    ## Remove the machine ID entry from the "state dictionary".
+                    self.__state[player]['machineID'].remove(machineId);
+                    break;
 
-                ## After to receive the new action from database increment the
-                ## player's count
-                self.__state[player]['count'] += 1;
+            elif data['valid'] == 2:
+                break;
 
-                ## Get action data from database simulation:
-                data = self.__get_next_action(self.__state[player]['count']);
-
-        return {};
+        return data;
 
 
     ##
@@ -229,9 +245,9 @@ class MCT_DB_Proxy_Server:
     ##
     def __invalid_action(self, idx):
 
-        query  = "UPDATE " + self.__tmpTable  + " SET valid='1' ";
-        query += "WHERE idx='" + str(idx) + "' " ;
-        valRet = self.__db.update_query(query);
+        query  = "UPDATE " + SIMULATION_TABLE + " SET valid='1' ";
+        query += "WHERE id='" + str(idx) + "' " ;
+        valRet = self.__dbConnection.update_query(query);
 
         return 0;
 
@@ -242,32 +258,71 @@ class MCT_DB_Proxy_Server:
     ## @PARAM idx == index to get the action.
     ##
     def __get_next_action(self, idx):
-
-        vmTypes = {
-            0 : 'T',
-            1 : 'S',
-            2 : 'B',
-            3 : 'B',
-        };
+        ## Valid == 2 meaning that there isnt record in database.
+        actionData = {'valid':2};
 
         ## Mount the select query: 
-        dbQuery  = "SELECT * FROM "+self.__tmpTable+" WHERE idx='" + idx + "'";
+        dbQuery =  "SELECT id,machineId,eventType,cpu,memory,valid,time "
+        dbQuery += "FROM " + SIMULATION_TABLE;
+        dbQuery +=" WHERE id='" + str(idx) + "'";
 
         dataReceived = [] or self.__dbConnection.select_query(dbQuery);
  
         if dataReceived != []:
-          actionData['jobID' ] = dataReceived[0][1];
-          actionData['action'] = dataReceived[0][2];
-          actionData['valid' ] = dataReceived[0][4];
 
-          ## Case the action is to create a new vm instance, check the type of
-          ## instance:
-          if actionData['action'] == CREATE_INSTANCE:
-              actionData['vmType'] = vmTypes[dataReceived[0][3]];
-        else:
-            actionData['valid'] = 1;        
+            ##
+            ## id          
+            ## time        
+            ## machineId   
+            ## eventType   
+            ## plataformId 
+            ## cpu         
+            ## memory      
+            ## valid       
+            ##
+            actionData['id'       ] = dataReceived[0][0];
+            actionData['machineID'] = dataReceived[0][1];
+            actionData['action'   ] = dataReceived[0][2];
+            actionData['cpu'      ] = dataReceived[0][3];
+            actionData['mem'      ] = dataReceived[0][4];
+            actionData['valid'    ] = dataReceived[0][5];
+
+            ## Convert time from microseconds to seconds. Normalize the time too
+            actionData['time'] = int(dataReceived[0][6]/1000000) - TIME_BASE;
+
+            ## Case the action is to create a new vm instance, check the type of
+            ## instance:
+            if actionData['action'] == ADD_VM_INSTANCE:
+                cpu = dataReceived[0][3];
+                mem = dataReceived[0][4];
+
+                ## Mapping schedulling class to virtual machine type inside MCT.
+                actionData['vmType'] = self.__get_vm_type(cpu, mem);
 
         return actionData;
+
+
+    ##
+    ## BRIEF: get the vm type.
+    ## ------------------------------------------------------------------------
+    ## @PARAM cpuFactor == cpu factor.
+    ## @PARAM memFactor == mem factor.
+    ##
+    def __get_vm_type(self, cpuFactor, memFactor):
+        ## VM types: 'T' (tiny), 'S' (Small), and 'B' (Big).
+        vmType = '';
+
+        ## Use mem factor to decide which the vm type put inside the request.
+        if   memFactor >= T_T_MIN and memFactor < T_T_MAX:
+            vmType = 'T';
+
+        elif memFactor >= T_S_MIN and memFactor < T_S_MAX:
+            vmType = 'S';
+
+        elif memFactor >= T_B_MIN and memFactor < T_B_MAX:
+            vmType = 'B';
+
+        return vmType;
 
 
     ##
@@ -278,9 +333,9 @@ class MCT_DB_Proxy_Server:
     def __list_player(self, playerName):
 
         if playerName not in self.__state:
-             self.__state[name] = {
-                 'count' : self.__count, 
-                 'jobId' : []
+             self.__state[playerName] = {
+                 'count'     : 1, 
+                 'machineID' : []
              };
 
         return 0;

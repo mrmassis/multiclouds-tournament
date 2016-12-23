@@ -10,7 +10,7 @@ import pika;
 import datetime;
 
 from mct.lib.utils        import *;
-from mct.lib.openstack    import MCT_Openstack_Nova;
+#from mct.lib.openstack    import MCT_Openstack_Nova;
 from mct.lib.emulator     import MCT_Emulator;
 from mct.lib.amqp         import RabbitMQ_Publish, RabbitMQ_Consume;
 from mct.lib.database     import MCT_Database;
@@ -212,7 +212,7 @@ class MCT_Agent(RabbitMQ_Consume):
             ## suspend instance e resume instance): 
             ## Create:
             if   message['code'] == CREATE_INSTANCE:
-                status = self.__emul_create_server(message);
+                status = self.__create_server(message);
 
             ## Delete:
             elif message['code'] == DELETE_INSTANCE:
@@ -429,24 +429,28 @@ if __name__ == "__main__":
 
     ## Case this agent is virtual (to emulate), open the file with vagents spe-
     ## cification.
-    if config['main']['emulate'] == 'true':
-        agents = get_configs(VAGENT_FILE);
+    if config['main']['emulated'] == 'disable':
+        agents = {'realPlayer':config['authenticate']};
     else:
-        agents = config['authenticate'];
+        agents = get_configs(VAGENT_FILE);
 
     try:
         ## Initialized the object responsable to authenticate the 'MCT_Agent'.
-        for agent in agents:
-            sAddr = agent['authenticate_address'];
-            sPort = agent['authenticate_port'   ];
-            aAddr = agent['agent_address'       ];
-            aName = agent['name'                ];
+        for key, value in agents.iteritems():
+            try:
+                sAddr = value['authenticate_address'];
+                sPort = value['authenticate_port'   ];
+                aAddr = value['agent_address'       ];
+                aName = value['name'                ];
 
-            mct_auth = MCT_Authenticate(aAddr, aName, sAddr, sPort);
+                mct_auth = MCT_Authenticate(aAddr, aName, sAddr, sPort);
+                mct_auth.authenticate();
+            except:
+                pass;
 
-         ## TODO: make a better designe: 
-         mct = MCT_Agent();
-         mct.consume();
+        ## TODO: make a better designe: 
+        mct = MCT_Agent();
+        mct.consume();
 
     except KeyboardInterrupt:
         pass;
