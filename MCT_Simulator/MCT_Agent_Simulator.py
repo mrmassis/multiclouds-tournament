@@ -9,12 +9,11 @@ import logging.handlers;
 import pika;
 import datetime;
 
-from mct.lib.utils        import *;
-#from mct.lib.openstack    import MCT_Openstack_Nova;
-from mct.lib.emulator     import MCT_Emulator;
-from mct.lib.amqp         import RabbitMQ_Publish, RabbitMQ_Consume;
-from mct.lib.database     import MCT_Database;
-from mct.lib.authenticate import MCT_Authenticate;
+from mct.lib.utils    import *;
+from mct.lib.emulator import MCT_Emulator;
+from mct.lib.amqp     import RabbitMQ_Publish, RabbitMQ_Consume;
+from mct.lib.database import MCT_Database;
+from mct.lib.registry import MCT_Registry;
 
 
 
@@ -119,6 +118,9 @@ class MCT_Agent(RabbitMQ_Consume):
         ## Intance a new object to handler all operation in the local database.
         self.__dbConnection = MCT_Database(config['database']);
 
+        ## Object that represet the cloud API emulator:
+        self.__cloud = MCT_Emulator();
+
 
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
@@ -164,11 +166,9 @@ class MCT_Agent(RabbitMQ_Consume):
         ## LOG:
         logger.info('MESSAGE SEND TO DISPATCH: %s', message);
 
-        print message
         ## Publish the message to MCT_Dispatch via AMQP. The MCT_Dispatch is in
         ## the remote server. 
         valRet = self.__publishExt.publish(message, self.__routeExt);
-        print valRet
 
         if valRet == False:
             ## LOG:
@@ -191,7 +191,8 @@ class MCT_Agent(RabbitMQ_Consume):
         logger.info('MESSAGE RETURNED OF %s REFEREE: %s', appId, message);
 
         ## In this case, the MCT_Agent received actions to be performed locally.
-        if message['origAdd'] != self.__my_ip and message['destAdd'] != '':
+        if message['destAdd'] != '':
+
             ## LOG:
             logger.info('PROCESSING REQUEST!');
 
@@ -205,14 +206,6 @@ class MCT_Agent(RabbitMQ_Consume):
             elif message['code'] == DELETE_INSTANCE:
                 status = self.__delete_server(message);
 
-            ## Suspend:
-            elif message['code'] == SUSPND_INSTANCE:
-                status = self.__suspnd_server(message);
-
-            ## Resume:
-            elif message['code'] == RESUME_INSTANCE:
-                status = self.__resume_server(message);
-
             ## The MCT_Agent support more than one cloud framework.So is neces-
             ## sary prepare the return status to a generic format. Send back to
             ## dispatch the return for the request.
@@ -220,6 +213,8 @@ class MCT_Agent(RabbitMQ_Consume):
 
             ## Return data to MCT_Dispatch.
             self.__publishExt.publish(message, self.__routeExt);
+
+        ## Return from a action:
         else:
             ## Update the database:
             self.__update_database(message);
@@ -248,30 +243,51 @@ class MCT_Agent(RabbitMQ_Consume):
 
 
     ##
-    ## BRIEF: create localy a new server. Receive the message, extract the ser-
-    ##        ver information (name, image, flavor, and net) and send to frame-
-    ##        work. So, wait return and check the return status. At finish, if
-    ##        the status == ACTIVE, make a mapping between id received and the
-    ##        local ID. At last, send back the status.
+    ## BRIEF: create localy a new server. 
     ## ------------------------------------------------------------------------
     ## @PARAM dict message == received message.
     ##
-    def __create_server(self, message):
+    def __create_server(self, msg):
 
-        vmsL = message['data']['name'  ];
-        imgL = message['data']['image' ];
-        flvL = 'm1.tiny' ; #message['data']['flavor'];
-        netL = 'demo-net';
+        status = 'ERROR';
 
-        valret = self.__cloud.create_instance(vmsL, imgL, flvL, netL);
+        ## Check if is possible create the new server (vcpu, memory, and disk).
+        query = "SELECT * FROM RESOURCES player_id='" + msg['playerId'] + "'";
 
-        status = valret[0];
-        destId = valret[1];        
+        dataReceived = [] or self.__dbConnection.select_query(query)[0];
 
-        if status == 'ACTIVE':
-            ## Insert in the MAP table the origin uuid (player source) and the
-            ## local instance uuuid.
-            self.__set_map_inst_id(destId, message['reqId']);
+        if dataReceived != []:
+
+            ## Get the index that meaning the flavors.(vcpus, memory, and disk).
+            i =FLV_NAME.keys()[FLV_NAME.values().index(msg['data']['flavor'])];
+
+            newVcpuUsed = int(dataReceived[2]) + int(CPU_INFO[i]);
+            newMemoUsed = int(dataReceived[4]) + int(MEN_INFO[i]);
+            newDiskUsed = int(dataReceived[6]) + int(DSK_INFO[i]);
+
+            ## Check if there are 'avaliable' resources to accept the instance.
+            if  newVcpuUsed =< int(dataReceived[1]) and 
+                newMemoUsed =< int(dataReceived[3]) and 
+                newDiskUsed =< int(dataReceived[5]):
+
+                ## Update the specific entry in dbase with new resource values.
+                query  = "UPDATE RESOURCES SET "
+                query += "vcpus_used='"      + str(newVcpuUsed) + "',";
+                query += "memory_mb_used='"  + str(newMemoUsed) + "',";
+                query += "local_gb_used='"   + str(newDiskUsed) + "' ";
+                query += "WHERE player_id='" + msg['playerId']  + "'" ;
+
+                valRet = self.__dbConnection.update_query(query);
+
+                ## Obtain a new hash to set the reqId:
+                destId = self.__create_index(); 
+
+                ## Insert in the MAP table the origin uuid (player source) and
+                ## the local instance uuuid. Here is where the data about run-
+                ## ning instances:
+                self.__set_map_inst_id(destId, message['reqId']);
+
+                status = 'ACTIVE';
 
         return status;
 
@@ -279,46 +295,37 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     ## BRIEF: delete localy a new server.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict message == received message.
+    ## @PARAM dict msg == received message.
     ##
-    def __delete_server(self, message):
+    def __delete_server(self, msg):
 
-        ## Obtain the local ID from MAP table.
-        destId = self.__get_map_inst_id(message['reqId']);
+        ## Check if is possible create the new server (vcpu, memory, and disk).
+        query = "SELECT * FROM RESOURCES player_id='" + msg['playerId'] + "'";
 
-        ## Delete the server:
-        valret = self.__cloud.delete_instance(destId);
+        dataReceived = [] or self.__dbConnection.select_query(query)[0];
 
-        status = valret[0];
+        if dataReceived != []:
 
-        if status == 'HARD_DELETED':
+            ## Get the index that meaning the flavors.(vcpus, memory, and disk).
+            i =FLV_NAME.keys()[FLV_NAME.values().index(msg['data']['flavor'])];
+
+            newVcpuUsed = int(dataReceived[2]) - int(CPU_INFO[i]);
+            newMemoUsed = int(dataReceived[4]) - int(MEN_INFO[i]);
+            newDiskUsed = int(dataReceived[6]) - int(DSK_INFO[i]);
+
+            ## Update the specific entry in database with new resource values.
+            query  = "UPDATE RESOURCES SET "
+            query += "vcpus_used='"      + str(newVcpuUsed) + "',";
+            query += "memory_mb_used='"  + str(newMemoUsed) + "',";
+            query += "local_gb_used='"   + str(newDiskUsed) + "' ";
+            query += "WHERE player_id='" + msg['playerId']  + "'" ;
+
+            valRet = self.__dbConnection.update_query(query);
+
+            ## Delete the instance from map ID table:
             self.__get_map_inst_id(message['reqId'], True);
 
-        return status;
-
-
-    ##
-    ## BRIEF: suspnd localy a new server.
-    ## ------------------------------------------------------------------------
-    ## @PARAM dict message == received message.
-    ##
-    def __suspnd_server(self, message):
-        destId = self.__get_map_inst_id(message['data']['reqId']);
-
-        ##status =self.__cloud.suspend_instance(instId);
-        return 'NOT_IMPLEMENTED';
-
-
-    ##
-    ## BRIEF: resume localy a new server.
-    ## ------------------------------------------------------------------------
-    ## @PARAM dict message == received message.
-    ##
-    def __resume_server(self, message):
-        destId = self.__get_map_inst_id(message['data']['reqId']);
-
-        ## status =self.__cloud.resume_instance(instId);
-        return 'NOT_IMPLEMENTED';
+        return 'HARD_DELETED';
 
 
     ##
@@ -371,6 +378,24 @@ class MCT_Agent(RabbitMQ_Consume):
         valRet = self.__dbConnection.insert_query(query, value);
 
         return 0;
+
+
+    ##
+    ## BRIEF: create a new index based in a hash.
+    ## ------------------------------------------------------------------------
+    ##
+    def __create_index(self):
+
+        ## Use FIPS SHA security algotirh sha512() to create a SHA hash object.
+        newHash = hashlib.sha512();
+
+        ## Update the hash object with the string arg. Repeated calls are equi-
+        ## valent to a single call with the concatenation of all the arguments:
+        newHash.update(str(time.time()));
+
+        ## Return a hash with ten position:
+        return newHash.hexdigest()[:10];
+
 
     ##
     ## Brief: get the local uuid from object.
@@ -429,12 +454,11 @@ if __name__ == "__main__":
                 aAddr = vCfg['agent_address'       ];
                 aName = vCfg['name'                ];
 
-                #mct_auth = MCT_Authenticate(aAddr, aName, sAddr, sPort);
-                #mct_auth.authenticate();
+                mct_registry = MCT_Registry(aAddr, aName, sAddr, sPort);
+                mct_registry.registry();
             except:
                 pass;
 
-        ## TODO: make a better designe: 
         mct = MCT_Agent(config);
         mct.consume();
 

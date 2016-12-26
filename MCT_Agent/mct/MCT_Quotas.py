@@ -24,7 +24,7 @@ from mct.lib.amqp      import RabbitMQ_Publish;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE  = '/etc/mct/mct_quotas.ini';
+CONFIG_FILE  = '/etc/mct/mct-quotas.ini';
 LOG_NAME     = 'MCT_Quotas';
 LOG_FORMAT   = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
 LOG_FILENAME = '/var/log/mct/mct_quotas.log';

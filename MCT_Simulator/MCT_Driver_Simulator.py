@@ -409,12 +409,14 @@ class MCT_Action(object):
         msgToSend = self.__create_basic_message(GETINF_RESOURCE, idx);
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        self.__publish.publish(msgToSend);
+        valret = self.__publish.publish(msgToSend);
 
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
-        #dataReceived = self.__waiting_return(self.__vplayerName, idx);
-        dataReceived = {};
+        if valret != -1:
+            dataReceived = self.__waiting_return(self.__vplayerName, idx);
+        else:
+            dataReceived = {};
 
         ## LOG:
         logger.info('[MCT_ACTION] DATA RECEIVED: %s', dataReceived);
@@ -449,12 +451,14 @@ class MCT_Action(object):
         msgToSend['data'] = vmData;
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        self.__publish.publish(msgToSend);
+        valret = self.__publish.publish(msgToSend);
 
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
-        #dataReceived = self.__waiting_return(self.__vplayerName, idx);
-        dataReceived = {};
+        if valret != -1:
+            dataReceived = self.__waiting_return(self.__vplayerName, idx);
+        else:
+            dataReceived = {};
 
         ## LOG:
         logger.info('[MCT_ACTION] DATA RECEIVED: %s', dataReceived);
@@ -496,13 +500,12 @@ class MCT_Action(object):
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
         valret = self.__publish.publish(msgToSend);
 
-        #if valret != -1:
-            ## Waiting for the answer (looking the dbase) . The answer is ready
-            ## when MCT_Agent send the return.
-        #    dataReceived = self.__waiting_return(self.__vplayerName, idx);
-        #else:
-        #    dataReceived = {};
-        dataReceived = {};
+        ## Waiting for the answer is ready in database.The answer is ready when
+        ## MCT_Agent send the return.
+        if valret != -1:
+            dataReceived = self.__waiting_return(self.__vplayerName, idx);
+        else:
+            dataReceived = {};
 
         ## LOG:
         logger.info('[MCT_ACTION] CREATE - DATA RECEIVED: %s', dataReceived);
@@ -540,8 +543,10 @@ class MCT_Action(object):
 
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
-        #dataReceived = self.__waiting_return(self.__vplayerName, idx);
-        dataReceived = {};
+        if valret != -1:
+            dataReceived = self.__waiting_return(self.__vplayerName, idx);
+        else:
+            dataReceived = {};
 
         ## LOG:
         logger.info('[MCT_ACTION] DELETE - DATA RECEIVED: %s', dataReceived);

@@ -33,12 +33,12 @@ TRIES        = 10
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
-class MCT_Authenticate(object):
+class MCT_Registry(object):
 
     """
-    MCT_Authenticate perform the register in the tournament.
+    MCT_Registry perform the register in the tournament.
     ---------------------------------------------------------------------------
-    * authenticate == authenticate a player.
+    * registry == authenticate a player.
     """
 
     ###########################################################################
@@ -77,7 +77,7 @@ class MCT_Authenticate(object):
     ## BRIEF: autheticate the player.
     ## -----------------------------------------------------------------------
     ## 
-    def authenticate(self):
+    def registry(self):
         messageDictRecv = {'status' : 0};
         count = 0;
 
@@ -140,8 +140,8 @@ if __name__ == "__main__":
     cName = 'vPlayer0';
     cAddr = '10.3.77.162'
 
-    mct_authenticate = MCT_Authenticate(cAddr, cName, sAddr, sPort);
-    mct_authenticate.authenticate();
+    mct_registry = MCT_Registry(cAddr, cName, sAddr, sPort);
+    mct_registry.registry();
 
 ## END.
 

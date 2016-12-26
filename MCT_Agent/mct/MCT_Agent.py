@@ -10,11 +10,10 @@ import pika;
 import datetime;
 
 from mct.lib.utils        import *;
-#from mct.lib.openstack    import MCT_Openstack_Nova;
-from mct.lib.emulator     import MCT_Emulator;
+from mct.lib.openstack    import MCT_Openstack_Nova;
 from mct.lib.amqp         import RabbitMQ_Publish, RabbitMQ_Consume;
 from mct.lib.database     import MCT_Database;
-from mct.lib.authenticate import MCT_Authenticate;
+from mct.lib.registry     import MCT_Registry;
 
 
 
@@ -26,7 +25,7 @@ from mct.lib.authenticate import MCT_Authenticate;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE  = '/etc/mct/mct_agent.ini';
+CONFIG_FILE  = '/etc/mct/mct-agent.ini';
 VAGENT_FILE  = '/etc/mct/mct_emulator.ini';
 LOG_NAME     = 'MCT_Agent';
 LOG_FORMAT   = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
@@ -427,28 +426,16 @@ if __name__ == "__main__":
 
     config = get_configs(CONFIG_FILE);
 
-    ## Case this agent is virtual (to emulate), open the file with vagents spe-
-    ## cification.
-    if config['main']['emulated'] == 'disable':
-        agents = {'realPlayer':config['authenticate']};
-    else:
-        agents = get_configs(VAGENT_FILE);
-
     try:
         ## Initialized the object responsable to authenticate the 'MCT_Agent'.
-        for key, value in agents.iteritems():
-            try:
-                sAddr = value['authenticate_address'];
-                sPort = value['authenticate_port'   ];
-                aAddr = value['agent_address'       ];
-                aName = value['name'                ];
+        sAddr = config['authenticate']['authenticate_address'];
+        sPort = config['authenticate']['authenticate_port'   ];
+        aAddr = config['authenticate']['agent_address'       ];
+        aName = config['authenticate']['name'                ];
 
-                mct_auth = MCT_Authenticate(aAddr, aName, sAddr, sPort);
-                mct_auth.authenticate();
-            except:
-                pass;
+        mct_registry = MCT_Registry(aAddr, aName, sAddr, sPort);
+        mct_registry.registry();
 
-        ## TODO: make a better designe: 
         mct = MCT_Agent();
         mct.consume();
 

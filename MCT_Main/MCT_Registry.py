@@ -60,7 +60,7 @@ logger.addHandler(handler);
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
-class MCT_Bid:
+class MCT_Registry:
 
     """
     Register the new player in the bollentin.
@@ -243,8 +243,8 @@ if __name__ == "__main__":
     logger.info('EXECUTION STARTED...');
 
     try:
-        mct_bid = MCT_Bid();
-        mct_bid.listen_connections();
+        mct_registry = MCT_Registry();
+        mct_registry.listen_connections();
 
     except KeyboardInterrupt, error:
         pass;

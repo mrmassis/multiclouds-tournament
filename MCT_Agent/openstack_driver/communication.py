@@ -28,7 +28,7 @@ from pika.exceptions  import AMQPConnectionError, AMQPChannelError;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE = '/etc/mct/mct_drive.ini';
+CONFIG_FILE = '/etc/mct/mct-drive.ini';
 
 LOG = logging.getLogger(__name__);
 
