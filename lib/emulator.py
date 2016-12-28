@@ -76,6 +76,5 @@ class MCT_Emulator(object):
     def delete_instance(self, uuid):
         return 'HARD_DELETED';  
 
-
 ## END.
 

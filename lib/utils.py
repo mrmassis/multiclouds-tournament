@@ -8,6 +8,8 @@
 ###############################################################################
 import ConfigParser;
 import inspect;
+import random;
+import time;
 
 
 
@@ -31,6 +33,20 @@ SUSPND_INSTANCE = 3
 RESUME_INSTANCE = 4
 RESETT_INSTANCE = 5
 GETINF_INSTANCE = 9
+
+## Instances definitions (SIMULATION):
+IMG_NAME = 'cirros-0.3.2-x86_64';
+NET_NAME = 'demo-net';
+
+## Information about the flavors. Get from openstack flavors!
+FLV_NAME = {'T':'m1.tiny', 'S':'m1.small', 'B':'m1.medium'};
+CPU_INFO = {'T':'1'  , 'S':'1'   , 'B':'2'   };
+MEM_INFO = {'T':'512', 'S':'2048', 'B':'4096'};
+DSK_INFO = {'T':'1'  , 'S':'20'  , 'B':'40'  };
+
+
+
+
 
 
 ###############################################################################

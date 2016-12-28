@@ -166,6 +166,18 @@ class MCT_Database(object):
         self.__dbConnection.cmd_refresh(refresh);
 
 
+    ##
+    ## BRIEF:
+    ## ------------------------------------------------------------------------
+    ## @PARAM simulationData ==
+    ## @PARAM tmpTableName   ==
+    ##
+    def dump_table(self, simulationData, tmpTableName):
+
+        print simulationData
+        print dstTableName
+
+
 
     ###########################################################################
     ## PRIVATE METHODS                                                       ##
