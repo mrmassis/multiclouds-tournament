@@ -106,7 +106,7 @@ class MCT_Referee(RabbitMQ_Consume):
         configs['amqp_publish']['pass'] = configs['rabbitmq']['pass'];
 
         ## Instantiates an object to perform the publication of AMQP messages.
-        self.__publish=RabbitMQ_Publish(configs['amqp_publish']);
+        self.__publish = RabbitMQ_Publish(configs['amqp_publish']);
 
         ## Intance a new object to handler all operation in the local database
         self.__db = MCT_Database(configs['database']);
@@ -143,6 +143,10 @@ class MCT_Referee(RabbitMQ_Consume):
         ## dictionary format.
         message = json.loads(message);
  
+        print message
+        return 0
+
+
         ## Check the messsge received.Verify if all fields are presents and are
         ## in correct form.
         valRet = self.__inspect_request(message);

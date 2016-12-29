@@ -150,11 +150,13 @@ class MCT_Registry:
     ##
     def __authenticate(self, message):
 
+
        ## LOG:
        logger.info('MESSAGE RECEIVED FROM AGENT: %s', message);
 
        playerId = message['playerId'];
        address  = message['origAdd' ];
+       data     = message['data'    ];
 
        ## Check if the player always registered in the BID:
        valRet = self.__check_player(playerId);
@@ -162,7 +164,7 @@ class MCT_Registry:
        if valRet == 1:
            ## Register a new player in the BID (database of player belongs to
            ## the multiclouds tournament).
-           valRet = self.__register_player(playerId, address);
+           valRet = self.__register_player(playerId, address, data);
 
        message['status'] = 1;
 
@@ -183,7 +185,7 @@ class MCT_Registry:
 
         ## Verifies that the request already present in the requests 'database'
         ## if not insert it.
-        if valRet == [] or valRet[0][0] != 0:
+        if valRet == []:
             ## LOG:
             logger.info('PLAYER ID %s not registered!', playerId);
             return 1;
@@ -194,10 +196,20 @@ class MCT_Registry:
     ##
     ## BRIEF: register a player in de bid.
     ## ------------------------------------------------------------------------
-    ## @PARAM str playerId  == identifier of the player.
-    ## @PARAM str address   == player address.
+    ## @PARAM str  playerId == identifier of the player.
+    ## @PARAM str  address  == player address.
+    ## @PARAM dict data     == data with resources from player.
     ##
-    def __register_player(self, playerId, address):
+    def __register_player(self, playerId, address, data):
+
+        ##
+        ## TODO: colocar aqui para definir os atributos iniciais.
+        ##
+
+        ## 
+        v = data['vcpus' ];
+        m = data['memory'];
+        d = data['disk'  ];
 
         try: 
             query  = "INSERT INTO PLAYER (";
@@ -213,7 +225,7 @@ class MCT_Registry:
             query += "memory_used, ";
             query += "disk_used";
             query += ") VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)";
-            value  = (playerId, address, MIN_DIVISION,0.0,0,0,0,0,0,0,0);
+            value  = (playerId, address, MIN_DIVISION,0.0,0,v,m,d,0,0,0);
             valRet = self.__dbConnection.insert_query(query, value)
 
         except:

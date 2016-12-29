@@ -220,6 +220,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
            ## readyinserted does not perform the action.
            valRet=self.__append_query(appId, message['reqId'], message['code']);
 
+       print message
        ## Send the message to MCT_Referee.
        self.__publish.publish(message, self.__routeReferee);
 
