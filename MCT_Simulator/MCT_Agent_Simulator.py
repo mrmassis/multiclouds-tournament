@@ -1,6 +1,15 @@
 #!/usr/bin/env python
 
 
+
+
+
+
+
+
+###############################################################################
+## IMPORT                                                                    ##
+###############################################################################
 import sys;
 import json;
 import time;
@@ -68,8 +77,9 @@ logger.addHandler(handler);
 class MCT_Agent(RabbitMQ_Consume):
 
     """
-    Class MCT_Agent. 
+    Class MCT_Agent - agent modified to be used in simulation. 
     ---------------------------------------------------------------------------
+    PUBLIC METHODS:
     callback == method invoked when the pika receive a message.
     
     __recv_message_referee == receive message from referee.
@@ -91,35 +101,40 @@ class MCT_Agent(RabbitMQ_Consume):
     __dbConnection = None;
     __emulated     = None;
     __emulator     = None;
+    __print        = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self, config):
+    ##
+    ## BRIEF: initialize the object.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict cfg == dictionary with configurations about MCT_Agent.
+    ##
+    def __init__(self, cfg):
+
+        ## Get the option that define to where the logs will are sent to show.
+        self.__print = Show_Actions(cfg['main']['print'], logger);
+
+        ## LOG:
+        self.__print.show('INITIALIZE AGENT SIMULATION!', 'I');
 
         ## Local address:
-        self.__my_ip = config['main']['my_ip'];
+        self.__my_ip = cfg['main']['my_ip'];
 
         ## Get which route is used to deliver the msg to the 'correct destine'.
-        self.__routeExt = config['amqp_external_publish']['route'];
+        self.__routeExt = cfg['amqp_external_publish']['route'];
 
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
         ## defined in the configuration file.
         RabbitMQ_Consume.__init__(self, config['amqp_consume']);
 
-        ### Credentials:
-        config['amqp_external_publish']['user'] = config['rabbitmq']['user'];
-        config['amqp_external_publish']['pass'] = config['rabbitmq']['pass'];
-
         ## Instantiates an object to perform the publication of AMQP messages.
-        self.__publishExt = RabbitMQ_Publish(config['amqp_external_publish']);
+        self.__publishExt = RabbitMQ_Publish(cfg['amqp_external_publish']);
 
         ## Intance a new object to handler all operation in the local database.
-        self.__dbConnection = MCT_Database(config['database']);
-
-        ## Object that represet the cloud API emulator:
-        self.__cloud = MCT_Emulator();
+        self.__dbConnection = MCT_Database(cfg['database']);
 
 
     ###########################################################################
@@ -160,11 +175,12 @@ class MCT_Agent(RabbitMQ_Consume):
     ## BRIEF: send message to MCT_Dispatch.
     ## ------------------------------------------------------------------------
     ## @PARAM dict message == received message.
+    ## @PARAM str  appId   == id from sender.
     ##
     def __send_message_dispatch(self, message, appId):
 
         ## LOG:
-        logger.info('MESSAGE SEND TO DISPATCH: %s', message);
+        self.__print.show('MESSAGE TO DISPATCH ' + message, 'I');
 
         ## Publish the message to MCT_Dispatch via AMQP. The MCT_Dispatch is in
         ## the remote server. 
@@ -172,10 +188,10 @@ class MCT_Agent(RabbitMQ_Consume):
 
         if valRet == False:
             ## LOG:
-            logger.error("IT WAS NOT POSSIBLE TO SEND THE MSG TO DISPATCH!");
+            self.__print.show('IT WAS NOT POSSIBLE TO SEND THE MESSAGE!', 'E');
         else:
             ## LOG:
-            logger.info ('MESSAGE SENT TO DISPATCH!');
+            self.__print.show('MESSAGE SENT TO DISPATCH!', 'I');
       
         return 0;
 
@@ -184,17 +200,18 @@ class MCT_Agent(RabbitMQ_Consume):
     ## BRIEF: receive message from MCT_Dispatch.
     ## ------------------------------------------------------------------------
     ## @PARAM dict message == received message.
+    ## @PARAM str  appId   == id from sender.
     ##
     def __recv_message_dispatch(self, message, appId):
 
         ## LOG:
-        logger.info('MESSAGE RETURNED OF %s REFEREE: %s', appId, message);
+        self.__print.show('MESSAGE RETURNED OF REFEREE: ' + message, 'I');
 
         ## In this case, the MCT_Agent received actions to be performed locally.
         if message['destAdd'] != '':
 
             ## LOG:
-            logger.info('PROCESSING REQUEST!');
+            self.__print.show('PROCESSING REQUEST!', 'I');
 
             ## Select the appropriate action (create instance, delete instance,
             ## suspend instance e resume instance): 
@@ -247,28 +264,28 @@ class MCT_Agent(RabbitMQ_Consume):
     ## ------------------------------------------------------------------------
     ## @PARAM dict message == received message.
     ##
-    def __create_server(self, msg):
+    def __create_server(self, message):
 
         status = 'ERROR';
 
         ## Check if is possible create the new server (vcpu, memory, and disk).
-        query = "SELECT * FROM RESOURCES player_id='" + msg['playerId'] + "'";
+        query = "SELECT * FROM RESOURCES player_id='"+message['playerId']+"'";
 
         dataReceived = [] or self.__dbConnection.select_query(query)[0];
 
         if dataReceived != []:
 
             ## Get the index that meaning the flavors.(vcpus, memory, and disk).
-            i =FLV_NAME.keys()[FLV_NAME.values().index(msg['data']['flavor'])];
+            i =FLV_NAME.keys()[FLV_NAME.values().index(message['data']['flavor'])];
 
             newVcpuUsed = int(dataReceived[2]) + int(CPU_INFO[i]);
             newMemoUsed = int(dataReceived[4]) + int(MEN_INFO[i]);
             newDiskUsed = int(dataReceived[6]) + int(DSK_INFO[i]);
 
             ## Check if there are 'avaliable' resources to accept the instance.
-            if  newVcpuUsed =< int(dataReceived[1]) and 
-                newMemoUsed =< int(dataReceived[3]) and 
-                newDiskUsed =< int(dataReceived[5]):
+            if  newVcpuUsed <= int(dataReceived[1]) and \
+                newMemoUsed <= int(dataReceived[3]) and \
+                newDiskUsed <= int(dataReceived[5]):
 
                 ## Update the specific entry in dbase with new resource values.
                 query  = "UPDATE RESOURCES SET "
@@ -295,19 +312,19 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     ## BRIEF: delete localy a new server.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict msg == received message.
+    ## @PARAM dict message == received message.
     ##
-    def __delete_server(self, msg):
+    def __delete_server(self, message):
 
         ## Check if is possible create the new server (vcpu, memory, and disk).
-        query = "SELECT * FROM RESOURCES player_id='" + msg['playerId'] + "'";
+        query = "SELECT * FROM RESOURCES player_id='"+message['playerId']+"'";
 
         dataReceived = [] or self.__dbConnection.select_query(query)[0];
 
         if dataReceived != []:
 
             ## Get the index that meaning the flavors.(vcpus, memory, and disk).
-            i =FLV_NAME.keys()[FLV_NAME.values().index(msg['data']['flavor'])];
+            i=FLV_NAME.keys()[FLV_NAME.values().index(message['data']['flavor'])];
 
             newVcpuUsed = int(dataReceived[2]) - int(CPU_INFO[i]);
             newMemoUsed = int(dataReceived[4]) - int(MEN_INFO[i]);
@@ -434,8 +451,6 @@ class MCT_Agent(RabbitMQ_Consume):
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
-    ## LOG:
-    logger.info('EXECUTION STARTED...');
 
     config = get_configs(CONFIG_FILE);
 
@@ -449,12 +464,7 @@ if __name__ == "__main__":
             vCfg = config[vName];
     
             try:
-                sAddr = vCfg['authenticate_address'];
-                sPort = vCfg['authenticate_port'   ];
-                aAddr = vCfg['agent_address'       ];
-                aName = vCfg['name'                ];
-
-                mct_registry = MCT_Registry(aAddr, aName, sAddr, sPort);
+                mct_registry = MCT_Registry(vCfg);
                 mct_registry.registry();
             except:
                 pass;
@@ -465,7 +475,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         pass;
 
-    ## LOG:
-    logger.info('EXECUTION FINISHED...');
     sys.exit(0);
 ## EOF

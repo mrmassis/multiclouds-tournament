@@ -102,6 +102,7 @@ class MCT_DB_Proxy:
     __state        = {};
     __tmpTable     = None;
     __port         = SOCKET_PORT
+    __print        = None;
 
 
     ###########################################################################
@@ -109,15 +110,14 @@ class MCT_DB_Proxy:
     ###########################################################################
     def __init__(self, cfg):
 
+        ## Get the option that define to where the logs will are sent to show.
+        self.__print = Show_Actions(cfg['main']['print'], logger);
+
         ## LOG:
-        logger.info('[MCT_DB_PROXY] INITIALIZE PROXY DB SERVER!');
-       
-        ## Get all configs parameters presents in the config file localized in
-        ## CONFIG_FILE path.
-        config = get_configs(CONFIG_FILE);
+        self.__print.show('INITIALIZE PROXY DB SERVER!', 'I');
 
         ## Intance a new object to handler all operation in the local database.
-        self.__dbConnection = MCT_Database(config['database']);
+        self.__dbConnection = MCT_Database(cfg['database']);
 
 
     ###########################################################################
@@ -137,14 +137,14 @@ class MCT_DB_Proxy:
 
         while True:
            ## LOG:
-           logger.info("WAIT FOR A REQUEST BY NEW REQUEST!!!");
+           self.__print.show('WAIT FOR A REQUEST BY NEW REQUEST!!!', 'I');
 
            ## Wait new connections from the MCT_Agents. Wait for new request by
            ## authentication.
            connection, address = s.accept();
 
            ## LOG:
-           logger.info("NEW RESQUEST FROM: " + str(address));
+           self.__print.show('NEW RESQUEST FROM: ' + str(address), 'I');
 
            ## Get messagem from MCT_Agents that wish authenticate and enter in
            ## multiclouds tournament.
@@ -165,7 +165,7 @@ class MCT_DB_Proxy:
 
            if messageDictSend['valid'] == 2:
                ## LOG:
-               logger.info("THE ACTIONS FINISH, DATABASE EMPTY!!!");
+               self.__print.show('THE ACTIONS FINISH, DATABASE EMPTY!!!', 'I');
                break;
 
         return 0;
@@ -177,7 +177,7 @@ class MCT_DB_Proxy:
     ##
     def finish(self):
         ## LOG:
-        logger.info("FINISHING...");
+        self.__print.show('FINISHING...', 'I');
         return 0
 
 
@@ -353,8 +353,6 @@ class MCT_DB_Proxy:
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
-    ## LOG:
-    logger.info('EXECUTION STARTED...');
 
     try:
         ## Get from configuration file all players and all respective paramters
@@ -366,7 +364,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         proxy_db_server.finish();
 
-    ## LOG:
-    logger.info('EXECUTION FINISHED...');
     sys.exit(0);
 ## EOF.

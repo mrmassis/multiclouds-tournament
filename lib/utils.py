@@ -107,4 +107,81 @@ def mutable_time_to_waiting(ini, end):
     value = random.uniform(ini, end)
     time.sleep(value);
 
+
+
+
+###############################################################################
+## CLASSES                                                                   ##
+###############################################################################
+class Show_Actions:
+
+    """
+    Show_Actions: class that print the received message in the screen or log.
+    ---------------------------------------------------------------------------
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __choice = None;
+    __logger = None;
+
+
+    ###########################################################################
+    ## SPECIAL METHODS                                                       ##
+    ###########################################################################
+    def __init__(self, choice, logger=None):
+
+        ## Choice the method to print the message.
+        self.__choice = choice;
+
+        ## Assing the logger object to the local attribute. It enable choice to
+        ## where the messagem will be printed.
+        self.__logger = logger;
+
+
+    ###########################################################################
+    ## PUBLIC METHOS                                                         ##
+    ###########################################################################
+    ##
+    ## BRIEF: show to screen or log the message.
+    ## ------------------------------------------------------------------------
+    ## @PARAM str msg      == message to show (screen or logger).
+    ## @PARAM str severity == message severity.
+    ##
+    def show(self, message, severity):
+
+        if self.__choice == 'screen':
+            self.__showScreen(message, severity);
+        else:
+            self.__showLogger(message, severity);
+
+
+
+    ###########################################################################
+    ## PRIVATE                                                              ##
+    ###########################################################################
+    ##
+    ## BRIEF: show message on the screen.
+    ## ------------------------------------------------------------------------
+    ## @PARAM str msg      == message to show (screen or logger).
+    ## @PARAM str severity == message severity.
+    ##
+    def __showScreen(self, message, severity):
+        print '[' + severity + '] ' + message;
+
+
+    ##
+    ## BRIEF: show message in the logger.
+    ## ------------------------------------------------------------------------
+    ## @PARAM str msg      == message to show (screen or logger).
+    ## @PARAM str severity == message severity.
+    ##
+    def __showLogger(self, message, severity):
+
+        if   severity == 'I':
+            self.__logger.info(message);
+
+        elif severity == 'E':
+            self.__logger.error(message);
 ## EOF.
