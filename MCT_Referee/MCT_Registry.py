@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 
 
+
+
+
+
+
+###############################################################################
+## IMPORT                                                                   ##
+###############################################################################
 import sys;
 import json;
 import logging;
@@ -20,11 +28,14 @@ from mct.lib.database import MCT_Database;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE      = '/etc/mct/mct_bid.ini';
+CONFIG_FILE      = '/etc/mct/mct_registry.ini';
 LOG_NAME         = 'MCT_Bid';
 LOG_FORMAT       = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
-LOG_FILENAME     = '/var/log/mct/mct_bid.log';
+LOG_FILENAME     = '/var/log/mct/mct_registry.log';
 MIN_DIVISION     = 3
+
+
+
 
 
 
@@ -75,16 +86,25 @@ class MCT_Registry:
     __addr         = None;
     __port         = None;
     __dbConnection = None;
+    __print        = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self):
+    ##
+    ## BRIEF: initialize the object.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict cfg    == dictionary with configurations about MCT_Agent.
+    ## @PARAM obj  logger == logger object.
+    ##
+    def __init__(self, cfg, logger):
 
-        ## Get all configs parameters presents in the config file localized in
-        ## CONFIG_FILE path.
-        configs = get_configs(CONFIG_FILE);
+        ## Get the option that define to where the logs will are sent to show.
+        self.__print = Show_Actions(cfg['main']['print'], logger);
+
+        ## LOG:
+        self.__print.show('INITIALIZE MCT_REGISTRY!', 'I');
 
         ## Server parameters:
         self.__addr = configs['connection']['addr'];
@@ -110,15 +130,16 @@ class MCT_Registry:
         s.listen(5);
 
         while True:
+
            ## LOG:
-           logger.info("WAIT FOR A REQUEST BY NEW REQUEST!!!");
+           self.__print.show('WAITING FOR A REQUEST BY NEW REQUEST!', 'I');
 
            ## Wait new connections from the MCT_Agents. Wait for new request by
            ## authentication.
            connection, address = s.accept();
 
            ## LOG:
-           logger.info("NEW RESQUEST FROM: " + str(address));
+           self.__print.show('NEW REQUEST FOR ' + str(address), 'I');
 
            ## Get messagem from MCT_Agents that wish authenticate and enter in
            ## multiclouds tournament.
@@ -150,9 +171,8 @@ class MCT_Registry:
     ##
     def __authenticate(self, message):
 
-
        ## LOG:
-       logger.info('MESSAGE RECEIVED FROM AGENT: %s', message);
+       self.__print.show('MESSAGE RECEIVED FROM AGENT: ' + str(message), 'I');
 
        playerId = message['playerId'];
        address  = message['origAdd' ];
@@ -186,8 +206,9 @@ class MCT_Registry:
         ## Verifies that the request already present in the requests 'database'
         ## if not insert it.
         if valRet == []:
+
             ## LOG:
-            logger.info('PLAYER ID %s not registered!', playerId);
+            self.__print.show('PLAYER ID NOT REGISTERED: '+str(playerId), 'I');
             return 1;
 
         return 0;
@@ -251,17 +272,17 @@ class MCT_Registry:
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
-    ## LOG:
-    logger.info('EXECUTION STARTED...');
+
+    ## Get all configs parameters presents in the config file localized in
+    ## CONFIG_FILE path.
+    cfg = get_configs(CONFIG_FILE);
 
     try:
-        mct_registry = MCT_Registry();
+        mct_registry = MCT_Registry(cfg, logger);
         mct_registry.listen_connections();
 
     except KeyboardInterrupt, error:
         pass;
 
-    ## LOG:
-    logger.info('EXECUTION FINISHED...');
     sys.exit(0);
 ## EOF.

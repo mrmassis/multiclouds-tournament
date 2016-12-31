@@ -23,7 +23,7 @@ from mct.lib.database    import MCT_Database;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE   = '/etc/mct/mct_referee.ini';
+CONFIG_FILE   = '/etc/mct/mct-referee.ini';
 LOG_NAME      = 'MCT_Referee';
 LOG_FORMAT    = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
 LOG_FILENAME  = '/var/log/mct/mct_referee.log';
@@ -71,8 +71,7 @@ class MCT_Referee(RabbitMQ_Consume):
     Class MCT_Referee: start and mantain the MCT referee.
     ---------------------------------------------------------------------------
     PUBLIC METHODS:
-    ** run            == create the divisions and wait in loop.
-    ** gracefull_stop == grecefull finish the divisions.
+    ** callback       == waiting for requests.
     """
 
     ###########################################################################
@@ -83,41 +82,46 @@ class MCT_Referee(RabbitMQ_Consume):
     __routeDispatch = None;
     __db            = None;
     __scheduller    = None;
+    __print         = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self):
+    ##
+    ## BRIEF: initialize the object.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict cfg    == dictionary with configurations about MCT_Agent.
+    ## @PARAM obj  logger == logger object.
+    ##
+    def __init__(self, cfg, logger):
 
-        ## Get the configurations related to the execution of the divisions de
-        ## fined by the User.
-        configs = get_configs(CONFIG_FILE);
+        ## Get the option that define to where the logs will are sent to show.
+        self.__print = Show_Actions(cfg['main']['print'], logger);
+
+        ## LOG:
+        self.__print.show('INITIALIZE MCT_REFEREE!', 'I');
 
         ## Get which route is used to deliver the message to the MCT_Dispatch.
         self.__routeDispatch = configs['amqp_publish']['route'];
 
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
         ## defined in the configuration file.
-        RabbitMQ_Consume.__init__(self, configs['amqp_consume']);
-
-        ## Credentials:
-        configs['amqp_publish']['user'] = configs['rabbitmq']['user'];
-        configs['amqp_publish']['pass'] = configs['rabbitmq']['pass'];
+        RabbitMQ_Consume.__init__(self, cfg['amqp_consume']);
 
         ## Instantiates an object to perform the publication of AMQP messages.
-        self.__publish = RabbitMQ_Publish(configs['amqp_publish']);
+        self.__publish = RabbitMQ_Publish(cfg['amqp_publish']);
 
         ## Intance a new object to handler all operation in the local database
-        self.__db = MCT_Database(configs['database']);
+        self.__db = MCT_Database(cfg['database']);
 
         ## Select the scheduller algorithm responsible for selection of the be-
         ## st player in a division.
         if   configs['scheduller']['approach'] == 'roundrobin':
-            self.__scheduller = Roundrobin(configs['scheduller']['restrict']);
+            self.__scheduller = Roundrobin(cfg['scheduller']['restrict']);
 
         elif configs['scheduller']['approach'] == 'bestscores':
-            self.__scheduller = Bestscores(configs['scheduller']['restrict']);
+            self.__scheduller = Bestscores(cfg['scheduller']['restrict']);
 
 
     ###########################################################################
@@ -132,9 +136,10 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM str                       message    = message received.
     ##
     def callback(self, channel, method, properties, message):
+        appId = properties.app_id;
 
         ## LOG:
-        logger.info('MESSAGE %s RECEIVED FROM: %s.',message,properties.app_id);
+        self.__print.show('MESSAGE RECEIVED: ' + message + ' Id: '+ appId,'I');
 
         ## Send to source an ack msg to ensuring that the message was received.
         self.chn.basic_ack(method.delivery_tag);
@@ -143,15 +148,12 @@ class MCT_Referee(RabbitMQ_Consume):
         ## dictionary format.
         message = json.loads(message);
  
-        print message
-        return 0
-
-
         ## Check the messsge received.Verify if all fields are presents and are
         ## in correct form.
         valRet = self.__inspect_request(message);
 
         if valRet == 0:
+
             ## Get which division than player belong.It is necessary to get the
             ## player list able to meet the request.
             division = self.__get_division(message['playerId']);
@@ -207,8 +209,9 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM dict request == received request.
     ##
     def __inspect_request(self, request):
+
         ## LOG:
-        logger.info('INSPECT REQUEST!');
+        self.__print.show('INSPECT REQUEST!', 'I');
 
         code = request['code'];
 
@@ -222,11 +225,11 @@ class MCT_Referee(RabbitMQ_Consume):
                 for field in fields.split(' '):
                     if not request['data'].has_key(field):
                         ## LOG:
-                        logger.info('MISSED FIELD: %s', str(field));
+                        self.__print.show('MISSED FIELD: ' + str(field), 'E');
                         return 1;
 
         ## LOG:
-        logger.info('FIELDS ARE OK...');
+        self.__print.show('FIELDS ARE OK...', 'I');
         return 0;
 
 
@@ -237,7 +240,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     def __get_division(self, playerId):
         ## LOG:
-        logger.info('INSPECT REQUEST!');
+        self.__print.show('GET PLAYER DIVISION!', 'I');
 
         ## Setting: 
         division = DIVISION_INVALID;
@@ -259,7 +262,8 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM dict msg     == message data.
     ##
     def __inf_instance(self, division, msg):
-        logger.info("TODO!!!!");
+        ## LOG:
+        self.__print.show('TODO!', 'I');
         return msg;
 
 
@@ -271,7 +275,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     def __add_instance(self, division, msg):
         ## LOG:
-        logger.info('CREATE INSTANCE: %s', str(msg['reqId']));
+        self.__print.show('CREATE INSTANCE: '+str(msg['reqId']), 'I');
          
         ## SENDTO: If 'retId == empty' the request is go to the player destiny.
         if msg['retId'] == '':
@@ -291,8 +295,9 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM dict message == message with some datas to delete an instance.
     ##
     def __del_instance(self, division, msg):
+
         ## LOG:
-        logger.info('DELETE INSTANCE: %s', str(msg['reqId']));
+        self.__print.show('DELETE INSTANCE: '+str(msg['reqId']), 'I');
 
         ## SENDTO: If 'retId == empty' the request is go to the player destiny.
         if msg['retId'] == '':
@@ -321,7 +326,7 @@ class MCT_Referee(RabbitMQ_Consume):
             addr = selectedPlayer['addr'];
 
             ## LOG:
-            logger.info('SELECTED THE PLAYER '+name+'address '+ str(addr));
+            self.__print.show('SELECTED PLAYER ' +name+ ' ' + str(addr) , 'I');
 
             ## Set the message to be a forward message (perform a map). Send it
             ## to the destine and waiting the return.
@@ -332,10 +337,10 @@ class MCT_Referee(RabbitMQ_Consume):
             msg['destAdd'] = addr;
 
             ## LOG:
-            logger.info('MESSAGE ' + str(msg));
+            self.__print.show('MESSAGE ' + str(msg) , 'I');
         else:
             ## LOG:
-            logger.info('THERE IS NOT PLAYER ABLE TO EXEC THE REQUEST!');
+            self.__print.show('THERE ISNT PLAYER ABLE TO EXEC THE REQ!','I');
 
             ## Case not found a player to execute the request setting status to
             ## error and return the message to origin.
@@ -352,7 +357,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     def __add_instance_recv_destiny(self, division, msg):
         ## LOG:
-        logger.info('RETURN FROM ADD_INSTANCE IS: ' + str(msg['status']));
+        self.__print.show('RETURN FROM ADD_INSTANCE IS: '+str(msg['status']),'I');
 
         f1 = str(msg['origAdd']);
         f2 = str(msg['reqId'  ]);
@@ -409,7 +414,7 @@ class MCT_Referee(RabbitMQ_Consume):
 
         if valRet != []:
             ## LOG:
-            logger.info('IDENTIFIED PLAYER ADDRESS ' + str(valRet[0][0]));
+            self.__print.show('IDENTIFIED PLAYER ADDR '+str(valRet[0][0]),'I');
 
             ## Set the message to be a forward message (perform a map). Send it
             ## to the destine and waiting the return.
@@ -420,8 +425,7 @@ class MCT_Referee(RabbitMQ_Consume):
             msg['destAdd'] = valRet[0][0];
         else:
             ## LOG:
-            logger.info('THERE IS NOT PLAYER EXECUTING THIS INSTANCE!');
-
+            self.__print.show('THERE IS NOT PLAYER EXECUTING THIS INST!', 'I');
             msg['status'] = 0;
 
         return msg;
@@ -436,7 +440,7 @@ class MCT_Referee(RabbitMQ_Consume):
     def __del_instance_recv_destiny(self, division, msg):
 
         ## LOG:
-        logger.info('RETURN FROM ADD_INSTANCE IS: ' + str(msg['status']));
+        self.__print.show('RETURN FROM DEL_INSTANCE IS: '+str(msg['status']),'I');
 
         f1 = str(msg['reqId'  ]);
         f2 = str(msg['status' ]);
@@ -628,18 +632,18 @@ class MCT_Referee(RabbitMQ_Consume):
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
-    ## LOG:
-    logger.info('EXECUTION STARTED...');
+
+    ## Get all configs parameters presents in the config file localized in
+    ## CONFIG_FILE path.
+    cfg = get_configs(CONFIG_FILE);
 
     try:
-        mctReferee = MCT_Referee();
+        mctReferee = MCT_Referee(cfg, logger);
         mctReferee.consume();
 
     except KeyboardInterrupt, error:
         pass;
 
-    ## LOG:
-    logger.info('EXECUTION FINISHED...');
     sys.exit(0);
 ## EOF.
 

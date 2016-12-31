@@ -110,7 +110,8 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     ## BRIEF: initialize the object.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict cfg == dictionary with configurations about MCT_Agent.
+    ## @PARAM dict cfg    == dictionary with configurations about MCT_Agent.
+    ## @PARAM obj  logger == logger object.
     ##
     def __init__(self, cfg):
 

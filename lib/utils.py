@@ -151,16 +151,31 @@ class Show_Actions:
     ##
     def show(self, message, severity):
 
-        if self.__choice == 'screen':
+        if   self.__choice == 'screen':
             self.__showScreen(message, severity);
-        else:
+
+        elif self.__choice == 'logger':
             self.__showLogger(message, severity);
+
+        else:
+            self.__showBothSL(message, severity);
 
 
 
     ###########################################################################
     ## PRIVATE                                                              ##
     ###########################################################################
+    ##
+    ## BRIEF: show message on the screen and logger.
+    ## ------------------------------------------------------------------------
+    ## @PARAM str msg      == message to show (screen or logger).
+    ## @PARAM str severity == message severity.
+    ##
+    def __showBothSL(self, message, severity):
+        self.__showScreen(message, severity);
+        self.__showLogger(message, severity);
+
+
     ##
     ## BRIEF: show message on the screen.
     ## ------------------------------------------------------------------------

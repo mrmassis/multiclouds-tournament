@@ -1,6 +1,15 @@
 #!/usr/bin/env python
 
 
+
+
+
+
+
+
+###############################################################################
+## IMPORT                                                                    ##
+###############################################################################
 import sys;
 import json;
 import datetime;
@@ -21,7 +30,7 @@ from mct.lib.amqp     import RabbitMQ_Publish, RabbitMQ_Consume;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE      = '/etc/mct/mct_dispatch.ini';
+CONFIG_FILE      = '/etc/mct/mct-dispatch.ini';
 AGENT_ROUTE      = 'mct_agent';
 AGENT_IDENTIFIER = 'MCT_Dispatch';
 AGENT_EXCHANGE   = 'mct_exchange';
@@ -30,6 +39,10 @@ LOG_NAME         = 'MCT_Dispatch';
 LOG_FORMAT       = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
 LOG_FILENAME     = '/var/log/mct/mct_dispatch.log';
 MESSAGE_FIELDS   = ['status','origAdd','destAdd','code','playerId','retId','reqId','data'];
+
+
+
+
 
 
 
@@ -91,36 +104,41 @@ class MCT_Dispatch(RabbitMQ_Consume):
     __dbConnection = None;
     __rabbitUser   = None;
     __rabbitPass   = None;
+    __print        = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self):
+    ##
+    ## BRIEF: initialize the object.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict cfg    == dictionary with configurations about MCT_Agent.
+    ## @PARAM obj  logger == logger object.
+    ##
+    def __init__(self, cfg, logger):
 
-        ## Get all configs parameters presents in the config file localized in
-        ## CONFIG_FILE path.
-        configs = get_configs(CONFIG_FILE);
+        ## Get the option that define to where the logs will are sent to show.
+        self.__print = Show_Actions(cfg['main']['print'], logger);
 
-        ## Get which 'route' is used to deliver the message to the MCT_Referee.
-        self.__routeReferee = configs['amqp_publish']['route'];
+        ## LOG:
+        self.__print.show('INITIALIZE MCT_DISPATCH!', 'I');
+
+        ## Get which 'route' is used to deliver the message to the MCT_Referee
+        ## and credentials:
+        self.__routeReferee = cfg['amqp_publish']['route'];
+        self.__rabbitUser   = cfg['amqp_publish']['user' ];
+        self.__rabbitPass   = cfg['amqp_publish']['pass' ];
 
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
         ## defined in the configuration file.
-        RabbitMQ_Consume.__init__(self, configs['amqp_consume']);
-
-        ## Credentials:
-        self.__rabbitUser = configs['rabbitmq']['user'];
-        self.__rabbitPass = configs['rabbitmq']['pass'];
-
-        configs['amqp_publish']['user'] = self.__rabbitUser;
-        configs['amqp_publish']['pass'] = self.__rabbitPass;
+        RabbitMQ_Consume.__init__(self, cfg['amqp_consume']);
 
         ## Instance a new object to perform the publication of 'AMQP' messages.
-        self.__publish=RabbitMQ_Publish(configs['amqp_publish']);
+        self.__publish=RabbitMQ_Publish(cfg['amqp_publish']);
 
         ## Intance a new object to handler all operation in the local database.
-        self.__dbConnection = MCT_Database(configs['database']);
+        self.__dbConnection = MCT_Database(cfg['database']);
 
 
     ###########################################################################
@@ -164,8 +182,9 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## @PARAM str  appId   == source app id.
     ##
     def __recv_message_referee(self, message, appId):
+
         ## LOG:
-        logger.info('MESSAGE RETURNED OF REFEREE: %s', message);
+        self.__print.show('MESSAGE RETURNED OF REFEREE: ' + message, 'I');
 
         ## If status is equal the 'MESSAGE_PARSE_ERROR' the request had fields
         ## missed.
@@ -209,8 +228,9 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## @PARAM str  appId   == source app id.
     ##
     def __send_message_referee(self, message, appId):
+
        ## LOG:
-       logger.info('MESSAGE SEND TO REFEREE: %s BY APP: %s', message, appId);
+       self.__print.show('MSG SENT TO REFEREE ' +message+ ' appid '+appID,'I');
 
        ## The message can be a request for action or a response for action per-
        ## formed. Check the message type, if respId == '' is a request.
@@ -218,9 +238,8 @@ class MCT_Dispatch(RabbitMQ_Consume):
 
            ## Adds the message in the pending requests dictionary. If it is al-
            ## readyinserted does not perform the action.
-           valRet=self.__append_query(appId, message['reqId'], message['code']);
+           valRet=self.__append_query(appId, message['reqId'],message['code']);
 
-       print message
        ## Send the message to MCT_Referee.
        self.__publish.publish(message, self.__routeReferee);
 
@@ -248,8 +267,9 @@ class MCT_Dispatch(RabbitMQ_Consume):
         ## Verifies that the request already present in the requests 'database'
         ## if not insert it.
         if valRet == [] or valRet[0][0] != 0:
+
             ## LOG:
-            logger.info('MESSAGE PENDING: %s', requestId);
+            self.__print.show('MESSAGE PENDING ' + requestId, 'I');
 
             ## Insert a line in table REQUEST from database mct. Each line mean
             ## a request finished or in execution.
@@ -266,9 +286,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
             return 0;
 
         ## LOG:
-        logger.info('MESSAGE ALREADY PENDING: %s (NOT INSERTED)', requestId);
-
-        ## 
+        self.__print.show('MESSAGE ALREADY PENDING ' + requestId, 'I');
         return 1;
 
 
@@ -299,7 +317,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
             pass;
  
         ## LOG:
-        logger.info('MESSAGE %s REMOVED FROM PENDING!', requestId);
+        self.__print.show('MESSAGE '+requestId+' REMOVED FROM PENDING!', 'I');
         return 0;
 
 
@@ -309,17 +327,18 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## @PARAM dict request == received request.
     ##
     def __inspect_request(self, request):
+
         ## LOG:
-        logger.info('INSPECT REQUEST!');
+        self.__print.show('INSPECT REQUEST!', 'I');
 
         for field in MESSAGE_FIELDS:
             if not request.has_key(field):
                 ## LOG:
-                logger.info('MISSED FIELD: %', str(field));
+                self.__print.show('MISSED FIELD ' + str(field), 'I');
                 return 1;
 
         ## LOG:
-        logger.info('FIELDS ARE OK...');
+        self.__print.show('FIELDS ARE OK...', 'I');
         return 0;
 ## END.
 
@@ -333,17 +352,17 @@ class MCT_Dispatch(RabbitMQ_Consume):
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
-    ## LOG:
-    logger.info('EXECUTION STARTED...');
+
+    ## Get all configs parameters presents in the config file localized in
+    ## CONFIG_FILE path.
+    cfg = get_configs(CONFIG_FILE);
 
     try:
-        mct_dispatch = MCT_Dispatch();
+        mct_dispatch = MCT_Dispatch(cfg, logger);
         mct_dispatch.consume();
 
     except KeyboardInterrupt, error:
         pass;
 
-    ## LOG:
-    logger.info('EXECUTION FINISHED...');
     sys.exit(0);
 ## EOF.

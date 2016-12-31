@@ -1,0 +1,3 @@
+##
+** Terminar de modificar o print objct para LOGS
+** Testar o simulador, ver se cria e apaga instancias soh com os vplayers
