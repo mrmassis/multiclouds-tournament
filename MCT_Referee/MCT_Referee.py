@@ -103,7 +103,7 @@ class MCT_Referee(RabbitMQ_Consume):
         self.__print.show('INITIALIZE MCT_REFEREE!', 'I');
 
         ## Get which route is used to deliver the message to the MCT_Dispatch.
-        self.__routeDispatch = configs['amqp_publish']['route'];
+        self.__routeDispatch = cfg['amqp_publish']['route'];
 
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
         ## defined in the configuration file.
@@ -117,10 +117,10 @@ class MCT_Referee(RabbitMQ_Consume):
 
         ## Select the scheduller algorithm responsible for selection of the be-
         ## st player in a division.
-        if   configs['scheduller']['approach'] == 'roundrobin':
+        if   cfg['scheduller']['approach'] == 'roundrobin':
             self.__scheduller = Roundrobin(cfg['scheduller']['restrict']);
 
-        elif configs['scheduller']['approach'] == 'bestscores':
+        elif cfg['scheduller']['approach'] == 'bestscores':
             self.__scheduller = Bestscores(cfg['scheduller']['restrict']);
 
 
@@ -317,6 +317,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM dict msg     == message data.
     ##
     def __add_instance_send_destiny(self, division, msg):
+
         ## Select one player able to comply a request to create VM. Inside the-
         ## se method is selected the scheduller approach.
         selectedPlayer = self.__get_player(division, msg['playerId']);
@@ -326,15 +327,16 @@ class MCT_Referee(RabbitMQ_Consume):
             addr = selectedPlayer['addr'];
 
             ## LOG:
-            self.__print.show('SELECTED PLAYER ' +name+ ' ' + str(addr) , 'I');
+            self.__print.show('SELECTED PLAYER '+name+' ADDR: '+str(addr), 'I');
 
             ## Set the message to be a forward message (perform a map). Send it
             ## to the destine and waiting the return.
             msg['retId'] = msg['reqId'];
 
-            ## Set the target address. The target addr is the player' addrs tha
-            ##  will accept the request.
-            msg['destAdd'] = addr;
+            ## Set the target address. The target addr is the player' addrs that
+            ## will accept the request.
+            msg['destAddr'] = addr;
+            msg['destName'] = name;
 
             ## LOG:
             self.__print.show('MESSAGE ' + str(msg) , 'I');
@@ -359,11 +361,12 @@ class MCT_Referee(RabbitMQ_Consume):
         ## LOG:
         self.__print.show('RETURN FROM ADD_INSTANCE IS: '+str(msg['status']),'I');
 
-        f1 = str(msg['origAdd']);
-        f2 = str(msg['reqId'  ]);
-        f3 = str(msg['destAdd']);
-        f4 = str(msg['status' ]);
-        f5 = str(datetime.datetime.now());
+        f1 = str(msg['origAddr']);
+        f2 = str(msg['reqId'   ]);
+        f3 = str(msg['destAddr']);
+        f4 = str(msg['destName']);
+        f5 = str(msg['status'  ]);
+        f6 = str(datetime.datetime.now());
 
         ## Here is check the status, and setting the database to record the re-
         ## sult of action.
@@ -371,17 +374,18 @@ class MCT_Referee(RabbitMQ_Consume):
         query += "origin_add, "      ;
         query += "origin_id, "       ;
         query += "destiny_add, "     ;
+        query += "destiny_name, "    ;
         query += "status, "          ;
         query += "timestamp_received";
     
         ## If the return is a error so finish the request now!
         if msg['status'] != 0:
-            query += ") VALUES (%s, %s, %s, %s, %s)";
-            value =  (f1, f2, f3, f4, f5);
+            query += ") VALUES (%s,%s,%s,%s,%s,%s)";
+            value =  (f1, f2, f3, f4, f5, f6);
         else:
             query += ",timestamp_finished";
-            query += ") VALUES (%s, %s,%s,%s,%s,%s)";
-            value =  (f1, f2, f3, f4, f5, f5);
+            query += ") VALUES (%s,%s,%s,%s,%s,%s,%s)";
+            value =  (f1, f2, f3, f4, f5, f6, f6);
 
         valRet = self.__db.insert_query(query, value);
 
@@ -389,8 +393,8 @@ class MCT_Referee(RabbitMQ_Consume):
         ## the table has all resources offer and used by the player.:
         self.__update_used_values(0, msg);
 
-        msg['destAdd'] = '';
-        msg['retId'  ] = '';
+        msg['destAddr'] = '';
+        msg['retId'   ] = '';
 
         return msg;
 
@@ -422,7 +426,7 @@ class MCT_Referee(RabbitMQ_Consume):
 
             ## Set the target address. The target addr is the player addrs that
             ## will accept the request.
-            msg['destAdd'] = valRet[0][0];
+            msg['destAddr'] = valRet[0][0];
         else:
             ## LOG:
             self.__print.show('THERE IS NOT PLAYER EXECUTING THIS INST!', 'I');
@@ -457,8 +461,8 @@ class MCT_Referee(RabbitMQ_Consume):
         ## the table has all resources offer and used by the player.:
         self.__update_used_values(1, msg);
 
-        msg['destAdd'] = '';
-        msg['retId'  ] = '';
+        msg['destAddr'] = '';
+        msg['retId'   ] = '';
 
         return msg;
 
@@ -548,6 +552,7 @@ class MCT_Referee(RabbitMQ_Consume):
        valRet = [] or self.__db.select_query(query);
 
        if valRet != []:
+
            ## Perform the player selection. Utilize the scheduller algorithm se
            ## lected before.
            playerOrdenedList = self.__scheduller.run(valRet);
@@ -586,9 +591,9 @@ class MCT_Referee(RabbitMQ_Consume):
         valRet = [] or self.__db.select_query(query);
 
         if valRet != []:
-            v0 = valRet[0][0];
-            v1 = valRet[0][1];
-            v2 = valRet[0][2];
+            v0 = int(valRet[0][0]);
+            v1 = int(valRet[0][1]);
+            v2 = int(valRet[0][2]);
  
             ## When action is equal the 0 meaning that the values will be incre
             ## mented. 1 is decremented!
@@ -601,13 +606,13 @@ class MCT_Referee(RabbitMQ_Consume):
                 ##       que o requisitado.                                   #
                 ###############################################################
                 if msg['status'] != 0: 
-                    v0 += msg['data']['vcpus' ];
-                    v1 += msg['data']['mem'   ];
-                    v2 += msg['data']['disk'  ];
+                    v0 += int(msg['data']['vcpus' ]);
+                    v1 += int(msg['data']['mem'   ]);
+                    v2 += int(msg['data']['disk'  ]);
             else:
-                v0 -= msg['data']['vcpus' ];
-                v1 -= msg['data']['mem'   ];
-                v2 -= msg['data']['disk'  ];
+                v0 -= int(msg['data']['vcpus' ]);
+                v1 -= int(msg['data']['mem'   ]);
+                v2 -= int(msg['data']['disk'  ]);
 
             ## Update the exposed player resources.
             query  = "UPDATE PLAYER SET ";

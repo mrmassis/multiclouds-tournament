@@ -68,6 +68,7 @@ CREATE  TABLE IF NOT EXISTS `mct`.`INSTANCE` (
   `origin_add` VARCHAR(45) NOT NULL,
   `origin_id` VARCHAR(45) NOT NULL,
   `destiny_add` VARCHAR(45) NOT NULL,
+  `destiny_name` VARCHAR(45) NOT NULL,
   `status` TINYINT(1) NOT NULL,
   `timestamp_received` TIMESTAMP NULL,
   `timestamp_finished` TIMESTAMP NULL,
@@ -90,8 +91,8 @@ ENGINE = InnoDB;
 INSERT INTO FIELDS (operation, fields) VALUES (0, 'name mem image vcpus disk uuid');
 
 -- PLAYER;
-INSERT INTO PLAYER (name, address, division, score, historic, vcpu, memory, disk, vcpu_used, memory_used, disk_used) VALUES ('Player1', '10.3.77.157',  3,  0.0, 0,  0, 0, 0, 0, 0, 0);
-INSERT INTO PLAYER (name, address, division, score, historic, vcpu, memory, disk, vcpu_used, memory_used, disk_used) VALUES ('Player2', '10.3.77.160',  3,  0.0, 0,  0, 0, 0, 0, 0, 0);
+-- INSERT INTO PLAYER (name, address, division, score, historic, vcpu, memory, disk, vcpu_used, memory_used, disk_used) VALUES ('Player1', '10.3.77.157',  3,  0.0, 0,  0, 0, 0, 0, 0, 0);
+-- INSERT INTO PLAYER (name, address, division, score, historic, vcpu, memory, disk, vcpu_used, memory_used, disk_used) VALUES ('Player2', '10.3.77.160',  3,  0.0, 0,  0, 0, 0, 0, 0, 0);
 
 -- PLAYER;
 INSERT INTO LAST_IDX (division, idx) VALUES (1, 1);

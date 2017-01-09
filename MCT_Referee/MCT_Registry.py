@@ -28,7 +28,7 @@ from mct.lib.database import MCT_Database;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE      = '/etc/mct/mct_registry.ini';
+CONFIG_FILE      = '/etc/mct/mct-registry.ini';
 LOG_NAME         = 'MCT_Bid';
 LOG_FORMAT       = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
 LOG_FILENAME     = '/var/log/mct/mct_registry.log';
@@ -107,11 +107,11 @@ class MCT_Registry:
         self.__print.show('INITIALIZE MCT_REGISTRY!', 'I');
 
         ## Server parameters:
-        self.__addr = configs['connection']['addr'];
-        self.__port = configs['connection']['port'];
+        self.__addr = cfg['connection']['addr'];
+        self.__port = cfg['connection']['port'];
 
         ## Intance a new object to handler all operation in the local database.
-        self.__dbConnection = MCT_Database(configs['database']);
+        self.__dbConnection = MCT_Database(cfg['database']);
 
 
     ###########################################################################
@@ -175,13 +175,13 @@ class MCT_Registry:
        self.__print.show('MESSAGE RECEIVED FROM AGENT: ' + str(message), 'I');
 
        playerId = message['playerId'];
-       address  = message['origAdd' ];
+       address  = message['origAddr'];
        data     = message['data'    ];
 
        ## Check if the player always registered in the BID:
        valRet = self.__check_player(playerId);
 
-       if valRet == 1:
+       if valRet == 1 and message != {}:
            ## Register a new player in the BID (database of player belongs to
            ## the multiclouds tournament).
            valRet = self.__register_player(playerId, address, data);
@@ -226,8 +226,6 @@ class MCT_Registry:
         ##
         ## TODO: colocar aqui para definir os atributos iniciais.
         ##
-
-        ## 
         v = data['vcpus' ];
         m = data['memory'];
         d = data['disk'  ];

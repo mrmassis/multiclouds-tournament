@@ -38,7 +38,7 @@ AGENT_QUEUE      = 'agent';
 LOG_NAME         = 'MCT_Dispatch';
 LOG_FORMAT       = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
 LOG_FILENAME     = '/var/log/mct/mct_dispatch.log';
-MESSAGE_FIELDS   = ['status','origAdd','destAdd','code','playerId','retId','reqId','data'];
+MESSAGE_FIELDS   = ['status','origAddr','destAddr','destName','code','playerId','retId','reqId','data'];
 
 
 
@@ -184,7 +184,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
     def __recv_message_referee(self, message, appId):
 
         ## LOG:
-        self.__print.show('MESSAGE RETURNED OF REFEREE: ' + message, 'I');
+        self.__print.show('MESSAGE RETURNED OF REFEREE: ' + str(message), 'I');
 
         ## If status is equal the 'MESSAGE_PARSE_ERROR' the request had fields
         ## missed.
@@ -195,11 +195,11 @@ class MCT_Dispatch(RabbitMQ_Consume):
                 ## ctionary.
                 valRet = self.__remove_query(message['reqId']);
 
-                playerAddress = message['origAdd'];
+                playerAddress = message['origAddr'];
 
             ## Make the request forward to player that will accept the request.
             else:
-                playerAddress = message['destAdd'];
+                playerAddress = message['destAddr'];
 
             ## Create the configuration about the return message.This configura
             ## tion will be used to send the messagem to apropriate player.
@@ -230,7 +230,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
     def __send_message_referee(self, message, appId):
 
        ## LOG:
-       self.__print.show('MSG SENT TO REFEREE ' +message+ ' appid '+appID,'I');
+       self.__print.show('MSG SENT TO REFEREE '+str(message)+' appid '+appId,'I');
 
        ## The message can be a request for action or a response for action per-
        ## formed. Check the message type, if respId == '' is a request.
