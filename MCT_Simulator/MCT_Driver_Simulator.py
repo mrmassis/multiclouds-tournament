@@ -24,6 +24,7 @@ import socket;
 import json;
 import pika;
 import threading;
+import mysql;
 
 from threading         import Timer;
 from multiprocessing   import Process, Queue, Lock;
@@ -98,7 +99,7 @@ def get_virtual_player_state(vPlayerName, dbConnection):
      dbQuery  = "SELECT vm_id,vm_owner,vm_type FROM STATE WHERE ";
      dbQuery += "player_id='" + vPlayerName + "' and running='1'";
 
-     dataReceived = [] or dbConnection.select_query(dbQuery);
+     dataReceived = [] or dbConnection['connection'].select_query(dbQuery);
 
      if dataReceived != []:
          for vm in dataReceived:
@@ -232,12 +233,13 @@ class MCT_Simple_AMQP_Publish:
     ##
     ## BRIEF: initialize the object.
     ## ------------------------------------------------------------------------
-    ## @PARAM cfg == dictionary with MCT_Simple_AMPQ_Publish configuration.
+    ## @PARAM cfg    == dictionary with MCT_Simple_AMPQ_Publish configuration.
+    ## @PARAM logger == log object.
     ##
-    def __init__(self, cfg):
+    def __init__(self, cfg, logger):
 
         ## Get the option that define to where the logs will are sent to show.
-        self.__print = Show_Actions(cfg['main']['print'], logger);
+        self.__print = Show_Actions(cfg['print'], logger);
 
         ## LOG:
         self.__print.show('INITIALIZE COMMUNICATION OBJECT', 'I');
@@ -281,7 +283,7 @@ class MCT_Simple_AMQP_Publish:
     def publish(self, message):
 
         ## LOG:
-        self.__print.show('PUBLISH MESSAGE: ' + message, 'I');
+        self.__print.show('PUBLISH MESSAGE: ' + str(message), 'I');
 
         propertiesData = {
             'delivery_mode': 2,
@@ -373,14 +375,15 @@ class MCT_Action(object):
             'identifier': config['amqp_identifier'],
             'address'   : config['amqp_address'   ],
             'exchange'  : config['amqp_exchange'  ],
-            'queue'     : config['amqp_queue_name']
+            'queue'     : config['amqp_queue_name'],
+            'print'     : config['print'          ]
         }
 
         ##
         self.__myIp = config['agent_address'];
 
         ## Instantiates an object to perform the publication of AMQP messages.
-        self.__publish = MCT_Simple_AMQP_Publish(amqpConfig);
+        self.__publish = MCT_Simple_AMQP_Publish(amqpConfig, logger);
 
         ## Intance a new object to handler all operation in the local database.
         self.__dbConnection = dbConnection;
@@ -451,7 +454,7 @@ class MCT_Action(object):
             dataReceived = {};
 
         ## LOG:
-        self.__print.show('GETINF - DATA RECEIVED: ' + dataReceived, 'I');
+        self.__print.show('|GETINF| - data received: '+str(dataReceived), 'I');
 
         ## Return the all datas about resouces avaliable in player's division.
         return dataReceived;
@@ -493,7 +496,7 @@ class MCT_Action(object):
             dataReceived = {};
 
         ## LOG:
-        self.__print.show('SETINF - DATA RECEIVED: ' + dataReceived, 'I');
+        self.__print.show('|SETINF| - data received: '+str(dataReceived), 'I');
 
         ## Return the all datas about resouces avaliable in player's division.
         return dataReceived;
@@ -540,7 +543,7 @@ class MCT_Action(object):
             dataReceived = {};
 
         ## LOG:
-        self.__print.show('CREATE - DATA RECEIVED: ' + dataReceived, 'I');
+        self.__print.show('|CREATE| - data received: '+str(dataReceived), 'I');
 
         ## Returns the status of the creation of the instance:
         return dataReceived;
@@ -581,7 +584,7 @@ class MCT_Action(object):
             dataReceived = {};
 
         ## LOG:
-        self.__print.show('DELETE - DATA RECEIVED: ' + dataReceived, 'I');
+        self.__print.show('|DELETE| - data received: '+str(dataReceived), 'I');
 
         ## Returns the status of the creation of the instance:
         return dataReceived;
@@ -616,7 +619,7 @@ class MCT_Action(object):
             if dataReceived != []:
 
                 ## LOG:
-                self.__print.show('DATA RECEIVED: ' + dataReceived[0], 'I');
+                #self.__print.show('DATA RECEIVED: '+str(dataReceived[0]), 'I');
 
                 valRet = {
                     'status': dataReceived[0][0],
@@ -666,8 +669,9 @@ class MCT_Action(object):
             'status'  : 0,
             'reqId'   : index,
             'retId'   : '',
-            'origAdd' : self.__myIp,
-            'destAdd' : '',
+            'origAddr': self.__myIp,
+            'destAddr': '',
+            'destName': '',
             'data'    : {}
         };
 
@@ -753,9 +757,9 @@ class MCT_States:
             ## onary.
             mDictRecv = json.loads(mJsonRecv);
 
-        except socket.error as errorDescription:
+        except socket.error as error:
             ## LOG:
-            self.__print.show('ERROR: ' + errorDescription, 'E');
+            self.__print.show('CONNECT TO MCT_DB_PROXY: ' + str(error), 'E');
             mDictRecv = {'valid': 2};
 
         finally:
@@ -804,34 +808,30 @@ class MCT_VPlayer(Process):
     ##
     ## BRIEF: iniatialize the object.
     ## ------------------------------------------------------------------------
-    ## @PARAM playerCfg    == configuration file.
-    ## @PARAM dbConnection == connection with database.
-    ## @PARAM lock         == protect concurrence among threads.
-    ## @PARAM logger       == log object.
+    ## @PARAM playerCfg == configuration file.
+    ## @PARAM db        == connection with database.
+    ## @PARAM logger    == log object.
     ##
-    def __init__(self, playerCfg, playerState, dbConnection, lock, logger):
+    def __init__(self, playerCfg, playerState, db, logger):
         super(MCT_VPlayer, self).__init__();
 
         ## Get the option that define to where the logs will are sent to show.
         self.__print = Show_Actions(playerCfg['print'], logger);
 
+        ## Player name:
+        self.__playerName = playerCfg['name'];
+
         ## LOG:
-        self.__print.show('INITIALIZE VPLAYER: ' + self.name, 'I');
+        self.__print.show('INITIALIZE VPLAYER: ' + self.__playerName, 'I');
 
         ## Set the objet that represent the connection with database (is neces-
         ## sary to use the lock object).
-        self.__dbConnection = {
-            'connection': dbConnection,
-            'lock'      : lock
-        }
+        self.__db = db;
 
         ## Object that send actions to the MCT_Agent and other that generates
         ## state to exec.
-        self.__mctAction = MCT_Action(playerCfg, dbConnection, logger);
+        self.__mctAction = MCT_Action(playerCfg, self.__db, logger);
         self.__mctStates = MCT_States(playerCfg, logger);
-        
-        ## Player name:
-        self.__playerName = playerCfg['name'];
 
         ## Time to send get resource info and set resources info request to MCT
         ## referee:
@@ -841,6 +841,9 @@ class MCT_VPlayer(Process):
         self.__vcpu = int(playerCfg['vcpus' ]);
         self.__disk = int(playerCfg['disk'  ]);
         self.__memo = int(playerCfg['memory']);
+
+        ## Init the avaliable resources database:
+        self.__init_avaliable_resources();
 
 
     ###########################################################################
@@ -888,7 +891,7 @@ class MCT_VPlayer(Process):
 
             ## Obtain one state select from the 'pool' of the possible states:
             else:
-                repeat_time.stop();
+                getSetInfRepeat.stop();
                 break;
 
         ## LOG:
@@ -899,6 +902,54 @@ class MCT_VPlayer(Process):
     ###########################################################################
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
+    ##
+    ## BRIEF: set initial avaliable resources to vplayer.
+    ## ------------------------------------------------------------------------
+    ##
+    def __init_avaliable_resources(self):
+
+        ## In the first time, create a new user in the respective table. When
+        ## the player already exist, only update then.
+        query  = "INSERT INTO AVALIABLE_RESOURCES "  ;
+        query += "(player_id,vcpus,memory,local_gb) ";
+        query += "VALUES (%s,%s,%s,%s)";
+        value  = (str(self.__playerName),
+                  str(self.__vcpu),
+                  int(self.__memo),
+                  str(self.__disk));
+
+        with self.__db['lock']:
+            try:
+                valRet = self.__db['connection'].insert_query(query,value);
+
+                ## LOG:
+                self.__print.show('INSERT RESOURCE VALUES IN TABLE!', 'I');
+                return 0;
+            except mysql.connector.Error as mysqlError:
+                ## LOG:
+                self.__print.show('MYSQL ERROR: ' + str(mysqlError), 'E');
+
+        ## 
+        query  = "UPDATE AVALIABLE_RESOURCES SET "
+        query += "vcpus='"           + str(self.__vcpu)        + "',";
+        query += "memory='"          + str(self.__memo)        + "',";
+        query += "local_gb='"        + str(self.__disk)        + "' ";
+        query += "WHERE player_id='" + str(self.__playerName)  + "'" ;
+ 
+        with self.__db['lock']:
+            try:
+                 valRet = self.__db['connection'].update_query(query);
+
+                 ## LOG:
+                 self.__print.show('UPDATE RESOURCE VALUES IN TABLE!','I');
+                 return 0;
+            except mysql.connector.Error as err:
+                 ## LOG:
+                 self.__print.show('MYSQL ERROR: ' + mysqlError, 'E');
+
+        return 1;
+
+
     ##
     ## BRIEF: update database with status from action (create/delete instances)
     ## ------------------------------------------------------------------------
@@ -948,59 +999,168 @@ class MCT_VPlayer(Process):
 
 
 
+class MCT_Drive_Simulation:
+    """
+    Class MCT_Drive_Simulation: main class in the module.
+    ---------------------------------------------------------------------------
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __vPlayers = [];
+    __db       = {};
+    __cfg      = None;
+    __print    = None;
+
+
+    ###########################################################################
+    ## SPECIAL METHODS                                                       ##
+    ###########################################################################
+    ##
+    ## BRIEF: iniatialize the object.
+    ## ------------------------------------------------------------------------
+    ## @PARAM logger    == log object.
+    ##
+    def __init__(self, logger):
+   
+        ## Try open and obtain all configs about the MCT_Drive_Simulation exe-
+        ## cution.
+        self.__get_configs(CONFIG_FILE);
+
+        ## Get the option that define to where the logs will are sent to show.
+        self.__print = Show_Actions(self.__cfg['main']['print'], logger);
+
+        ## Connect to database.
+        self.__get_database();
+
+        ## Launch all player defined in configfile. Executing then in threads.
+        self.__launch_vplayers();
+
+
+    ###########################################################################
+    ## PUBLIC METHODS                                                        ##
+    ###########################################################################
+    ##
+    ## BRIEF: excute the MCT_Drive_Simulation.
+    ## ------------------------------------------------------------------------
+    ##
+    def run(self):
+
+        ## Check if the threads (vPlayers) is already running:
+        while self.__vPlayers != []:
+             auxList = [];
+             for vPlayer in self.__vPlayers:
+                 if vPlayer.is_alive():
+                     auxList.append(vPlayer);
+
+             self.__vPlayers = auxList;
+             time.sleep(5);
+
+
+    ##
+    ## BRIEF: stop the execution.
+    ## ------------------------------------------------------------------------
+    ##
+    def stop(self):
+        ## Stop all virtual player executing in thread:
+        for vPlayer in self.__vPlayers:
+            vPlayer.terminate();
+            vPlayer.join();
+
+
+    ###########################################################################
+    ## PRIVATE METHODS                                                       ##
+    ###########################################################################
+    ##
+    ## BRIEF: get configuration from config file.
+    ## ------------------------------------------------------------------------
+    ##
+    def __get_configs(self, cfgFileName):
+
+        try:
+            self.__cfg = get_configs(cfgFileName);
+            return 0;
+
+        except ConfigParser.Error as cfgError:
+            print '[E] IT IS IMPOSSIBLE OBTAIN CFGS: ' + str(cfgError);
+            sys.exit(1);
+
+
+    ##
+    ## BRIEF: connect to database.
+    ## ------------------------------------------------------------------------
+    ##
+    def __get_database(self):
+
+        try:
+           ## Connect to database (use the crendetiais defined in the cfg file):
+           self.__db['connection'] = MCT_Database(self.__cfg['database']);
+
+           ## A primitive lock is a synchronization primitive that is not owned
+           ## by a particular thread when locked.
+           self.__db['lock'] = Lock();
+
+        except mysql.connector.Error as mysqlError: 
+
+            if   mysqlError.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+                messageError = '|DB|] SOMETHING IS WRONG WITH USER/PASS!';
+
+            elif mysqlError.errno == errorcode.ER_BAD_DB_ERROR:
+                messageError = '[DB] DATABASE DOES NOT EXIST!';
+
+            else:
+                messageError = '|DB| ' + str(mysqError);
+
+            ## LOG:
+            self.__print(messageError, 'E');
+            sys.exit(1);
+
+
+    ##
+    ## BRIEF: launch the vplayers.
+    ## ------------------------------------------------------------------------
+    ##
+    def __launch_vplayers(self):
+
+        ## To each player run in thread a simulation:
+        for i in range(int(self.__cfg['main']['vplayers'])):
+
+            ## Get configuration options to the virtual player (amqp cfg, etc).
+            vCfg = self.__cfg['vplayer' + str(i)];
+
+            ## Get the actual virtual player state stored in database.
+            ## ----------------------------------------------------------------
+            vState = get_virtual_player_state(vCfg['name'], self.__db);
+
+            ## Running vplayers in the threads:
+            self.__vPlayers.append(MCT_VPlayer(vCfg,vState,self.__db,logger));
+            self.__vPlayers[i].daemon = True;
+            self.__vPlayers[i].start();
+
+            ## Wait the unpredicable time. 
+            mutable_time_to_waiting(0.3, 5.0);
+
+## END CLASS.
+
+
+
+
+
+
+
+
 ###############################################################################
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
 
     try:
-        vPlayers = [];
-
-        ## Get from configuration file all players and all respective paramters
-        vCfgs = get_configs(CONFIG_FILE);
-
-        ## Connect to database:
-        dbConnection = MCT_Database(vCfgs['database']); 
-
-        ## A primitive lock is a synchronization primitive that is not owned by
-        ## a particular thread when locked.
-        lock = Lock();
-
-        ## To each player run in thread a simulation:
-        for i in range(int(vCfgs['main']['vplayers'])):
-            vName = 'vplayer' + str(i);
-
-            ## Get configuration options to the virtual player (amqp cfg, quote
-            ## etc).
-            vCfg = vCfgs[vName];
-
-            ## Get the actual virtual player state stored in database.
-            ## ----------------------------------------------------------------
-            vState = get_virtual_player_state(vName, dbConnection);
-
-            ## Running vplayers in the threads:
-            vPlayers.append(MCT_VPlayer(vCfg,vState,dbConnection,lock,logger));
-            vPlayers[i].name   = vName;
-            vPlayers[i].daemon = True;
-            vPlayers[i].start();
-            
-            ## Wait the unpredicable time. 
-            mutable_time_to_waiting(0.3, 5.0);
-
-        ## Check if the threads (vPlayers) is already running:
-        while vPlayers != []:
-             auxList = [];
-             for vPlayer in vPlayers:
-                 if vPlayer.is_alive():
-                     auxList.append(vPlayer);
-
-             vPlayers = auxList;
-             time.sleep(5);
+         mctDriveSimulation = MCT_Drive_Simulation(logger);
+         mctDriveSimulation.run();
 
     except KeyboardInterrupt:
-        for vPlayer in vPlayers:
-            vPlayer.terminate();
-            vPlayer.join();
+         mctDriveSimulation.stop();
 
     sys.exit(0);
 

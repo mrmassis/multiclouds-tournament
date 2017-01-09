@@ -44,6 +44,13 @@ CPU_INFO = {'T':'1'  , 'S':'1'   , 'B':'2'   };
 MEM_INFO = {'T':'512', 'S':'2048', 'B':'4096'};
 DSK_INFO = {'T':'1'  , 'S':'20'  , 'B':'40'  };
 
+## Dictionary with the convertion of return signal.
+GENERIC_STATUS = {
+    CREATE_INSTANCE : { 'NOSTATE':0, 'ERROR':0, 'ACTIVE':1},
+    DELETE_INSTANCE : { 'NOSTATE':0, 'ERROR':0, 'HARD_DELETED':1,'DELETED':1},
+    SUSPND_INSTANCE : { 'NOSTATE':0, 'ERROR':0, 'SUSPENDED'   :1},
+    RESUME_INSTANCE : { 'NOSTATE':0, 'ERROR':0, 'ACTIVE'      :1}
+}
 
 
 
@@ -60,18 +67,24 @@ DSK_INFO = {'T':'1'  , 'S':'20'  , 'B':'40'  };
 def get_configs(configName):
     cfg = {};
 
-    config = ConfigParser.ConfigParser();
-    config.readfp(open(configName));
+    try:
+        config = ConfigParser.ConfigParser();
+        config.readfp(open(configName));
 
-    ## Scan the configuration file and get the relevant informations and save
-    ## then in cfg dictionary.
-    for section in config.sections():
-        cfg[section] = {};
+        ## Scan the configuration file and get the relevant infos. Save infos
+        ## in a dictionary.
+        for section in config.sections():
+            cfg[section] = {};
 
-        for option in config.options(section):
-            cfg[section][option] = config.get(section,option);
+            for option in config.options(section):
+                cfg[section][option] = config.get(section,option);
 
-    return cfg;
+        return cfg;
+
+    except ConfigParser.Error as cfgError:
+        raise cfgError;
+
+    return {};
 
 
 

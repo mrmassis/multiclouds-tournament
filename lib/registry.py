@@ -56,18 +56,12 @@ class MCT_Registry(object):
     ##
     ## BRIEF: initialize the object.
     ## ------------------------------------------------------------------------
-    ## @PARAM clientAddr == client address;
-    ## @PARAM clientName == cliente name (id);
-    ## @PARAM serverAddr == server address;
-    ## @PARAM serverPort == server port.
+    ## @PARAMA dictClient == dictionaty with information about the client.
     ##
-    def __init__(self, clientAddr, clientName, serverAddr, serverPort):
+    def __init__(self, dictClient):
 
-        self.__clientAddr = clientAddr;
-        self.__clientName = clientName;
+        self.__dictClient = dictClient;
 
-        self.__serverAddr = serverAddr;
-        self.__serverPort = serverPort;
 
 
     ###########################################################################
@@ -81,20 +75,29 @@ class MCT_Registry(object):
         messageDictRecv = {'status' : 0};
         count = 0;
 
+        addr = self.__dictClient['authenticate_address']; 
+        port = self.__dictClient['authenticate_port'];
+
+
         while count < TRIES:
             try:
                 connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
-                connection.connect(('', int(self.__serverPort)));
+                connection.connect((addr, int(port)));
 
                 messageDictSend = {
                     'code'    : -1,
-                    'playerId': self.__clientName,
+                    'playerId': self.__dictClient['name'],
                     'status'  : 0,
                     'reqId'   : '',
                     'retId'   : '',
-                    'origAdd' : self.__clientAddr,
-                    'destAdd' : '',
-                    'data'    : {}
+                    'origAddr': self.__dictClient['agent_address'],
+                    'destAddr': '',
+                    'destName': '',
+                    'data'    : {
+                        'vcpus' : self.__dictClient['vcpus' ],
+                        'memory': self.__dictClient['memory'],
+                        'disk'  : self.__dictClient['disk'  ]
+                    }
                 }
 
                 ## Format message to 'json' (convert dictionary to json format):
