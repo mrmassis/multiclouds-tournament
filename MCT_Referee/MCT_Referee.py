@@ -555,12 +555,7 @@ class MCT_Referee(RabbitMQ_Consume):
 
            ## Perform the player selection. Utilize the scheduller algorithm se
            ## lected before.
-           playerOrdenedList = self.__scheduller.run(valRet);
-
-           if playerOrdenedList != []: 
-               selectedPlayer = playerOrdenedList[0];
-           else:
-               selectedPlayer = {};
+           selectedPlayer = self.__scheduller.run(valRet);
 
        return selectedPlayer;
 
