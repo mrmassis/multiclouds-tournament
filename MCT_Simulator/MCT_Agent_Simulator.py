@@ -19,11 +19,11 @@ import pika;
 import datetime;
 import hashlib;
 
-from mct.lib.utils    import *;
-from mct.lib.emulator import MCT_Emulator;
-from mct.lib.amqp     import RabbitMQ_Publish, RabbitMQ_Consume;
-from mct.lib.database import MCT_Database;
-from mct.lib.registry import MCT_Registry;
+from mct.lib.utils               import *;
+from mct.lib.emulator            import MCT_Emulator;
+from mct.lib.amqp                import RabbitMQ_Publish, RabbitMQ_Consume;
+from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy,Player,Request;
+from mct.lib.registry            import MCT_Registry;
 
 
 
@@ -72,6 +72,9 @@ logger.addHandler(handler);
 
 
 
+
+
+
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
@@ -81,12 +84,12 @@ class MCT_Agent(RabbitMQ_Consume):
     Class MCT_Agent - agent modified to be used in simulation. 
     ---------------------------------------------------------------------------
     PUBLIC METHODS:
-    callback == method invoked when the pika receive a message.
-    
-    __recv_message_referee == receive message from referee.
-    __send_message_referee == send message to referee.
-    __inspect_request      == check if all necessary fields are in request.
+    ** callback == method invoked when the pika receive a message.
 
+    PRIVATE METHODS:    
+    ** __recv_message_referee == receive message from referee.
+    ** __send_message_referee == send message to referee.
+    ** __inspect_request      == check if all necessary fields are in request.
     """
 
     ###########################################################################
@@ -99,7 +102,7 @@ class MCT_Agent(RabbitMQ_Consume):
     __my_ip        = None;
     __cloud        = None;
     __cloudType    = None;
-    __dbConnection = None;
+    __db           = None;
     __print        = None;
     __insts        = {};
 
@@ -113,13 +116,10 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict cfg    == dictionary with configurations about MCT_Agent.
     ## @PARAM obj  logger == logger object.
     ##
-    def __init__(self, cfg):
+    def __init__(self, cfg, authToken):
 
         ## Get the option that define to where the logs will are sent to show.
         self.__print = Show_Actions(cfg['main']['print'], logger);
-
-        ## LOG:
-        self.__print.show('INITIALIZE AGENT SIMULATION!', 'I');
 
         ## Local address:
         self.__my_ip = cfg['main']['my_ip'];
@@ -135,7 +135,13 @@ class MCT_Agent(RabbitMQ_Consume):
         self.__publishExt = RabbitMQ_Publish(cfg['amqp_external_publish']);
 
         ## Intance a new object to handler all operation in the local database.
-        self.__dbConnection = MCT_Database(cfg['database']);
+        self.__db = MCT_Database_SQLAlchemy(cfg['database']);
+
+        ## Setting the player's authentication token:
+        self.__authToken = authToken;
+
+        ## LOG:
+        self.__print.show("\n###### START MCT_AGENT_SIMULATION ######\n",'I');
 
 
     ###########################################################################
@@ -183,6 +189,11 @@ class MCT_Agent(RabbitMQ_Consume):
         ## LOG:
         self.__print.show('MESSAGE TO DISPATCH ' + str(message), 'I');
 
+        ##
+        ## TODO: put in a specific module!!!
+        ## Verify if the vPlayer has authorization to send mssg to MCT_Referee.
+        valRet = self.__check_vplayer_access(message['playerId']);
+
         ## Publish the message to MCT_Dispatch via AMQP. The MCT_Dispatch is in
         ## the remote server. 
         valRet = self.__publishExt.publish(message, self.__routeExt);
@@ -218,16 +229,11 @@ class MCT_Agent(RabbitMQ_Consume):
             ## suspend instance e resume instance): 
             ## Create:
             if   message['code'] == CREATE_INSTANCE:
-                status = self.__create_server(message);
+                message = self.__create_server(message);
 
             ## Delete:
             elif message['code'] == DELETE_INSTANCE:
-                status = self.__delete_server(message);
-
-            ## The MCT_Agent support more than one cloud framework.So is neces-
-            ## sary prepare the return status to a generic format. Send back to
-            ## dispatch the return for the request.
-            message['status'] = GENERIC_STATUS[message['code']][status]; 
+                message = self.__delete_server(message);
 
             ## LOG:
             self.__print.show('RETURN TO DISPATCH!', 'I');
@@ -254,101 +260,124 @@ class MCT_Agent(RabbitMQ_Consume):
             return 0;
 
         ## Insert the message received into the database.
-        query  = "INSERT INTO REQUEST (player_id, request_id, status, message) ";
-        query += "VALUES (%s,%s,%s,%s)";
-        value  = (str(message['playerId']), 
-                  str(message['reqId'   ]), 
-                  int(message['status'  ]),
-                  str(message['data'    ]));
+        request = Request();
 
-        valret = self.__dbConnection.insert_query(query, value);
+        request.player_id  = str(message['playerId']);
+        request.request_id = str(message['reqId'   ]);
+        request.status     = int(message['status'  ]);
+        request.message    = str(message['data'    ]);
+
+        valRet = self.__db.insert_reg(request);
 
 
     ##
     ## BRIEF: create localy a new server. 
     ## ------------------------------------------------------------------------
-    ## @PARAM dict message == received message.
+    ## @PARAM dict msg == received message.
     ##
-    def __create_server(self, message):
+    def __create_server(self, msg):
 
         status = 'ERROR';
 
         ## Check if is possible create the new server (vcpu, memory, and disk).
-        query  = "SELECT * FROM AVALIABLE_RESOURCES ";
-        query += "WHERE player_id='" + message['destName'] + "'";
-        
-        dataReceived = [] or self.__dbConnection.select_query(query);
+        dReceived=self.__db.first_reg_filter(Player, 
+                                          Player.player_id == msg['destName']);
 
-        if dataReceived != []:
+        if dReceived != []:
 
             ## Get the index that meaning the flavors.(vcpus, memory, and disk).
-            i =FLV_NAME.keys()[FLV_NAME.values().index(message['data']['flavor'])];
+            i =FLV_NAME.keys()[FLV_NAME.values().index(msg['data']['flavor'])];
 
-            newVcpuUsed = int(dataReceived[0][2]) + int(CPU_INFO[i]);
-            newMemoUsed = int(dataReceived[0][4]) + int(MEM_INFO[i]);
-            newDiskUsed = int(dataReceived[0][6]) + int(DSK_INFO[i]);
+            newVcpuUsed = int(dReceived[0]['vcpus_used'    ])+int(CPU_INFO[i]);
+            newMemoUsed = int(dReceived[0]['memory_mb_used'])+int(MEM_INFO[i]);
+            newDiskUsed = int(dReceived[0]['local_gb_used' ])+int(DSK_INFO[i]);
 
             ## Check if there are 'avaliable' resources to accept the instance.
-            if  newVcpuUsed <= int(dataReceived[0][1]) and \
-                newMemoUsed <= int(dataReceived[0][3]) and \
-                newDiskUsed <= int(dataReceived[0][5]):
+            if  newVcpuUsed <= dReceived[0]['vcpus'   ] and \
+                newMemoUsed <= dReceived[0]['memory'  ] and \
+                newDiskUsed <= dReceived[0]['local_gb']:
 
                 ## Update the specific entry in dbase with new resource values.
-                query  = "UPDATE AVALIABLE_RESOURCES SET "
-                query += "vcpus_used='"      + str(newVcpuUsed) + "',";
-                query += "memory_mb_used='"  + str(newMemoUsed) + "',";
-                query += "local_gb_used='"   + str(newDiskUsed) + "' ";
-                query += "WHERE player_id='" + message['destName']  + "'" ;
+                fieldsToUpdate = {
+                    'vcpus_used'     : newVcpuUsed,
+                    'memory_mb_used' : newMemoUsed,  
+                    'local_gb_used'  : newDiskUsed
+                };
 
-                valRet = self.__dbConnection.update_query(query);
+                valRet=self.__db.update_reg(Player, 
+                                            Player.player_id == msg['destName'],
+                                            fieldsToUpdate);
 
                 ## Store the new virtual machine instance in a special structu-
                 ## re. A dictionary:
-                self.__insert_instance_to_dictionary(message);
+                self.__insert_instance_to_dictionary(msg);
 
                 status = 'ACTIVE';
 
         ## LOG:
-        self.__print.show('>> STATUS '+str(status)+' FROM REQ '+str(message),'I');
-        return status;
+        self.__print.show('>> STATUS '+str(status)+' FROM REQ '+str(msg), 'I');
+
+        ## The MCT_Agent support more than one cloud framework. So is necessary
+        ## prepare the return status to a generic format. Send back to dispatch
+        ## the return for the request.
+        msg['status'] = GENERIC_STATUS[msg['code']][status]; 
+
+        return msg;
 
 
     ##
     ## BRIEF: delete localy a new server.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict message == received message.
+    ## @PARAM dict msg == received message.
     ##
-    def __delete_server(self, message):
+    def __delete_server(self, msg):
 
-        ## Check if is possible create the new server (vcpu, memory, and disk).
-        query  = "SELECT * FROM AVALIABLE_RESOURCES ";
-        query += "WHERE player_id='" + message['destName'] + "'";
+        dReceived=self.__db.first_reg_filter(Player, 
+                                          Player.player_id == msg['destName']);
 
-        dataReceived = [] or self.__dbConnection.select_query(query);
-
-        if dataReceived != []:
+        if dReceived != []:
 
             ## Remove a virtual machine instance in a special structure. A dic-
             ## tionary:
-            flavorId = self.__remove_instance_from_dictionary(message);
+            flavorId = self.__remove_instance_from_dictionary(msg);
 
             ## Get the index that meaning the flavors.(vcpus, memory, and disk).
-            i=FLV_NAME.keys()[FLV_NAME.values().index(flavorId)];
+            i = FLV_NAME.keys()[FLV_NAME.values().index(flavorId)];
 
-            newVcpuUsed = int(dataReceived[0][2]) - int(CPU_INFO[i]);
-            newMemoUsed = int(dataReceived[0][4]) - int(MEN_INFO[i]);
-            newDiskUsed = int(dataReceived[0][6]) - int(DSK_INFO[i]);
+            newVcpuUsed = int(dReceived[0]['vcpus_used'    ])-int(CPU_INFO[i]);
+            newMemoUsed = int(dReceived[0]['memory_mb_used'])-int(MEM_INFO[i]);
+            newDiskUsed = int(dReceived[0]['local_gb_used' ])-int(DSK_INFO[i]);
 
             ## Update the specific entry in database with new resource values.
-            query  = "UPDATE AVALIABLE_RESOURCES SET "
-            query += "vcpus_used='"      + str(newVcpuUsed) + "',";
-            query += "memory_mb_used='"  + str(newMemoUsed) + "',";
-            query += "local_gb_used='"   + str(newDiskUsed) + "' ";
-            query += "WHERE player_id='" + msg['destName']  + "'" ;
+            fieldsToUpdate = {
+                'vcpus_used'     : newVcpuUsed,
+                'memory_mb_used' : newMemoUsed,  
+                'local_gb_used'  : newDiskUsed
+            };
 
-            valRet = self.__dbConnection.update_query(query);
+            valRet=self.__db.update_reg(Player, 
+                                        Player.player_id == msg['dstName'],
+                                        fieldsToUpdate);
 
-        return 'HARD_DELETED';
+            msg['data']['vcpus'] = int(CPU_INFO[i]);
+            msg['data']['mem'  ] = int(MEN_INFO[i]);
+            msg['data']['disk' ] = int(DSK_INFO[i]);
+
+        else:
+
+            msg['data']['vcpus'] = 0;
+            msg['data']['mem'  ] = 0;
+            msg['data']['disk' ] = 0;
+
+        ## LOG:
+        self.__print.show('>> STATUS HARD DELETED FROM REQ ' + str(msg), 'I');
+
+        ## The MCT_Agent support more than one cloud framework. So is necessary
+        ## prepare the return status to a generic format. Send back to dispatch
+        ## the return for the request.
+        msg['status'] = GENERIC_STATUS[msg['code']]['HARD_DELETED']; 
+
+        return msg;
 
 
     ##
@@ -357,29 +386,6 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict request == received request.
     ##
     def __inspect_request(self, request):
-        return 0;
-
-
-    ##
-    ## Brief: create a map between two uuid.
-    ## ------------------------------------------------------------------------
-    ## @PARAM str destId == local uuid.
-    ## @PARAM str origId == origin uuid.
-    ##
-    def __set_map_inst_id(self, destId, origId):
-        ## 
-        timeStamp = str(datetime.datetime.now());
-
-        query  = "INSERT INTO MAP (";
-        query += "uuid_src, ";
-        query += "uuid_dst, ";
-        query += "type_obj, ";
-        query += "date";
-        query += ") VALUES (%s, %s, %s, %s)";
-        value  = (origId, destId, 'instance', timeStamp);
-
-        valRet = self.__dbConnection.insert_query(query, value);
-
         return 0;
 
 
@@ -407,12 +413,25 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM msg == message with instance data.
     ##
     def __remove_instance_from_dictionary(self, message):
+
         ## Remove the instance entry from dictionary and return the flavorID.
         flavorId = self.__insts[msg['destName']].pop([msg['reqId']], None);
 
         ## LOG:
-        self.__print.show('-- INSTANCES: ' + str(self.__insts), 'I');
+        self.__print.show('[INSTANCES RUNNING] - ' + str(self.__insts), 'I');
+
         return flavorId;
+
+
+    ##
+    ## TODO: put in the specific module!
+    ## BRIEF: verify if vPlayer has authorization to send msg to MCT_Referee.
+    ## ------------------------------------------------------------------------
+    ## @PARAM playerId == player identification
+    ##
+    def __check_vplayer_access(self, playerId):
+        return 0;
+
 ## END.
 
 
@@ -429,6 +448,9 @@ if __name__ == "__main__":
     config = get_configs(CONFIG_FILE);
 
     try:
+        ##
+        tokens = [];
+
         ## Case this agent is virtual (to emulate), open the file with vagents
         ## specification.
         for i in range(int(config['main']['vplayers'])):
@@ -439,11 +461,20 @@ if __name__ == "__main__":
     
             try:
                 mct_registry = MCT_Registry(vCfg);
-                mct_registry.registry();
+
+                ## Register the virtual player in the tournament. Return status
+                ## and the authentication token.
+                authStatus, authToken = mct_registry.registry();
+
+                ## Store the token:
+                tokens.append({'name'      : vName,
+                               'authStatus': authStatus,
+                               'authToken' : authToken}
+                             );
             except:
                 pass;
 
-        mct = MCT_Agent(config);
+        mct = MCT_Agent(config, tokens);
         mct.consume();
 
     except KeyboardInterrupt:

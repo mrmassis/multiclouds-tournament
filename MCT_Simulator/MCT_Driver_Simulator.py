@@ -25,11 +25,12 @@ import json;
 import pika;
 import threading;
 import mysql;
+import yaml;
 
-from threading         import Timer;
-from multiprocessing   import Process, Queue, Lock;
-from mct.lib.database  import MCT_Database;
-from mct.lib.utils     import *;
+from threading                   import Timer;
+from multiprocessing             import Process, Queue, Lock;
+from mct.lib.database_sqlalchemy import *;
+from mct.lib.utils               import *;
 
 
 
@@ -77,6 +78,10 @@ logger.addHandler(handler);
 
 
 
+
+
+
+
 ###############################################################################
 ## FUNCTION                                                                  ##
 ###############################################################################
@@ -84,10 +89,11 @@ logger.addHandler(handler);
 ## BRIEF: mantain the virtual player state.
 ## ----------------------------------------------------------------------------
 ## @PARAM vPlayerName  == virtual player name.
-## @PARAM dbConnection == database connection.
+## @PARAM db           == database connection.
 ##
 ##
-def get_virtual_player_state(vPlayerName, dbConnection):
+def get_virtual_player_state(vPlayerName, db):
+
      stateDictionary = {
          'vPlayer': vPlayerName,
          'vmsRcv' : [],
@@ -95,21 +101,19 @@ def get_virtual_player_state(vPlayerName, dbConnection):
      };
 
      ## Perform a select to get all vm instances assign (running) in 'vPlayer'.
-     ## ----
-     dbQuery  = "SELECT vm_id,vm_owner,vm_type FROM STATE WHERE ";
-     dbQuery += "player_id='" + vPlayerName + "' and running='1'";
-
-     dataReceived = [] or dbConnection['connection'].select_query(dbQuery);
+     dataReceived = db['connection'].all_regs_filter(State,  
+                         State.player_id == vPlayerName and State.running == 1);
 
      if dataReceived != []:
          for vm in dataReceived:
-             if vm[1] == vPlayerName:
+             if vm['player_id'] == vPlayerName:
                  stateDictionary['vmsRcv'].append(vm);
              else:
                  stateDictionary['vmsSnd'].append(vm);
 
      return stateDictionary;
 
+## END DEFINITION.
 
 
 
@@ -349,11 +353,11 @@ class MCT_Action(object):
     ##
     ## BRIEF: iniatialize the object.
     ## ------------------------------------------------------------------------
-    ## @PARAM config       == configuration dictionary.
-    ## @PARAM dbConnection == connection with database.
-    ## @PARAM logger       == log object.
+    ## @PARAM config  == configuration dictionary.
+    ## @PARAM db      == connection with database.
+    ## @PARAM logger  == log object.
     ##
-    def __init__(self, config, dbConnection, logger):
+    def __init__(self, config, db, logger):
         
         ## Get the option that define to where the logs will are sent to show.
         self.__print = Show_Actions(config['print'], logger);
@@ -386,7 +390,7 @@ class MCT_Action(object):
         self.__publish = MCT_Simple_AMQP_Publish(amqpConfig, logger);
 
         ## Intance a new object to handler all operation in the local database.
-        self.__dbConnection = dbConnection;
+        self.__db = db;
 
 
     ##
@@ -574,7 +578,7 @@ class MCT_Action(object):
         msgToSend['data'] = vmData;
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        self.__publish.publish(msgToSend);
+        valret = self.__publish.publish(msgToSend);
 
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
@@ -600,32 +604,25 @@ class MCT_Action(object):
     ## @PARAM str requestId = identify of the resquest.
     ##
     def __waiting_return(self, playerId, requestId):
-
         count = 0;
 
         ## Waiting for the answer arrive. When the status change status get it.
         while True and count < self.__requestPendingIteract:
 
-            ## Mount the select query: 
-            dbQuery  ="SELECT SQL_NO_CACHE status, message FROM REQUEST WHERE ";
-            dbQuery +="player_id='"  + playerId  + "' and ";
-            dbQuery +="request_id='" + requestId + "'";
- 
-            with self.__dbConnection['lock']:
-                dataReceived = [] or \
-                self.__dbConnection['connection'].select_query(dbQuery);
+            with self.__db['lock']:
+                dataReceived = self.__db['connection'].first_reg_filter(Request, Request.player_id == playerId and Request.request_id == requestId);
 
             ## If there is return finish the process!
             if dataReceived != []:
 
-                ## LOG:
-                #self.__print.show('DATA RECEIVED: '+str(dataReceived[0]), 'I');
-
                 valRet = {
-                    'status': dataReceived[0][0],
-                    'data'  : ast.literal_eval(dataReceived[0][1])
-                }
+                    'status': dataReceived[0]['status'],
+                    'data'  : ast.literal_eval(dataReceived[0]['message'])
+                };
 
+                ## Calculate and update the player'satisfaction level.Check the
+                ## status;
+                self.__fairness(playerId, valRet['data'], valRet['status']);
                 return valRet;
 
             ## Wating for a predefined time to check (pooling) the list again.
@@ -638,6 +635,43 @@ class MCT_Action(object):
         return {};        
 
 
+    ##
+    ## BRIEF: calculate the player's fairness level.
+    ## ------------------------------------------------------------------------
+    ## @PARAM str playerId = identify of the player.
+    ## @PARAM str message  = message received.
+    ## @PARAM str status   = status of the request.
+    ##
+    def __fairness(self, playerId, message, status):
+
+        #fairness = 0.0;
+
+        #code = message['code'];
+
+
+
+
+        #if message['code'] == CREATE_INSTANCE:
+           
+
+
+ 
+
+        ## Select the requests number and calculate the fairness!Mount the sele
+        ## ct query: 
+        #with self.__db['lock']:
+        #    dataReceived = self.__db['connection'].first_reg_filter(Player, Player.player_id == playerId);
+
+
+        ## If there is return finish the process!
+        #if dataReceived != []:
+        #    fairness = float(dataReceived[0]['fairness']);
+            
+        ## LOG:
+        #self.__print.show('PLAYER '+playerId+' FAIRNESS: '+str(fairness), 'I');
+        return 0;
+
+ 
     ##
     ## BRIEF: create a new index based in a hash.
     ## ------------------------------------------------------------------------
@@ -714,9 +748,6 @@ class MCT_States:
        ## Get the option that define to where the logs will are sent to show.
        self.__print = Show_Actions(config['print'], logger);
 
-       self.__vcpus  = config['vcpus' ];
-       self.__memory = config['memory'];
-       self.__disk   = config['disk'  ];
        self.__addr   = config['addr'  ];
        self.__port   = config['port'  ];
 
@@ -789,7 +820,7 @@ class MCT_VPlayer(Process):
     ###########################################################################
     __mctAction               = None;
     __mctStates               = None;
-    __playerName              = None;
+    __name                    = None;
     __lock                    = None;
     __dbConnection            = None;
     __get_resources_info_time = None;
@@ -819,10 +850,10 @@ class MCT_VPlayer(Process):
         self.__print = Show_Actions(playerCfg['print'], logger);
 
         ## Player name:
-        self.__playerName = playerCfg['name'];
+        self.__name = playerCfg['name'];
 
         ## LOG:
-        self.__print.show('INITIALIZE VPLAYER: ' + self.__playerName, 'I');
+        self.__print.show('INITIALIZE VPLAYER: ' + self.__name, 'I');
 
         ## Set the objet that represent the connection with database (is neces-
         ## sary to use the lock object).
@@ -837,13 +868,14 @@ class MCT_VPlayer(Process):
         ## referee:
         self.__interval = float(playerCfg['get_set_resources_info_time']);
 
-        ## Resource: 
-        self.__vcpu = int(playerCfg['vcpus' ]);
-        self.__disk = int(playerCfg['disk'  ]);
-        self.__memo = int(playerCfg['memory']);
+        ## The localization and name of the file with the resources information
+        self.__resourcesFile = playerCfg['resources_file'];
 
         ## Init the avaliable resources database:
         self.__init_avaliable_resources();
+
+        ## TODO: remove
+        time.sleep(5);
 
 
     ###########################################################################
@@ -895,7 +927,7 @@ class MCT_VPlayer(Process):
                 break;
 
         ## LOG:
-        self.__print.show('END SIMULATION PLAYER: ' + self.__playerName, 'I');
+        self.__print.show('END SIMULATION PLAYER: ' + self.__name, 'I');
         return 0;
 
 
@@ -908,46 +940,31 @@ class MCT_VPlayer(Process):
     ##
     def __init_avaliable_resources(self):
 
-        ## In the first time, create a new user in the respective table. When
-        ## the player already exist, only update then.
-        query  = "INSERT INTO AVALIABLE_RESOURCES "  ;
-        query += "(player_id,vcpus,memory,local_gb) ";
-        query += "VALUES (%s,%s,%s,%s)";
-        value  = (str(self.__playerName),
-                  str(self.__vcpu),
-                  int(self.__memo),
-                  str(self.__disk));
-
-        with self.__db['lock']:
-            try:
-                valRet = self.__db['connection'].insert_query(query,value);
-
-                ## LOG:
-                self.__print.show('INSERT RESOURCE VALUES IN TABLE!', 'I');
-                return 0;
-            except mysql.connector.Error as mysqlError:
-                ## LOG:
-                self.__print.show('MYSQL ERROR: ' + str(mysqlError), 'E');
-
-        ## 
-        query  = "UPDATE AVALIABLE_RESOURCES SET "
-        query += "vcpus='"           + str(self.__vcpu)        + "',";
-        query += "memory='"          + str(self.__memo)        + "',";
-        query += "local_gb='"        + str(self.__disk)        + "' ";
-        query += "WHERE player_id='" + str(self.__playerName)  + "'" ;
+        ## Obtain the path and the file name with the vplayer resources informa
+        ## mations (vcpu, memory, and disk):
+        stream = file(self.__resourcesFile, 'r');
  
-        with self.__db['lock']:
-            try:
-                 valRet = self.__db['connection'].update_query(query);
+        ## Obtain the dictionary with resource informations (vcpus, memory, and
+        ## disk).
+        rDict = yaml.load(stream); 
 
-                 ## LOG:
-                 self.__print.show('UPDATE RESOURCE VALUES IN TABLE!','I');
-                 return 0;
-            except mysql.connector.Error as err:
-                 ## LOG:
-                 self.__print.show('MYSQL ERROR: ' + mysqlError, 'E');
+        player = Player();
 
-        return 1;
+        player.player_id = self.__name;
+        player.vcpus     = rDict['vcpus' ];
+        player.memory    = rDict['memory'];
+        player.local_gb  = rDict['disk'  ];
+
+        ## In the first time, create a new entry (user( in the respective table
+        try:
+            with self.__db['lock']:
+                valRet = self.__db['connection'].insert_reg(player);
+        except:
+            pass;
+
+        ## LOG:
+        self.__print.show('INSERT RESOURCE VALUES IN TABLE!', 'I');
+        return 0;
 
 
     ##
@@ -970,25 +987,70 @@ class MCT_VPlayer(Process):
         ## Check the last action. If was get execute the set information, other
         ## wise execute the get. 
         if self.__get == True:
-            
-            message = {
-                'action' : GETINF_RESOURCE
-            }
-
+            self.__get_resources_info();
         else:
-            
-            message = {
-                'action': SETINF_RESOURCE,
-                'vcpus' : self.__vcpu,
-                'memory': self.__memo,
-                'disk'  : self.__disk
-            }
+            self.__set_resources_info();
 
         ## Select the next action: 'True' to 'False', 'Get to Set' information.
         self.__get = not self.__get;
 
-        ## Dispatch the action to MCT_Dispatch:
+
+    ##
+    ## BRIEF: get tournament information.
+    ## ------------------------------------------------------------------------
+    ##
+    def __get_resources_info(self):
+
+        message = {
+            'action' : GETINF_RESOURCE
+        };
+
+        ## LOG:
+        self.__print.show('SEND REQUEST TO GET TOURNAMENT INFORMATION!','I');
+
+        ## Send the request to get information to the MCT_Dispatch in the remo-
+        ## te server.
         dataRecv = self.__mctAction.dispatch(message);
+
+
+    ##
+    ## BRIEF: set vplayer information to the tournament.
+    ## ------------------------------------------------------------------------
+    ##
+    def __set_resources_info(self):
+
+        errorDatabase = False;
+
+        ## Get the path and the file name with the player resources information
+        stream = file(self.__resourcesFile, 'r');
+
+        ## Get the dictionary with resource information (vcpus,memory,and disk)
+        rDict = yaml.load(stream);
+
+        data = {
+            'vcpus'    : rDict['vcpus' ],
+            'memory'   : rDict['memory'],
+            'local_gb' : rDict['disk'  ]
+        };
+
+        ## Execute in exclusive mode - lock block - the database update action.
+        with self.__db['lock']:
+            self.__db['connection'].update_reg(Player, 
+                                        Player.player_id == self.__name, data); 
+
+        ## Dont put this block inside the Try because the oper is in lock mode.
+        message = {
+               'action': SETINF_RESOURCE,
+               'vcpus' : rDict['vcpus' ],
+               'memory': rDict['memory'],
+               'disk'  : rDict['disk'  ]
+        };
+
+        ## Send the request to update 'resources' values to 'MCT_Dispatch':
+        dataRecv = self.__mctAction.dispatch(message);
+
+        ## LOG:
+        self.__print.show('UPDATE RESOURCE VALUES IN TABLE!','I');
 
 ## END CLASS.
 
@@ -1047,6 +1109,9 @@ class MCT_Drive_Simulation:
     ##
     def run(self):
 
+        ## LOG:
+        self.__print.show("\n####### START MCT_DRIVE_SIMULATION #######\n",'I');
+
         ## Check if the threads (vPlayers) is already running:
         while self.__vPlayers != []:
              auxList = [];
@@ -1063,6 +1128,10 @@ class MCT_Drive_Simulation:
     ## ------------------------------------------------------------------------
     ##
     def stop(self):
+
+        ## LOG:
+        self.__print.show("\n###### FINISH MCT_DRIVE_SIMULATION ######\n",'I');
+
         ## Stop all virtual player executing in thread:
         for vPlayer in self.__vPlayers:
             vPlayer.terminate();
@@ -1092,29 +1161,13 @@ class MCT_Drive_Simulation:
     ## ------------------------------------------------------------------------
     ##
     def __get_database(self):
+        
+        ## Connect to database (use the crendetiais defined in the cfg file):
+        self.__db['connection']=MCT_Database_SQLAlchemy(self.__cfg['database']);
 
-        try:
-           ## Connect to database (use the crendetiais defined in the cfg file):
-           self.__db['connection'] = MCT_Database(self.__cfg['database']);
-
-           ## A primitive lock is a synchronization primitive that is not owned
-           ## by a particular thread when locked.
-           self.__db['lock'] = Lock();
-
-        except mysql.connector.Error as mysqlError: 
-
-            if   mysqlError.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                messageError = '|DB|] SOMETHING IS WRONG WITH USER/PASS!';
-
-            elif mysqlError.errno == errorcode.ER_BAD_DB_ERROR:
-                messageError = '[DB] DATABASE DOES NOT EXIST!';
-
-            else:
-                messageError = '|DB| ' + str(mysqError);
-
-            ## LOG:
-            self.__print(messageError, 'E');
-            sys.exit(1);
+        ## A primitive lock is a synchronization primitive that is not owned by
+        ## by a particular thread when locked.
+        self.__db['lock'] = Lock();
 
 
     ##

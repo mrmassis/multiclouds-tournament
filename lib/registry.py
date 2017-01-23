@@ -78,7 +78,6 @@ class MCT_Registry(object):
         addr = self.__dictClient['authenticate_address']; 
         port = self.__dictClient['authenticate_port'];
 
-
         while count < TRIES:
             try:
                 connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
@@ -93,11 +92,7 @@ class MCT_Registry(object):
                     'origAddr': self.__dictClient['agent_address'],
                     'destAddr': '',
                     'destName': '',
-                    'data'    : {
-                        'vcpus' : self.__dictClient['vcpus' ],
-                        'memory': self.__dictClient['memory'],
-                        'disk'  : self.__dictClient['disk'  ]
-                    }
+                    'data'    : {}
                 }
 
                 ## Format message to 'json' (convert dictionary to json format):
@@ -122,7 +117,7 @@ class MCT_Registry(object):
             time.sleep(TIME_TO_WAIT);
             count += 1;
 
-        return int(messageDictRecv['status']);
+        return int(messageDictRecv['status']), messageDictRecv['data']['token'];
 ## END CLASS;
 
 
