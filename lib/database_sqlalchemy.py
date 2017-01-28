@@ -273,7 +273,7 @@ class MCT_Database_SQLAlchemy:
     ## BRIEF: return all registries from database (with filter).
     ## ------------------------------------------------------------------------
     ## @PARAM obj table      == object that meaning one table in database.
-    ## @PARAM str filterRule == filter to apply.
+    ## @PARAM dct filterRules== filters to apply.
     ##
     def all_regs_filter(self, table, filterRule):
         rList = [];
@@ -291,14 +291,24 @@ class MCT_Database_SQLAlchemy:
     ## BRIEF: return the first registry from database (with filter).
     ## ------------------------------------------------------------------------
     ## @PARAM obj table      == object that meaning one table in database.
-    ## @PARAM str filterRule == filter to apply.
+    ## @PARAM dct filterRules== filters to apply.
     ##
-    def first_reg_filter(self, table, filterRule):
+    def first_reg_filter(self, table, filterRules):
+
         rList = [];
 
-        ## Obtain the first registry from database:
-        registry = self.session.query(table).filter(filterRule).first();
+        ## Execute the query:
+        querySql = self.session.query(table)
 
+        ## Filter:
+        for attr, value in filterRules.items():
+            if querySql:
+                querySql = querySql.filter(value);
+
+        ## Get the first element found in the table:
+        registry = querySql.first();
+
+        ## Convert the object structure to a pythoninc dictionary format:
         if registry:
             rList.append(self.__row2dict(registry));
 

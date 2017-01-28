@@ -609,20 +609,26 @@ class MCT_Action(object):
         ## Waiting for the answer arrive. When the status change status get it.
         while True and count < self.__requestPendingIteract:
 
+            filterRules = {
+                0 : Request.player_id  == playerId,
+                1 : Request.request_id == requestId
+            };
+
             with self.__db['lock']:
-                dataReceived = self.__db['connection'].first_reg_filter(Request, Request.player_id == playerId and Request.request_id == requestId);
+                dataReceived = self.__db['connection'].first_reg_filter(Request, filterRules);
 
             ## If there is return finish the process!
             if dataReceived != []:
 
                 valRet = {
-                    'status': dataReceived[0]['status'],
+                    'status': int(dataReceived[0]['status']),
+                    'action': int(dataReceived[0]['action']),
                     'data'  : ast.literal_eval(dataReceived[0]['message'])
                 };
 
                 ## Calculate and update the player'satisfaction level.Check the
                 ## status;
-                self.__fairness(playerId, valRet['data'], valRet['status']);
+                self.__fairness(playerId, valRet);
                 return valRet;
 
             ## Wating for a predefined time to check (pooling) the list again.
@@ -638,37 +644,58 @@ class MCT_Action(object):
     ##
     ## BRIEF: calculate the player's fairness level.
     ## ------------------------------------------------------------------------
-    ## @PARAM str playerId = identify of the player.
-    ## @PARAM str message  = message received.
-    ## @PARAM str status   = status of the request.
+    ## @PARAM str playerId == identify of the player.
+    ## @PARAM dct message  == data dictionary with action, status and messeage.
     ##
-    def __fairness(self, playerId, message, status):
+    def __fairness(self, playerId, message):
 
-        #fairness = 0.0;
+        if message['action'] == CREATE_INSTANCE:
 
-        #code = message['code'];
+            filterRules = {
+                0 : Player.player_id == playerId
+            };
 
+            ## Select the requests number and calculate the fairness! Mount the
+            ## select query: 
+            with self.__db['lock']:
+                dataReceived = self.__db['connection'].first_reg_filter(Player, filterRules);
 
+            requests  = int(dataReceived[0]['requests']);
+            accepted  = int(dataReceived[0]['accepted']);
+            requests += 1;
 
+            if message['status'] == 0:
+                accepted += 1;
 
-        #if message['code'] == CREATE_INSTANCE:
-           
+            try:
+                ##
+                fairness = float((accepted*100)/requests);
+            except:
+                fairness = 0.0;
+                
+            print '--------'
+            print playerId
+            print requests
+            print accepted
+            print fairness
+            print '--------'
 
+            data = {
+                'player_id': playerId,
+                'requests' : requests,
+                'accepted' : accepted,
+                'fairness' : fairness
+            };
 
- 
-
-        ## Select the requests number and calculate the fairness!Mount the sele
-        ## ct query: 
-        #with self.__db['lock']:
-        #    dataReceived = self.__db['connection'].first_reg_filter(Player, Player.player_id == playerId);
-
-
-        ## If there is return finish the process!
-        #if dataReceived != []:
-        #    fairness = float(dataReceived[0]['fairness']);
+            ## Update player status with the number of requests, accepted reque
+            ## sts, and the player's fairness.
+            with self.__db['lock']:
+                 self.__db['connection'].update_reg(Player,
+                                           Player.player_id == playerId, data);
             
-        ## LOG:
-        #self.__print.show('PLAYER '+playerId+' FAIRNESS: '+str(fairness), 'I');
+            ## LOG:
+            self.__print.show(playerId + ' FAIRNESS: ' + str(fairness), 'I');
+
         return 0;
 
  
@@ -917,10 +944,6 @@ class MCT_VPlayer(Process):
                 ## Dispatch the action to MCT_Dispatch:
                 dataRecv = self.__mctAction.dispatch(message);
 
-                ## Update the database with the status from action (create/dele
-                ## te instances).
-                self.__update_database(message, dataRecv);
-
             ## Obtain one state select from the 'pool' of the possible states:
             else:
                 getSetInfRepeat.stop();
@@ -965,17 +988,6 @@ class MCT_VPlayer(Process):
         ## LOG:
         self.__print.show('INSERT RESOURCE VALUES IN TABLE!', 'I');
         return 0;
-
-
-    ##
-    ## BRIEF: update database with status from action (create/delete instances)
-    ## ------------------------------------------------------------------------
-    ## @PARAM message  == message to publish.
-    ## @PARAM dataRecv == message response.
-    ##
-    def __update_database(self, message, dataRecv):
-        ## self.__dbConnection:
-        pass
 
 
     ##

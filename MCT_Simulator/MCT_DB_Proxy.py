@@ -259,7 +259,7 @@ class MCT_DB_Proxy:
         };
 
         ## Update the entry:
-        self.__db.update_reg(Simulation,Simulation.id == idx,fieldsToUpdate);
+        self.__db.update_reg(Simulation, Simulation.id == idx,fieldsToUpdate);
 
         return 0;
 
@@ -274,7 +274,11 @@ class MCT_DB_Proxy:
         ## If the valid is equal 2, meaning that there isnt record in database.
         actionData = {'valid':2};
 
-        dataReceived=self.__db.first_reg_filter(Simulation, Simulation.id==idx);
+        filterDict = {
+            0 : Simulation.id == idx
+        };
+
+        dataReceived=self.__db.first_reg_filter(Simulation, filterDict);
 
         if dataReceived != []:
 

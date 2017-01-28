@@ -264,6 +264,7 @@ class MCT_Agent(RabbitMQ_Consume):
 
         request.player_id  = str(message['playerId']);
         request.request_id = str(message['reqId'   ]);
+        request.action     = int(message['code'    ]);
         request.status     = int(message['status'  ]);
         request.message    = str(message['data'    ]);
 
@@ -279,9 +280,12 @@ class MCT_Agent(RabbitMQ_Consume):
 
         status = 'ERROR';
 
+        filterRules = {
+            0 : Player.player_id == msg['destName']
+        };
+
         ## Check if is possible create the new server (vcpu, memory, and disk).
-        dReceived=self.__db.first_reg_filter(Player, 
-                                          Player.player_id == msg['destName']);
+        dReceived=self.__db.first_reg_filter(Player, filterRules);
 
         if dReceived != []:
 
@@ -332,8 +336,11 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     def __delete_server(self, msg):
 
-        dReceived=self.__db.first_reg_filter(Player, 
-                                          Player.player_id == msg['destName']);
+        filterRules = {
+            0 : Player.player_id == msg['destName']
+        };
+
+        dReceived=self.__db.first_reg_filter(Player, filterRules);
 
         if dReceived != []:
 
