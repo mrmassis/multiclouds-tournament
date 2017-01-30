@@ -41,8 +41,8 @@ LOG_FILENAME  = '/var/log/mct/mct_referee.log';
 ## Create a handler and define the output filename and the max size and max nun
 ## ber of the files (1 mega = 1048576 bytes).
 handler= logging.handlers.RotatingFileHandler(LOG_FILENAME,
-                                              maxBytes=1048576,
-                                              backupCount=10);
+                                              maxBytes=10485760,
+                                              backupCount=100);
 
 ## Create a foramatter that specific the format of log and insert it in the log
 ## handler. 
