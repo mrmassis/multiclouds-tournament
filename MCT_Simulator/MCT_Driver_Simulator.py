@@ -664,22 +664,16 @@ class MCT_Action(object):
             accepted  = int(dataReceived[0]['accepted']);
             requests += 1;
 
-            if message['status'] == 0:
+            ## Status 1 meaning that all ok!!!
+            if message['status'] == 1:
                 accepted += 1;
 
             try:
-                ##
+                ## Caculate the porcetage:
                 fairness = float((accepted*100)/requests);
             except:
                 fairness = 0.0;
                 
-            print '--------'
-            print playerId
-            print requests
-            print accepted
-            print fairness
-            print '--------'
-
             data = {
                 'player_id': playerId,
                 'requests' : requests,
@@ -694,6 +688,8 @@ class MCT_Action(object):
                                            Player.player_id == playerId, data);
             
             ## LOG:
+            self.__print.show(playerId + ' REQUESTS: ' + str(requests), 'I');
+            self.__print.show(playerId + ' ACCEPTED: ' + str(accepted), 'I');
             self.__print.show(playerId + ' FAIRNESS: ' + str(fairness), 'I');
 
         return 0;
