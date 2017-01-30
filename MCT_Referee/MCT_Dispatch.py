@@ -236,9 +236,12 @@ class MCT_Dispatch(RabbitMQ_Consume):
        ## formed. Check the message type, if respId == '' is a request.
        if message['retId'] == '':
 
+           ## Get player name:
+           playerId = message['playerId'];
+
            ## Adds the message in the pending requests dictionary. If it is al-
            ## readyinserted does not perform the action.
-           valRet=self.__append_query(appId, message['reqId'],message['code']);
+           valRet=self.__append_query(playerId,message['reqId'],message['code']);
 
        ## Send the message to MCT_Referee.
        self.__publish.publish(message, self.__routeReferee);

@@ -123,6 +123,9 @@ class MCT_Referee(RabbitMQ_Consume):
         elif cfg['scheduller']['approach'] == 'bestscores':
             self.__scheduller = Bestscores(cfg['scheduller']['restrict']);
 
+        elif cfg['scheduller']['approach'] == 'clock':
+            self.__scheduller = Clock();
+
 
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
@@ -605,6 +608,7 @@ class MCT_Referee(RabbitMQ_Consume):
                     v1 += int(msg['data']['mem'   ]);
                     v2 += int(msg['data']['disk'  ]);
             else:
+                print msg
                 v0 -= int(msg['data']['vcpus' ]);
                 v1 -= int(msg['data']['mem'   ]);
                 v2 -= int(msg['data']['disk'  ]);

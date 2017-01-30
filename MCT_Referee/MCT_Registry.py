@@ -14,6 +14,8 @@ import json;
 import logging;
 import logging.handlers;
 import socket;
+import os;
+import hashlib;
 
 from mct.lib.utils    import *;
 from mct.lib.database import MCT_Database;
@@ -103,9 +105,6 @@ class MCT_Registry:
         ## Get the option that define to where the logs will are sent to show.
         self.__print = Show_Actions(cfg['main']['print'], logger);
 
-        ## LOG:
-        self.__print.show('INITIALIZE MCT_REGISTRY!', 'I');
-
         ## Server parameters:
         self.__addr = cfg['connection']['addr'];
         self.__port = cfg['connection']['port'];
@@ -122,6 +121,9 @@ class MCT_Registry:
     ## ------------------------------------------------------------------------
     ##
     def listen_connections(self):
+
+        ## LOG:
+        self.__print.show("\n########## START MCT_REGISTRY ##########\n",'I');
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1);
@@ -158,6 +160,9 @@ class MCT_Registry:
            connection.sendall(messageJsonSend);
            connection.close();
 
+           ## LOG:
+           self.__print.show('END OF REQUEST!\n---', 'I');
+
         return 0;
 
 
@@ -170,24 +175,32 @@ class MCT_Registry:
     ## @PARAM dict message == received message.
     ##
     def __authenticate(self, message):
+       valRet = 1;
 
        ## LOG:
        self.__print.show('MESSAGE RECEIVED FROM AGENT: ' + str(message), 'I');
 
-       playerId = message['playerId'];
-       address  = message['origAddr'];
-       data     = message['data'    ];
+       if message != {}:
 
-       ## Check if the player always registered in the BID:
-       valRet = self.__check_player(playerId);
+           playerId = message['playerId'];
+           address  = message['origAddr'];
+           data     = message['data'    ];
 
-       if valRet == 1 and message != {}:
-           ## Register a new player in the BID (database of player belongs to
-           ## the multiclouds tournament).
-           valRet = self.__register_player(playerId, address, data);
+           ## Check if the player always registered in the BID:
+           valRet, token = self.__check_player(playerId);
 
-       message['status'] = 1;
+           if valRet == 1:
 
+               ## Register a new player in the BID (database of player belongs
+               ## to the multiclouds tournament).
+               valRet, token = self.__register_player(playerId, address, data);
+
+           ## Set the player's token. It will be used in the future to enable 
+           ## the player actions.
+           message['data']['token'] = token;
+       
+       ## Set the status!    
+       message['status'] = valRet;
        return message;
 
 
@@ -200,7 +213,7 @@ class MCT_Registry:
 
         ## Check if the line that represent the request already in db. Perform
         ## a select.
-        query  = "SELECT * FROM PLAYER WHERE name='" + str(playerId) + "'";
+        query  = "SELECT token FROM PLAYER WHERE name='" + str(playerId) + "'";
         valRet = [] or self.__dbConnection.select_query(query)
 
         ## Verifies that the request already present in the requests 'database'
@@ -209,9 +222,15 @@ class MCT_Registry:
 
             ## LOG:
             self.__print.show('PLAYER ID NOT REGISTERED: '+str(playerId), 'I');
-            return 1;
 
-        return 0;
+            token  = '';
+            status = 1;
+
+        else:
+            token = valRet[0][0];
+            status= 0;
+
+        return status, token;
 
 
     ##
@@ -223,14 +242,14 @@ class MCT_Registry:
     ##
     def __register_player(self, playerId, address, data):
 
-        ##
-        ## TODO: colocar aqui para definir os atributos iniciais.
-        ##
-        v = data['vcpus' ];
-        m = data['memory'];
-        d = data['disk'  ];
+
+        ## Calculate the initial attributes to a new player in the tournament.
+        initScore, initHistory = self.__initial_attributes(playerId);
 
         try: 
+            ## Create the token:
+            token = self.__generate_new_token();
+
             query  = "INSERT INTO PLAYER (";
             query += "name, ";
             query += "address, ";
@@ -242,22 +261,41 @@ class MCT_Registry:
             query += "disk, ";
             query += "vcpu_used, ";
             query += "memory_used, ";
-            query += "disk_used";
-            query += ") VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)";
-            value  = (playerId, address, MIN_DIVISION,0.0,0,v,m,d,0,0,0);
+            query += "disk_used, ";
+            query += "token";
+            query += ") VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)";
+            value  = (playerId, address, MIN_DIVISION, initScore, initHistory,0,0,0,0,0,0,token);
             valRet = self.__dbConnection.insert_query(query, value)
 
         except:
-            return 1;
+            return 1, '';
  
-        return 0;
+        return 0, token;
+
 
     ##
     ## BRIEF: create a new token.
     ## ------------------------------------------------------------------------
     ##
-    def __generate_new_token(self, playerId):
-        return 0;
+    def __generate_new_token(self):
+
+        ## Generate a 128 bytes (40 character) safe token.
+        token = hashlib.sha1(os.urandom(128)).hexdigest();
+        return token;
+
+
+    ##
+    ## BRIEF: calcule the initial attributes to a new players..
+    ## ------------------------------------------------------------------------
+    ## @PARAM playerId == player identifier.
+    ##
+    def __initial_attributes(self, playerId):
+
+        ## Calcule the initials attributes to a new player.
+        score   = 0.0;
+        history = 0;
+
+        return score, history;
 ## END.
 
 

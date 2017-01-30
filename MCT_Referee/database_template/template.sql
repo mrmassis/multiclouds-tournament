@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
   `vcpu_used` BIGINT NOT NULL ,
   `memory_used` BIGINT NOT NULL ,
   `disk_used` BIGINT NOT NULL ,
+  `token` VARCHAR(45) NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
