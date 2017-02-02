@@ -409,9 +409,35 @@ class MCT_Agent(RabbitMQ_Consume):
         ##  Insert the instance in dictionary:
         self.__insts[msg['destName']][msg['reqId']] = msg['data']['flavor'];
 
+        ## Format the data to show in LOG:
+        T = 0; S = 0; M = 0;
+
+        aux = '';
+
+        for vp in self.__insts.keys():
+            t = 0; s = 0; m = 0;
+
+            for instUUID in self.__insts[vp]:
+                if   self.__insts[vp][instUUID] == 'm1.tiny'  :
+                    t += 1; T += 1;
+
+                elif self.__insts[vp][instUUID] == 'm1.small' :
+                    s += 1; S += 1;
+
+                elif self.__insts[vp][instUUID] == 'm1.medium':
+                    m += 1; M += 1;
+
+            ## Store the local information about the virtual machines intances
+            ## running in each virtual player:
+            aux += vp + ';t:' + str(t) + ';s:' + str(s) + ';m:' + str(m) + ' ';
+
         ## LOG:
-        self.__print.show('-- INSTANCES: ' + str(self.__insts), 'I');
-        
+        self.__print.show('ALLINSTS: ' + str(self.__insts), 'I');
+
+        ## LOG:
+        self.__print.show('INTANCES|' + aux + '|T:' + str(T)
+                                            + ',S:' + str(S)
+                                            + ',M:' + str(M), 'I');
 
 
     ##

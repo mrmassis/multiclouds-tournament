@@ -688,9 +688,9 @@ class MCT_Action(object):
                                            Player.player_id == playerId, data);
             
             ## LOG:
-            self.__print.show(playerId + ' REQUESTS: ' + str(requests), 'I');
-            self.__print.show(playerId + ' ACCEPTED: ' + str(accepted), 'I');
-            self.__print.show(playerId + ' FAIRNESS: ' + str(fairness), 'I');
+            self.__print.show(playerId + ' REQUESTS: | ' + str(requests), 'I');
+            self.__print.show(playerId + ' ACCEPTED: | ' + str(accepted), 'I');
+            self.__print.show(playerId + ' FAIRNESS: | ' + str(fairness), 'I');
 
         return 0;
 
