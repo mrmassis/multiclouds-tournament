@@ -608,7 +608,6 @@ class MCT_Referee(RabbitMQ_Consume):
                     v1 += int(msg['data']['mem'   ]);
                     v2 += int(msg['data']['disk'  ]);
             else:
-                print msg
                 v0 -= int(msg['data']['vcpus' ]);
                 v1 -= int(msg['data']['mem'   ]);
                 v2 -= int(msg['data']['disk'  ]);
