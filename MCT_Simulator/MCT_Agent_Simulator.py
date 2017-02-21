@@ -217,7 +217,7 @@ class MCT_Agent(RabbitMQ_Consume):
     def __recv_message_dispatch(self, message, appId):
 
         ## LOG:
-        self.__print.show('MESSAGE RETURNED FROM REFEREE: '+str(message), 'I');
+        self.__print.show('MESSAGE RETURNED FROM DISPATCH: '+str(message), 'I');
 
         ## In this case, the MCT_Agent received actions to be performed locally.
         if message['destAddr'] != '':
@@ -280,8 +280,11 @@ class MCT_Agent(RabbitMQ_Consume):
 
         status = 'ERROR';
 
+        ## Obtain the name of player that will accepted the new request!
+        name = msg['destName'];
+
         filterRules = {
-            0 : Player.player_id == msg['destName']
+            0 : Player.player_id == name
         };
 
         ## Check if is possible create the new server (vcpu, memory, and disk).
@@ -296,10 +299,16 @@ class MCT_Agent(RabbitMQ_Consume):
             newMemoUsed = int(dReceived[0]['memory_mb_used'])+int(MEM_INFO[i]);
             newDiskUsed = int(dReceived[0]['local_gb_used' ])+int(DSK_INFO[i]);
 
+            ## LOG:
+            self.__print.show('IN ' + name + ' ' + str(dReceived[0]), 'I');
+
             ## Check if there are 'avaliable' resources to accept the instance.
-            if  newVcpuUsed <= dReceived[0]['vcpus'   ] and \
-                newMemoUsed <= dReceived[0]['memory'  ] and \
-                newDiskUsed <= dReceived[0]['local_gb']:
+            if  newVcpuUsed <= int(dReceived[0]['vcpus'   ]) and \
+                newMemoUsed <= int(dReceived[0]['memory'  ]) and \
+                newDiskUsed <= int(dReceived[0]['local_gb']):
+
+                ## LOG:
+                self.__print.show('Player ' + name + ' has resources','I');
 
                 ## Update the specific entry in dbase with new resource values.
                 fieldsToUpdate = {
@@ -309,7 +318,7 @@ class MCT_Agent(RabbitMQ_Consume):
                 };
 
                 valRet=self.__db.update_reg(Player, 
-                                            Player.player_id == msg['destName'],
+                                            Player.player_id == name,
                                             fieldsToUpdate);
 
                 ## Store the new virtual machine instance in a special structu-
@@ -317,9 +326,12 @@ class MCT_Agent(RabbitMQ_Consume):
                 self.__insert_instance_to_dictionary(msg);
 
                 status = 'ACTIVE';
+            else:
+                ## LOG:
+                self.__print.show('Player ' + name +' dont has resources','I');
 
         ## LOG:
-        self.__print.show('>> STATUS '+str(status)+' FROM REQ '+str(msg), 'I');
+        self.__print.show('>> STATUS ['+ status + '] FROM REQ '+str(msg), 'I');
 
         ## The MCT_Agent support more than one cloud framework. So is necessary
         ## prepare the return status to a generic format. Send back to dispatch
