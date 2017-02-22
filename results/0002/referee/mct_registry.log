@@ -1,0 +1,64 @@
+2017-02-21 15:29:54,514 MCT_Bid      INFO     
+########## START MCT_REGISTRY ##########
+
+2017-02-21 15:29:54,515 MCT_Bid      INFO     WAITING FOR A REQUEST BY NEW REQUEST!
+2017-02-21 15:30:43,820 MCT_Bid      INFO     NEW REQUEST FOR ('10.3.77.162', 60157)
+2017-02-21 15:30:43,821 MCT_Bid      INFO     MESSAGE RECEIVED FROM AGENT: {u'status': 0, u'code': -1, u'playerId': u'playerVirtual0', u'retId': u'', u'origAddr': u'10.3.77.162', u'reqId': u'', u'destAddr': u'', u'data': {}, u'destName': u''}
+2017-02-21 15:30:43,822 MCT_Bid      INFO     PLAYER ID NOT REGISTERED: playerVirtual0
+2017-02-21 15:30:43,867 MCT_Bid      INFO     END OF REQUEST!
+---
+2017-02-21 15:30:43,868 MCT_Bid      INFO     WAITING FOR A REQUEST BY NEW REQUEST!
+2017-02-21 15:30:43,869 MCT_Bid      INFO     NEW REQUEST FOR ('10.3.77.162', 60158)
+2017-02-21 15:30:43,869 MCT_Bid      INFO     MESSAGE RECEIVED FROM AGENT: {u'status': 0, u'code': -1, u'playerId': u'playerVirtual1', u'retId': u'', u'origAddr': u'10.3.77.162', u'reqId': u'', u'destAddr': u'', u'data': {}, u'destName': u''}
+2017-02-21 15:30:43,870 MCT_Bid      INFO     PLAYER ID NOT REGISTERED: playerVirtual1
+2017-02-21 15:30:43,892 MCT_Bid      INFO     END OF REQUEST!
+---
+2017-02-21 15:30:43,892 MCT_Bid      INFO     WAITING FOR A REQUEST BY NEW REQUEST!
+2017-02-21 15:30:43,893 MCT_Bid      INFO     NEW REQUEST FOR ('10.3.77.162', 60159)
+2017-02-21 15:30:43,894 MCT_Bid      INFO     MESSAGE RECEIVED FROM AGENT: {u'status': 0, u'code': -1, u'playerId': u'playerVirtual2', u'retId': u'', u'origAddr': u'10.3.77.162', u'reqId': u'', u'destAddr': u'', u'data': {}, u'destName': u''}
+2017-02-21 15:30:43,895 MCT_Bid      INFO     PLAYER ID NOT REGISTERED: playerVirtual2
+2017-02-21 15:30:43,919 MCT_Bid      INFO     END OF REQUEST!
+---
+2017-02-21 15:30:43,919 MCT_Bid      INFO     WAITING FOR A REQUEST BY NEW REQUEST!
+2017-02-21 15:30:43,921 MCT_Bid      INFO     NEW REQUEST FOR ('10.3.77.162', 60160)
+2017-02-21 15:30:43,921 MCT_Bid      INFO     MESSAGE RECEIVED FROM AGENT: {u'status': 0, u'code': -1, u'playerId': u'playerVirtual3', u'retId': u'', u'origAddr': u'10.3.77.162', u'reqId': u'', u'destAddr': u'', u'data': {}, u'destName': u''}
+2017-02-21 15:30:43,922 MCT_Bid      INFO     PLAYER ID NOT REGISTERED: playerVirtual3
+2017-02-21 15:30:43,944 MCT_Bid      INFO     END OF REQUEST!
+---
+2017-02-21 15:30:43,944 MCT_Bid      INFO     WAITING FOR A REQUEST BY NEW REQUEST!
+2017-02-21 15:30:43,946 MCT_Bid      INFO     NEW REQUEST FOR ('10.3.77.162', 60161)
+2017-02-21 15:30:43,946 MCT_Bid      INFO     MESSAGE RECEIVED FROM AGENT: {u'status': 0, u'code': -1, u'playerId': u'playerVirtual4', u'retId': u'', u'origAddr': u'10.3.77.162', u'reqId': u'', u'destAddr': u'', u'data': {}, u'destName': u''}
+2017-02-21 15:30:43,947 MCT_Bid      INFO     PLAYER ID NOT REGISTERED: playerVirtual4
+2017-02-21 15:30:43,969 MCT_Bid      INFO     END OF REQUEST!
+---
+2017-02-21 15:30:43,970 MCT_Bid      INFO     WAITING FOR A REQUEST BY NEW REQUEST!
+2017-02-21 15:30:43,971 MCT_Bid      INFO     NEW REQUEST FOR ('10.3.77.162', 60162)
+2017-02-21 15:30:43,972 MCT_Bid      INFO     MESSAGE RECEIVED FROM AGENT: {u'status': 0, u'code': -1, u'playerId': u'playerVirtual5', u'retId': u'', u'origAddr': u'10.3.77.162', u'reqId': u'', u'destAddr': u'', u'data': {}, u'destName': u''}
+2017-02-21 15:30:43,972 MCT_Bid      INFO     PLAYER ID NOT REGISTERED: playerVirtual5
+2017-02-21 15:30:44,003 MCT_Bid      INFO     END OF REQUEST!
+---
+2017-02-21 15:30:44,003 MCT_Bid      INFO     WAITING FOR A REQUEST BY NEW REQUEST!
+2017-02-21 15:30:44,005 MCT_Bid      INFO     NEW REQUEST FOR ('10.3.77.162', 60163)
+2017-02-21 15:30:44,005 MCT_Bid      INFO     MESSAGE RECEIVED FROM AGENT: {u'status': 0, u'code': -1, u'playerId': u'playerVirtual6', u'retId': u'', u'origAddr': u'10.3.77.162', u'reqId': u'', u'destAddr': u'', u'data': {}, u'destName': u''}
+2017-02-21 15:30:44,006 MCT_Bid      INFO     PLAYER ID NOT REGISTERED: playerVirtual6
+2017-02-21 15:30:44,053 MCT_Bid      INFO     END OF REQUEST!
+---
+2017-02-21 15:30:44,053 MCT_Bid      INFO     WAITING FOR A REQUEST BY NEW REQUEST!
+2017-02-21 15:30:44,055 MCT_Bid      INFO     NEW REQUEST FOR ('10.3.77.162', 60164)
+2017-02-21 15:30:44,055 MCT_Bid      INFO     MESSAGE RECEIVED FROM AGENT: {u'status': 0, u'code': -1, u'playerId': u'playerVirtual7', u'retId': u'', u'origAddr': u'10.3.77.162', u'reqId': u'', u'destAddr': u'', u'data': {}, u'destName': u''}
+2017-02-21 15:30:44,056 MCT_Bid      INFO     PLAYER ID NOT REGISTERED: playerVirtual7
+2017-02-21 15:30:44,087 MCT_Bid      INFO     END OF REQUEST!
+---
+2017-02-21 15:30:44,087 MCT_Bid      INFO     WAITING FOR A REQUEST BY NEW REQUEST!
+2017-02-21 15:30:44,088 MCT_Bid      INFO     NEW REQUEST FOR ('10.3.77.162', 60165)
+2017-02-21 15:30:44,089 MCT_Bid      INFO     MESSAGE RECEIVED FROM AGENT: {u'status': 0, u'code': -1, u'playerId': u'playerVirtual8', u'retId': u'', u'origAddr': u'10.3.77.162', u'reqId': u'', u'destAddr': u'', u'data': {}, u'destName': u''}
+2017-02-21 15:30:44,090 MCT_Bid      INFO     PLAYER ID NOT REGISTERED: playerVirtual8
+2017-02-21 15:30:44,120 MCT_Bid      INFO     END OF REQUEST!
+---
+2017-02-21 15:30:44,120 MCT_Bid      INFO     WAITING FOR A REQUEST BY NEW REQUEST!
+2017-02-21 15:30:44,122 MCT_Bid      INFO     NEW REQUEST FOR ('10.3.77.162', 60166)
+2017-02-21 15:30:44,122 MCT_Bid      INFO     MESSAGE RECEIVED FROM AGENT: {u'status': 0, u'code': -1, u'playerId': u'playerVirtual9', u'retId': u'', u'origAddr': u'10.3.77.162', u'reqId': u'', u'destAddr': u'', u'data': {}, u'destName': u''}
+2017-02-21 15:30:44,123 MCT_Bid      INFO     PLAYER ID NOT REGISTERED: playerVirtual9
+2017-02-21 15:30:44,153 MCT_Bid      INFO     END OF REQUEST!
+---
+2017-02-21 15:30:44,154 MCT_Bid      INFO     WAITING FOR A REQUEST BY NEW REQUEST!
