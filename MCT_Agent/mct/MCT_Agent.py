@@ -9,11 +9,11 @@ import logging.handlers;
 import pika;
 import datetime;
 
-from mct.lib.utils        import *;
-from mct.lib.openstack    import MCT_Openstack_Nova;
-from mct.lib.amqp         import RabbitMQ_Publish, RabbitMQ_Consume;
-from mct.lib.database     import MCT_Database;
-from mct.lib.registry     import MCT_Registry;
+from mct.lib.utils               import *;
+from mct.lib.openstack           import MCT_Openstack_Nova;
+from mct.lib.amqp                import RabbitMQ_Publish, RabbitMQ_Consume;
+from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Map, Instances, Request ;
+from mct.lib.registry            import MCT_Registry;
 
 
 
@@ -26,12 +26,11 @@ from mct.lib.registry     import MCT_Registry;
 ## DEFINITIONS                                                               ##
 ###############################################################################
 CONFIG_FILE  = '/etc/mct/mct-agent.ini';
-VAGENT_FILE  = '/etc/mct/mct_emulator.ini';
 LOG_NAME     = 'MCT_Agent';
 LOG_FORMAT   = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
 LOG_FILENAME = '/var/log/mct/mct_agent.log';
 DISPATCH_NAME= 'MCT_Dispatch';
-
+NET_NAME     = 'demo-net';
 
 
 
@@ -89,22 +88,24 @@ class MCT_Agent(RabbitMQ_Consume):
     __my_ip        = None;
     __cloud        = None;
     __cloudType    = None;
-    __dbConnection = None;
-    __emulated     = None;
-    __emulator     = None;
+    __db           = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self):
+    ## BRIEF: initialize the agent.
+    ## ------------------------------------------------------------------------
+    ## @PARAM cfg       == player's configuration.
+    ## @PARAM authToken == token to authentication.
+    ##
+    def __init__(self, config, authToken):
 
-        ## Get all configs parameters presents in the config file localized in
-        ## CONFIG_FILE path.
-        config = get_configs(CONFIG_FILE);
+        ## Get the option that define to where the logs will are sent to show.
+        self.__print = Show_Actions(config['main']['print'], logger);
 
         ## Local address:
-        self.__my_ip = config['main']['my_ip'];
+        self.__my_ip = config['main']['agent_address'];
 
         ## Get which route is used to deliver the msg to the 'correct destine'.
         self.__routeExt = config['amqp_external_publish']['route'];
@@ -113,15 +114,14 @@ class MCT_Agent(RabbitMQ_Consume):
         ## defined in the configuration file.
         RabbitMQ_Consume.__init__(self, config['amqp_consume']);
 
-        ### Credentials:
-        config['amqp_external_publish']['user'] = config['rabbitmq']['user'];
-        config['amqp_external_publish']['pass'] = config['rabbitmq']['pass'];
-
         ## Instantiates an object to perform the publication of AMQP messages.
         self.__publishExt = RabbitMQ_Publish(config['amqp_external_publish']);
 
         ## Intance a new object to handler all operation in the local database.
-        self.__dbConnection = MCT_Database(config['database']);
+        self.__db = MCT_Database_SQLAlchemy(config['database']);
+
+        ## Setting the player's authentication token:
+        self.__authToken = authToken;
 
         ## Check the type of framework utilized to build the cloud.Intance the
         ## correct API.
@@ -130,8 +130,8 @@ class MCT_Agent(RabbitMQ_Consume):
         if   self.__cloudType == 'openstack':
             self.__cloud = MCT_Openstack_Nova(config['cloud_framework']);
 
-        elif self.__cloudType == 'emulation':
-            self.__cloud = MCT_Emulator();
+        ## LOG:
+        self.__print.show("\n###### START MCT_AGENT ######\n",'I');
 
 
     ###########################################################################
@@ -176,7 +176,11 @@ class MCT_Agent(RabbitMQ_Consume):
     def __send_message_dispatch(self, message, appId):
 
         ## LOG:
-        logger.info('MESSAGE SEND TO DISPATCH: %s', message);
+        self.__print.show('MESSAGE TO DISPATCH ' + str(message), 'I');
+
+        ##
+        ## TODO: check authToken to know if the player has permission grant!!!!
+        ##
 
         ## Publish the message to MCT_Dispatch via AMQP. The MCT_Dispatch is in
         ## the remote server. 
@@ -200,12 +204,13 @@ class MCT_Agent(RabbitMQ_Consume):
     def __recv_message_dispatch(self, message, appId):
 
         ## LOG:
-        logger.info('MESSAGE RETURNED OF %s REFEREE: %s', appId, message);
+        self.__print.show('MESSAGE RETURNED FROM DISPATCH: '+str(message), 'I');
 
         ## In this case, the MCT_Agent received actions to be performed locally.
         if message['origAdd'] != self.__my_ip and message['destAdd'] != '':
+
             ## LOG:
-            logger.info('PROCESSING REQUEST!');
+            self.__print.show('PROCESSING REQUEST!', 'I');
 
             ## Select the appropriate action (create instance, delete instance,
             ## suspend instance e resume instance): 
@@ -230,9 +235,15 @@ class MCT_Agent(RabbitMQ_Consume):
             ## dispatch the return for the request.
             message['status'] = self.__convert_status(status, message['code']); 
 
+            ## LOG:
+            self.__print.show('RETURN TO DISPATCH!', 'I');
+
             ## Return data to MCT_Dispatch.
             self.__publishExt.publish(message, self.__routeExt);
+
+        ## Return from a action:
         else:
+
             ## Update the database:
             self.__update_database(message);
 
@@ -245,18 +256,20 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict message == received message.
     ##
     def __update_database(self, message):
+
         if message['code'] == SETINF_RESOURCE: 
             return 0;
 
         ## Insert the message received into the database.
-        query  = "INSERT INTO REQUEST (player_id, request_id, status, message) ";
-        query += "VALUES (%s,%s,%s,%s)";
-        value  = (str(message['playerId']), 
-                  str(message['reqId'   ]), 
-                  int(message['status'  ]),
-                  str(message['data'    ]));
+        request = Request();
 
-        valret = self.__dbConnection.insert_query(query, value);
+        request.player_id  = str(message['playerId']);
+        request.request_id = str(message['reqId'   ]);
+        request.action     = int(message['code'    ]);
+        request.status     = int(message['status'  ]);
+        request.message    = str(message['data'    ]);
+
+        valRet = self.__db.insert_reg(request);
 
 
     ##
@@ -266,14 +279,16 @@ class MCT_Agent(RabbitMQ_Consume):
     ##        the status == ACTIVE, make a mapping between id received and the
     ##        local ID. At last, send back the status.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict message == received message.
+    ## @PARAM dict msg == received message.
     ##
-    def __create_server(self, message):
+    def __create_server(self, msg):
 
-        vmsL = message['data']['name'  ];
+        ## New server data -- server label, imagem label and flavor type. The 
+        ## network name is fixed (TODO).
+        flvL = message['data']['flavor'];
         imgL = message['data']['image' ];
-        flvL = 'm1.tiny' ; #message['data']['flavor'];
-        netL = 'demo-net';
+        vmsL = message['data']['name'  ];
+        netL = NET_NAME;
 
         valret = self.__cloud.create_instance(vmsL, imgL, flvL, netL);
 
@@ -281,8 +296,9 @@ class MCT_Agent(RabbitMQ_Consume):
         destId = valret[1];        
 
         if status == 'ACTIVE':
+
             ## Insert in the MAP table the origin uuid (player source) and the
-            ## local instance uuuid.
+            ## local instance uuid.
             self.__set_map_inst_id(destId, message['reqId']);
 
         return status;
@@ -369,20 +385,22 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM str origId == origin uuid.
     ##
     def __set_map_inst_id(self, destId, origId):
+
         ## 
         timeStamp = str(datetime.datetime.now());
 
-        query  = "INSERT INTO MAP (";
-        query += "uuid_src, ";
-        query += "uuid_dst, ";
-        query += "type_obj, ";
-        query += "date";
-        query += ") VALUES (%s, %s, %s, %s)";
-        value  = (origId, destId, 'instance', timeStamp);
+        ## Insert the message received into the database.
+        mapping = Map();
 
-        valRet = self.__dbConnection.insert_query(query, value);
+        mapping.type_obj = 'instance';
+        mapping.uuid_src = str(origId);
+        mapping.uuid_dst = str(destId);
+        mapping.date     = str(timeStamp);
+
+        valRet = self.__db.insert_reg(mapping);
 
         return 0;
+
 
     ##
     ## Brief: get the local uuid from object.
@@ -393,20 +411,23 @@ class MCT_Agent(RabbitMQ_Consume):
     def __get_map_inst_id(self, origId, delete=False):
         destId = '';
 
-        ## Mount the select query: 
-        dbQuery  = "SELECT uuid_dst FROM MAP WHERE ";
-        dbQuery += "uuid_src='" + origId + "'";
+        filterRules = {
+            0 : Map.uuid_src == origId
+        };
 
-        dataReceived = [] or self.__dbConnection.select_query(dbQuery);
+        ## Check if is possible create the new server (vcpu, memory, and disk).
+        dReceived = self.__db.first_reg_filter(Map, filterRules);
 
         if dataReceived != []:
-            destId = dataReceived[0][0];
+            destId = dataReceived[0]['destId'];
 
             if delete:
-                ## Delete the correspondent entry:
-                query  = "DELETE FROM MAP WHERE uuid_src='" + origId + "'";
 
-                valRet = self.__dbConnection.delete_query(query); 
+                filterRules = {
+                    0 : Map.uuid_src == origId
+                };
+
+                valRet = self.__db.delete_reg(Map, filterRules);
 
         return destId;
 ## END.
@@ -421,28 +442,23 @@ class MCT_Agent(RabbitMQ_Consume):
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
-    ## LOG:
-    logger.info('EXECUTION STARTED...');
 
+    ## Get all configs parameters presents in the config file localized in CON-
+    ## FIG_FILE path.
     config = get_configs(CONFIG_FILE);
 
     try:
-        ## Initialized the object responsable to authenticate the 'MCT_Agent'.
-        sAddr = config['authenticate']['authenticate_address'];
-        sPort = config['authenticate']['authenticate_port'   ];
-        aAddr = config['authenticate']['agent_address'       ];
-        aName = config['authenticate']['name'                ];
+        ## Authentication:
+        mct_registry = MCT_Registry(config['main']);
 
-        mct_registry = MCT_Registry(aAddr, aName, sAddr, sPort);
-        mct_registry.registry();
+        ## Register the player in the multicloud tournament:
+        authStatus, authToken = mct_registry.registry();
 
-        mct = MCT_Agent();
+        mct = MCT_Agent(config, authToken);
         mct.consume();
 
     except KeyboardInterrupt:
         pass;
 
-    ## LOG:
-    logger.info('EXECUTION FINISHED...');
     sys.exit(0);
 ## EOF

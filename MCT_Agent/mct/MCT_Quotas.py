@@ -82,6 +82,7 @@ class MCT_Quotas:
     __addrExternal  = None;
     __cloud         = None;
     __timeToPublish = None;
+    __print         = None;
 
 
     ###########################################################################
@@ -92,6 +93,9 @@ class MCT_Quotas:
         ## Get all configs parameters presents in the config file localized in
         ## CONFIG_FILE path.
         config = get_configs(CONFIG_FILE);
+
+        ## Get the option that define to where the logs will are sent to show.
+        self.__print = Show_Actions(config['main']['print'], logger);
 
         ## Local address and name:
         self.__playerAddr = config['properties']['addr'];
@@ -134,6 +138,7 @@ class MCT_Quotas:
             'retId'   : '',
             'origAdd' : self.__playerAddr,
             'destAdd' : '',
+            'destName': '',
             'data'    : ''
         }
 
@@ -188,7 +193,7 @@ class MCT_Quotas:
     def __send_message_dispatch(self, message, appId):
 
         ## LOG:
-        logger.info('MESSAGE SEND TO DISPATCH: %s', message);
+        self.__print('MESSAGE SEND TO DISPATCH: ' + str(message), 'I');
 
         ## Publish the message to MCT_Dispatch via AMQP. The MCT_Dispatch is in
         ## the remote server. 
@@ -214,16 +219,13 @@ class MCT_Quotas:
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
-    ## LOG:
-    logger.info('EXECUTION STARTED...');
 
     try:
         mct = MCT_Quotas();
         mct.publish_quota();
+
     except KeyboardInterrupt:
         pass;
 
-    ## LOG:
-    logger.info('EXECUTION FINISHED...');
     sys.exit(0);
 ## EOF

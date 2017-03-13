@@ -7,7 +7,7 @@
 
 
 
-__all__ = ['MCT_Database_SQLAlchemy', 'Simulation', 'State', 'Request', 'Player', 'Fairness']
+__all__ = ['MCT_Database_SQLAlchemy', 'Simulation', 'State', 'Request', 'Player', 'Fairness', 'Map', 'Instances']
 
 
 
@@ -59,11 +59,11 @@ class Simulation(Base):
     id          = Column(BIGINT(20) , nullable=False, primary_key=True); 
     time        = Column(BIGINT(20) , nullable=False);
     machineId   = Column(BIGINT(20) , nullable=False);
-    eventType   = Column(INT(11)    , nullable=False);
+    eventType   = Column(INT        , nullable=False);
     plataformId = Column(VARCHAR(45), nullable=True );
     cpu         = Column(FLOAT      , nullable=False);
     memory      = Column(FLOAT      , nullable=False);
-    valid       = Column(INT(11)    , default=0);
+    valid       = Column(INT        , default=0);
         
     id.autoincrement = True;
 
@@ -95,7 +95,33 @@ class State(Base):
     running   = Column(VARCHAR(45), nullable=False);
 
 ## END CLASS.
+
     
+
+
+
+
+
+
+class Map(Base):
+
+    """
+    Class Map:
+    ---------------------------------------------------------------------------
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __tablename__ = 'MAP';
+
+    uuid_src = Column(VARCHAR(45), nullable=False, primary_key=True);
+    uuid_dst = Column(VARCHAR(45), nullable=False);
+    type_obj = Column(VARCHAR(45), nullable=False);
+    date     = Column(TIMESTAMP  , nullable=True);
+
+## END CLASS.
+
 
 
 
@@ -179,6 +205,60 @@ class Player(Base):
 
 ## END CLASS.
 
+
+
+
+
+
+
+
+class Map:
+
+    """
+    Class Map:
+    ---------------------------------------------------------------------------
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __tablename__ = 'MAP';
+
+    uuid_src = Column(VARCHAR(45), nullable=False, primary_key=True);
+    uuid_dst = Column(VARCHAR(45), nullable=False);
+    type_obj = Column(VARCHAR(45), nullable=False);
+    date     = Column(TIMESTAMP  , nullable=True);
+
+## END CLASS.
+
+
+
+
+
+
+
+
+class Instances:
+
+    """
+    Class Instance:
+    ---------------------------------------------------------------------------
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __tablename__ = 'INSTANCES'
+
+    uuid      = Column(VARCHAR(45), nullable=False, primary_key=True);
+    name      = Column(VARCHAR(45), nullable=True);
+    vcpu      = Column(INT        , nullable=True);
+    disk      = Column(INT        , nullable=True);
+    memory    = Column(INT        , nullable=True);
+    mct_state = Column(VARCHAR(45), nullable=True);
+    pwr_state = Column(INT        , nullable=True);
+
+## END CLASS.
 
 
 
