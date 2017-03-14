@@ -280,11 +280,7 @@ class MCT_Agent(RabbitMQ_Consume):
         valRet = self.__db.insert_reg(request);
 
         ## LOG:
-<<<<<<< HEAD
         self.__print.show('UPDATED!', 'I');
-=======
-        self.__print.show('DATABASE UPDATED!', 'I');
->>>>>>> 73de16224a7a17ba39c89801af1dfd1624df2dfe
 
 
     ##
