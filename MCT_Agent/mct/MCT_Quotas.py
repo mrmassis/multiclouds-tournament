@@ -192,9 +192,6 @@ class MCT_Quotas:
     ##
     def __send_message_dispatch(self, message, appId):
 
-        ## LOG:
-        self.__print('MESSAGE SEND TO DISPATCH: ' + str(message), 'I');
-
         ## Publish the message to MCT_Dispatch via AMQP. The MCT_Dispatch is in
         ## the remote server. 
         valRet = self.__publish.publish(message, self.__route);
