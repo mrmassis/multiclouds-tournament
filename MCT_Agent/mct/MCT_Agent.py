@@ -257,6 +257,9 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     def __update_database(self, message):
 
+        ## LOG:
+        self.__print.show('UPDATE DATABASE ' + str(message), 'I');
+
         if message['code'] == SETINF_RESOURCE: 
             return 0;
 
@@ -270,6 +273,9 @@ class MCT_Agent(RabbitMQ_Consume):
         request.message    = str(message['data'    ]);
 
         valRet = self.__db.insert_reg(request);
+
+        ## LOG:
+        self.__print.show('UPDATED!', 'I');
 
 
     ##
