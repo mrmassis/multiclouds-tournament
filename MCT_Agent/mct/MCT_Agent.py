@@ -207,7 +207,7 @@ class MCT_Agent(RabbitMQ_Consume):
         self.__print.show('MESSAGE RETURNED FROM DISPATCH: '+str(message), 'I');
 
         ## In this case, the MCT_Agent received actions to be performed locally.
-        if message['origAdd'] != self.__my_ip and message['destAdd'] != '':
+        if message['origAddr'] != self.__my_ip and message['destAddr'] != '':
 
             ## LOG:
             self.__print.show('PROCESSING REQUEST!', 'I');
@@ -243,6 +243,8 @@ class MCT_Agent(RabbitMQ_Consume):
 
         ## Return from a action:
         else:
+            ## LOG:
+            self.__print.show('SEND TO DRIVE!', 'I');
 
             ## Update the database:
             self.__update_database(message);
@@ -260,6 +262,9 @@ class MCT_Agent(RabbitMQ_Consume):
         if message['code'] == SETINF_RESOURCE: 
             return 0;
 
+        ## LOG:
+        self.__print.show('UPDATE DATABASE!', 'I');
+
         ## Insert the message received into the database.
         request = Request();
 
@@ -270,6 +275,9 @@ class MCT_Agent(RabbitMQ_Consume):
         request.message    = str(message['data'    ]);
 
         valRet = self.__db.insert_reg(request);
+
+        ## LOG:
+        self.__print.show('DATABASE UPDATED!', 'I');
 
 
     ##
