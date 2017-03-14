@@ -136,8 +136,8 @@ class MCT_Quotas:
             'status'  : 0,
             'reqId'   : '',
             'retId'   : '',
-            'origAdd' : self.__playerAddr,
-            'destAdd' : '',
+            'origAddr': self.__playerAddr,
+            'destAddr': '',
             'destName': '',
             'data'    : ''
         }

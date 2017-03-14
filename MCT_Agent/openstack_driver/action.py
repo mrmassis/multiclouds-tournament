@@ -417,8 +417,9 @@ class MCT_Action(object):
             'status'  : 0,
             'reqId'   : index,
             'retId'   : '',
-            'origAdd' : self.__cfg['main']['address_external'],
-            'destAdd' : '',
+            'origAddr': self.__cfg['main']['address_external'],
+            'destAddr': '',
+            'destName': '',
             'data'    : {}
         };
 
