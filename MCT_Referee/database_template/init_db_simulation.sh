@@ -12,7 +12,7 @@ echo "Initializing the MCT database..."
 ## ------------------------------------------------------------------------- ##
 ## Init all tables utilized by MCT components.                               ##
 ## ------------------------------------------------------------------------- ##
-mysql -uroot -ppassword mct < database_template/template.sql
+mysql -uroot -ppassword mct < /etc/mct/database/template.sql
 
 echo "Done"
 

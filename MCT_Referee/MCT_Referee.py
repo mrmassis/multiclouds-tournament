@@ -342,10 +342,10 @@ class MCT_Referee(RabbitMQ_Consume):
             msg['destName'] = name;
 
             ## LOG:
-            self.__print.show('MESSAGE ' + str(msg) , 'I');
+            self.__print.show('SEND REQ TO SELECTED DESTINY: '+ str(msg), 'I');
         else:
             ## LOG:
-            self.__print.show('THERE ISNT PLAYER ABLE TO EXEC THE REQ!','I');
+            self.__print.show('THERE ISNT PLAYER ABLE TO EXEC: '+str(msg),'E');
 
             ## Case not found a player to execute the request setting status to
             ## error and return the message to origin.
@@ -364,6 +364,7 @@ class MCT_Referee(RabbitMQ_Consume):
         ## LOG:
         self.__print.show('RETURN FROM ADD_INSTANCE IS: '+str(msg['status']),'I');
 
+        f0 = str(msg['playerId']);
         f1 = str(msg['origAddr']);
         f2 = str(msg['reqId'   ]);
         f3 = str(msg['destAddr']);
@@ -385,10 +386,17 @@ class MCT_Referee(RabbitMQ_Consume):
         if msg['status'] != 0:
             query += ") VALUES (%s,%s,%s,%s,%s,%s)";
             value =  (f1, f2, f3, f4, f5, f6);
+
+            ## LOG:
+            self.__print.show("VM_ID "+f2+" FROM "+f0+" IS RUNNING IN "+f4, 'I');
+
         else:
             query += ",timestamp_finished";
             query += ") VALUES (%s,%s,%s,%s,%s,%s,%s)";
             value =  (f1, f2, f3, f4, f5, f6, f6);
+
+            ## LOG:
+            self.__print.show("VM_ID "+f2+" FROM "+f0+" ISNT RUNNING IN "+f4,'I');
 
         valRet = self.__db.insert_query(query, value);
 

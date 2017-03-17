@@ -31,7 +31,7 @@ from mct.lib.database import MCT_Database;
 ## DEFINITIONS                                                               ##
 ###############################################################################
 CONFIG_FILE      = '/etc/mct/mct-registry.ini';
-LOG_NAME         = 'MCT_Bid';
+LOG_NAME         = 'MCT_Registry';
 LOG_FORMAT       = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
 LOG_FILENAME     = '/var/log/mct/mct_registry.log';
 MIN_DIVISION     = 3
