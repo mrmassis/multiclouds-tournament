@@ -146,8 +146,11 @@ class MCT_Action(object):
         ## LOG:
         LOG.info('[MCT_ACTION] GET INSTANCE INFORMATION FROM MCT!');
 
+        ## LOG:
+        LOG.info('[MCT_ACTION] DATA: ' + str(data));
+
         ## Obtain the request identifier (use the "UUID" created by OpenStack).
-        idx = self.__cfg['main']['player'] + '_' + data['instance']['uuid'];
+        #idx = self.__cfg['main']['player'] + '_' + data['instance']['uuid'];
 
         ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
         ## to exec de action.
@@ -179,6 +182,8 @@ class MCT_Action(object):
         ## LOG:
         LOG.info('[MCT_ACTION] CREATE - SEND REQUEST TO CREATE A NEW INSTANCE!');
 
+        LOG.info('[MCT_ACTION]' + str(data['instance']['system_metadata']));
+
         ## Obtain the request identifier (use the "UUID" created by OpenStack).
         idx = self.__cfg['main']['player'] + '_' + data['instance']['uuid'];
 
@@ -188,12 +193,13 @@ class MCT_Action(object):
 
         ## Mount the requirement:
         data = {
-            'vcpus' : data['instance']['vcpus'       ],
-            'mem'   : data['instance']['memory_mb'   ],
-            'disk'  : data['instance']['root_gb'     ],
-            'name'  : data['instance']['display_name'],
-            'uuid'  : data['instance']['uuid'        ],
-            'image' : data['image'   ]['name'        ]
+            'vcpus' : data['instance']['vcpus'          ],
+            'mem'   : data['instance']['memory_mb'      ],
+            'disk'  : data['instance']['root_gb'        ],
+            'name'  : data['instance']['display_name'   ],
+            'uuid'  : data['instance']['uuid'           ],
+            'image' : data['image'   ]['name'           ],
+            'flavor': data['instance']['system_metadata']['instance_type_name']
         };
 
         msgToSend['data'] = data;

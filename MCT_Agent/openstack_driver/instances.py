@@ -277,8 +277,11 @@ class MCT_Instances(object):
     ## @PARAM uuid  ==
     ##
     def get_instance(self, uuid):
+        instance = self.instanceDict[uuid];
+        instance['uuid'] = uuid;
+
         ## TODO: mudar!!!!!!! tem que buscar atualizado.
-        return self.instanceDict[uuid];
+        return instance;
 ## END.
 
 
