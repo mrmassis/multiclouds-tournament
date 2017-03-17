@@ -212,22 +212,22 @@ class Player(Base):
 
 
 
-class Map:
+#class Map:
 
-    """
-    Class Map:
-    ---------------------------------------------------------------------------
-    """
+#    """
+#    Class Map:
+#    ---------------------------------------------------------------------------
+#    """
 
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __tablename__ = 'MAP';
+#    __tablename__ = 'MAP';
 
-    uuid_src = Column(VARCHAR(45), nullable=False, primary_key=True);
-    uuid_dst = Column(VARCHAR(45), nullable=False);
-    type_obj = Column(VARCHAR(45), nullable=False);
-    date     = Column(TIMESTAMP  , nullable=True);
+#    uuid_src = Column(VARCHAR(45), nullable=False, primary_key=True);
+#    uuid_dst = Column(VARCHAR(45), nullable=False);
+#    type_obj = Column(VARCHAR(45), nullable=False);
+#    date     = Column(TIMESTAMP  , nullable=True);
 
 ## END CLASS.
 

@@ -12,7 +12,7 @@ import datetime;
 from mct.lib.utils               import *;
 from mct.lib.openstack           import MCT_Openstack_Nova;
 from mct.lib.amqp                import RabbitMQ_Publish, RabbitMQ_Consume;
-from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Map, Instances, Request ;
+from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Map, Request;
 from mct.lib.registry            import MCT_Registry;
 
 
@@ -292,7 +292,7 @@ class MCT_Agent(RabbitMQ_Consume):
     ## ------------------------------------------------------------------------
     ## @PARAM dict msg == received message.
     ##
-    def __create_server(self, msg):
+    def __create_server(self, message):
 
         ## New server data -- server label, imagem label and flavor type. The 
         ## network name is fixed (TODO).
@@ -406,7 +406,7 @@ class MCT_Agent(RabbitMQ_Consume):
         mapping.type_obj = 'instance';
         mapping.uuid_src = str(origId);
         mapping.uuid_dst = str(destId);
-        mapping.date     = str(timeStamp);
+        mapping.date     = timeStamp;
 
         valRet = self.__db.insert_reg(mapping);
 
@@ -427,10 +427,11 @@ class MCT_Agent(RabbitMQ_Consume):
         };
 
         ## Check if is possible create the new server (vcpu, memory, and disk).
-        dReceived = self.__db.first_reg_filter(Map, filterRules);
+        dataReceived = self.__db.first_reg_filter(Map, filterRules);
 
         if dataReceived != []:
-            destId = dataReceived[0]['destId'];
+
+            destId = dataReceived[0]['uuid_dst'];
 
             if delete:
 
