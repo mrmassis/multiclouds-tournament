@@ -434,9 +434,8 @@ class MCT_Agent(RabbitMQ_Consume):
             destId = dataReceived[0]['uuid_dst'];
 
             if delete:
-
                 filterRules = {
-                    0 : Map.uuid_src == origId
+                    0 : Map.uuid_dst == destId
                 };
 
                 valRet = self.__db.delete_reg(Map, filterRules);

@@ -412,6 +412,30 @@ class MCT_Database_SQLAlchemy:
 
 
     ##
+    ## BRIEF: delete an existent register in table;
+    ## ------------------------------------------------------------------------
+    ## @PARAM obj table      == object that meaning one table in database.
+    ## @PARAM str filterRule == filter to apply.
+    ##
+    def delete_reg(self, table, filterRules):
+
+        ## Execute the query:
+        querySql = self.session.query(table)
+
+        ## Filter:
+        for attr, value in filterRules.items():
+            if querySql:
+                querySql = querySql.filter(value);
+
+        ## Delete element found in the table:
+        registry = querySql.delete();
+
+        self.session.commit();
+
+        return 0;
+
+
+    ##
     ## BRIEF: convert the sqlalchemy row to python dictionary.
     ## ------------------------------------------------------------------------
     ## @PARAM row == row to convert. 
