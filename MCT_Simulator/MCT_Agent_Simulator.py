@@ -210,10 +210,10 @@ class MCT_Agent(RabbitMQ_Consume):
 
         if valRet == False:
             ## LOG:
-            self.__print.show('IT WAS NOT POSSIBLE TO SEND THE MESSAGE!', 'E');
+            logger.error("IT WAS NOT POSSIBLE TO SEND THE MSG TO DISPATCH!");
         else:
             ## LOG:
-            self.__print.show('MESSAGE SENT TO DISPATCH!', 'I');
+            logger.info ('MESSAGE SENT TO DISPATCH!');
       
         return 0;
 
