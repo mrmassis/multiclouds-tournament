@@ -369,7 +369,8 @@ if __name__ == "__main__":
         proxy_db_server.run();
 
     except KeyboardInterrupt:
-        proxy_db_server.stop();
+        pass;
 
+    proxy_db_server.stop();
     sys.exit(0);
 ## EOF.

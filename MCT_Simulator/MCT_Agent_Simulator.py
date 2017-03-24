@@ -163,14 +163,23 @@ class MCT_Agent(RabbitMQ_Consume):
         ## Convert the json format to a structure than can handle by the python
         message = json.loads(message);
 
-        ## Check if is a request received from players or a return from a divi-
-        ## sions. The identifier is the properties.app_id.
-        if properties.app_id == DISPATCH_NAME:
-            if self.__inspect_request(message) == 0:
-                self.__recv_message_dispatch(message, properties.app_id);
+        ## Check if is to finish the service:
+        if message['code'] == 1000:
+            self.amqpPikaExitControl = False;
+            self.chn_basic_stop();
+
+            ## LOG:
+            self.__print.show("\n#### STOPT MCT_AGENT_SIMULATION ####\n",'I');
+
         else:
-            if self.__inspect_request(message) == 0:
-                self.__send_message_dispatch(message, properties.app_id);
+            ## Check if is a request received from players or a return from di-
+            ## vision. The identifier is the properties.app_id.
+            if properties.app_id == DISPATCH_NAME:
+                if self.__inspect_request(message) == 0:
+                    self.__recv_message_dispatch(message, properties.app_id);
+            else:
+                if self.__inspect_request(message) == 0:
+                    self.__send_message_dispatch(message, properties.app_id);
 
         return 0;
 
@@ -191,6 +200,7 @@ class MCT_Agent(RabbitMQ_Consume):
 
         ##
         ## TODO: put in a specific module!!!
+
         ## Verify if the vPlayer has authorization to send mssg to MCT_Referee.
         valRet = self.__check_vplayer_access(message['playerId']);
 
@@ -255,9 +265,6 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict message == received message.
     ##
     def __update_database(self, message):
-
-        if message['code'] == SETINF_RESOURCE: 
-            return 0;
 
         ## Insert the message received into the database.
         request = Request();

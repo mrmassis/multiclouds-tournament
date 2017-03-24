@@ -309,7 +309,7 @@ class MCT_Simple_AMQP_Publish:
             ack = self.channel.basic_publish(self.__exchange, 
                                              self.__route, jData, properties);
 
-        except (AMQPConnectionError, AMQPChannelError), error:
+        except (pika.exceptions.AMQPConnectionError, pika.exceptions.AMQPChannelError), error:
             ack = -1;
 
         return ack;
@@ -609,6 +609,8 @@ class MCT_Action(object):
         ## Waiting for the answer arrive. When the status change status get it.
         while True and count < self.__requestPendingIteract:
 
+            self.__print.show(str(playerId) + " " + str(requestId), 'I');
+
             filterRules = {
                 0 : Request.player_id  == playerId,
                 1 : Request.request_id == requestId
@@ -897,9 +899,6 @@ class MCT_VPlayer(Process):
         ## Init the avaliable resources database:
         self.__init_avaliable_resources();
 
-        ## TODO: remove
-        time.sleep(5);
-
 
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
@@ -911,10 +910,15 @@ class MCT_VPlayer(Process):
     def run(self):
         oldTime = 0;
 
+        ## Set virtual players resources: 
+        self.__set_resources_info();
+
         ## Scheduller set and get information to/from MCT main components.
         getSetInfRepeat = Repeated_Timer(self.__interval, self.__get_set_info);
 
         while True:
+            ## Get resources info:
+            #self.__get_resources_info();
 
             ## Get a new action from database through the MCT_DB_Proxy service.
             message = self.__mctStates.give_me_state_from_database();
@@ -940,10 +944,12 @@ class MCT_VPlayer(Process):
                 ## Dispatch the action to MCT_Dispatch:
                 dataRecv = self.__mctAction.dispatch(message);
 
-            ## Obtain one state select from the 'pool' of the possible states:
             else:
                 getSetInfRepeat.stop();
                 break;
+
+            ## Set resources info:
+            #self.__set_resources_info();
 
         ## LOG:
         self.__print.show('END SIMULATION PLAYER: ' + self.__name, 'I');
@@ -995,9 +1001,9 @@ class MCT_VPlayer(Process):
         ## Check the last action. If was get execute the set information, other
         ## wise execute the get. 
         if self.__get == True:
-            self.__get_resources_info();
-        else:
             self.__set_resources_info();
+        else:
+            self.__get_resources_info();
 
         ## Select the next action: 'True' to 'False', 'Get to Set' information.
         self.__get = not self.__get;
@@ -1082,6 +1088,7 @@ class MCT_Drive_Simulation:
     __db       = {};
     __cfg      = None;
     __print    = None;
+    __publish  = None;
 
 
     ###########################################################################
@@ -1106,6 +1113,21 @@ class MCT_Drive_Simulation:
 
         ## Launch all player defined in configfile. Executing then in threads.
         self.__launch_vplayers();
+
+        ## Dictionary with AMQ configuration:
+        amqpConfig = {
+            'user'      : self.__cfg['main']['amqp_user'      ],
+            'pass'      : self.__cfg['main']['amqp_pass'      ],
+            'route'     : self.__cfg['main']['amqp_route'     ],
+            'identifier': self.__cfg['main']['amqp_identifier'],
+            'address'   : self.__cfg['main']['amqp_address'   ],
+            'exchange'  : self.__cfg['main']['amqp_exchange'  ],
+            'queue'     : self.__cfg['main']['amqp_queue_name'],
+            'print'     : self.__cfg['main']['print'          ]
+        }
+
+        ## Instantiates an object to perform the publication of AMQP messages.
+        self.__publish = MCT_Simple_AMQP_Publish(amqpConfig, logger);
 
 
     ###########################################################################
@@ -1144,6 +1166,22 @@ class MCT_Drive_Simulation:
         for vPlayer in self.__vPlayers:
             vPlayer.terminate();
             vPlayer.join();
+
+        ## Send message of finish to MCT_Agent.
+        msgToSend = {
+            'code'    : 1000,
+            'playerId': '',
+            'status'  : 0,
+            'reqId'   : '',
+            'retId'   : '',
+            'origAddr': '',
+            'destAddr': '',
+            'destName': '',
+            'data'    : {}
+        };
+
+        ## Publish:
+        self.__publish.publish(msgToSend); 
 
 
     ###########################################################################
@@ -1217,11 +1255,13 @@ class MCT_Drive_Simulation:
 if __name__ == "__main__":
 
     try:
-         mctDriveSimulation = MCT_Drive_Simulation(logger);
-         mctDriveSimulation.run();
+        mctDriveSimulation = MCT_Drive_Simulation(logger);
+        mctDriveSimulation.run();
 
     except KeyboardInterrupt:
-         mctDriveSimulation.stop();
+        pass;
+
+    mctDriveSimulation.stop();
 
     sys.exit(0);
 
