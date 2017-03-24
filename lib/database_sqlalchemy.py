@@ -59,11 +59,11 @@ class Simulation(Base):
     id          = Column(BIGINT(20) , nullable=False, primary_key=True); 
     time        = Column(BIGINT(20) , nullable=False);
     machineId   = Column(BIGINT(20) , nullable=False);
-    eventType   = Column(INT(11)    , nullable=False);
+    eventType   = Column(INT        , nullable=False);
     plataformId = Column(VARCHAR(45), nullable=True );
     cpu         = Column(FLOAT      , nullable=False);
     memory      = Column(FLOAT      , nullable=False);
-    valid       = Column(INT(11)    , default=0);
+    valid       = Column(INT        , default=0);
         
     id.autoincrement = True;
 
@@ -127,6 +127,28 @@ class Request(Base):
 ## END CLASS.
 
     
+
+
+
+
+
+class Map(Base):
+
+    """
+    Class Map:
+    ---------------------------------------------------------------------------
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __tablename__ = 'MAP';
+
+    uuid_src = Column(VARCHAR(45), nullable=False, primary_key=True);
+    uuid_dst = Column(VARCHAR(45), nullable=False);
+    type_obj = Column(VARCHAR(45), nullable=False);
+    date     = Column(TIMESTAMP  , nullable=True);
+## END CLASS.
 
 
 
