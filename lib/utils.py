@@ -35,7 +35,7 @@ RESETT_INSTANCE = 5
 GETINF_INSTANCE = 9
 
 ## Instances definitions (SIMULATION):
-IMG_NAME = 'cirros-0.3.2-x86_64';
+IMG_NAME = 'cirros-0.3.3-x86_64';
 NET_NAME = 'demo-net';
 
 ## Information about the flavors. Get from openstack flavors!
