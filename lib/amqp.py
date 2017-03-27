@@ -211,10 +211,11 @@ class RabbitMQ_Consume(object):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __data       = {};
-    __qName      = None;
-    __connection = None;
-    __chn        = None;
+    amqpPikaExitControl = True;
+    __data              = {};
+    __qName             = None;
+    __connection        = None;
+    __chn               = None;
 
 
     ###########################################################################
@@ -238,6 +239,7 @@ class RabbitMQ_Consume(object):
     def consume(self):
 
         while True:
+
             ## Sends the AMQP command Basic. Consume to the broker and binds me
             ## ssages for the consumer_tag to the consumer callback.If you do n
             ## ot pass in a consumer_tag, one will be automatically generated f
@@ -250,9 +252,15 @@ class RabbitMQ_Consume(object):
                 self.chn.start_consuming();
 
             except pika.exceptions.ConnectionClosed:
-                ## LOG:
-                LOG.info('CONNECTION LOST! RECONNECT...');
-                self.__connect();
+
+                if self.amqpPikaExitControl == True:
+                    ## LOG:
+                    LOG.info('CONNECTION LOST! RECONNECT IT!');
+                    self.__connect();
+                else:
+                    ## LOG:
+                    LOG.info('CONNECTION STOPED! LEAVE!');
+                    break;
             
 
     ##
