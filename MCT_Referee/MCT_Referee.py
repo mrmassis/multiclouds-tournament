@@ -170,28 +170,44 @@ class MCT_Referee(RabbitMQ_Consume):
             ## GET RESOUCES INF.                                             ##
             ## ------------------------------------------------------------- ##
             if   int(message['code']) == GETINF_RESOURCE:
+
+                ## LOG:
+                self.__print.show('GETINF' ,'I');
+
                 message['data'] = self.__get_resources_inf(division);
  
             ## ------------------------------------------------------------- ##
             ## SET RESOUCES INF.                                             ##
             ## ------------------------------------------------------------- ##
             elif int(message['code']) == SETINF_RESOURCE:
+
+                ## LOG:
+                self.__print.show('SETINF' ,'I');
+
                 message['data'] = self.__set_resources_inf(division, message);
 
             ## ------------------------------------------------------------- ##
             ## CREATE A NEW INSTANCE.                                        ##
             ## ------------------------------------------------------------- ##
             elif int(message['code']) == CREATE_INSTANCE:
+
+                ## LOG:
+                self.__print.show('CREATE' ,'I');
+
                 message = self.__add_instance(division, message);
 
             ## ------------------------------------------------------------- ##
             ## DELETE AN INSTANCE.                                           ##
             ## ------------------------------------------------------------- ##
             elif int(message['code']) == DELETE_INSTANCE:
+
+                ## LOG:
+                self.__print.show('DELETE' ,'I');
+
                 message = self.__del_instance(division, message);
 
             ## ------------------------------------------------------------- ##
-            ## DELETE AN INSTANCE.                                           ##
+            ## GET INSTANCE INFO.                                            ##
             ## ------------------------------------------------------------- ##
             elif int(message['code']) == GETINF_INSTANCE:
                 message = self._inf_instance(division, message);
@@ -219,8 +235,13 @@ class MCT_Referee(RabbitMQ_Consume):
         code = request['code'];
 
         if int(code) != 0:
-            query = "SELECT fields FROM FIELDS WHERE operation='"+str(code)+"'";
-            valRet = [] or self.__db.select_query(query);
+
+            ## Get the necessary fields from database:
+            fieldsDb = ['fields'];
+            whereDb  = {'operation=':str(code)};
+            tableDb  = 'FIELDS';
+
+            valRet = self.__select_db(tableDb, fieldsDb, whereDb);
 
             if valRet != []:
                 fields = valRet[0][0];
@@ -239,18 +260,20 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     ## BRIEF: get the player's division.
     ## ------------------------------------------------------------------------
-    ## @PARAM str playerId == player identifier.
+    ## @PARAM str player == player identifier.
     ##
-    def __get_division(self, playerId):
+    def __get_division(self, player):
         ## LOG:
         self.__print.show('GET PLAYER DIVISION!', 'I');
 
         ## Setting: 
         division = DIVISION_INVALID;
 
-        query = "SELECT division FROM PLAYER WHERE name='" + playerId + "'";
+        fieldsDb = ['division'];
+        whereDb  = {'name=':str(player)};
+        tableDb  = 'PLAYER';
 
-        valRet = [] or self.__db.select_query(query);
+        valRet = self.__select_db(tableDb, fieldsDb, whereDb);
 
         if valRet != []:
             division = valRet[0][0];
@@ -300,7 +323,7 @@ class MCT_Referee(RabbitMQ_Consume):
     def __del_instance(self, division, msg):
 
         ## LOG:
-        self.__print.show('DELETE INSTANCE: '+str(msg['reqId']), 'I');
+        self.__print.show('DELETE INSTANCE: '+str(msg), 'I');
 
         ## SENDTO: If 'retId == empty' the request is go to the player destiny.
         if msg['retId'] == '':
@@ -362,7 +385,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     def __add_instance_recv_destiny(self, division, msg):
         ## LOG:
-        self.__print.show('RETURN FROM ADD_INSTANCE IS: '+str(msg['status']),'I');
+        self.__print.show('RETURN FROM ADD_INSTANCE IS: '+str(msg),'I');
 
         f0 = str(msg['playerId']);
         f1 = str(msg['origAddr']);
@@ -370,7 +393,12 @@ class MCT_Referee(RabbitMQ_Consume):
         f3 = str(msg['destAddr']);
         f4 = str(msg['destName']);
         f5 = str(msg['status'  ]);
-        f6 = str(datetime.datetime.now());
+
+        ## Instance resources:
+        f6 = str(msg['data']['vcpus']);
+        f7 = str(msg['data']['mem'  ]);
+        f8 = str(msg['data']['disk' ]);
+        f9 = str(datetime.datetime.now());
 
         ## Here is check the status, and setting the database to record the re-
         ## sult of action.
@@ -380,12 +408,14 @@ class MCT_Referee(RabbitMQ_Consume):
         query += "destiny_add, "     ;
         query += "destiny_name, "    ;
         query += "status, "          ;
+        query += "vcpus, "           ;
+        query += "mem, "             ;
+        query += "disk, "            ;
         query += "timestamp_received";
-    
-        ## If the return is a error so finish the request now!
+
         if msg['status'] != 0:
-            query += ") VALUES (%s,%s,%s,%s,%s,%s)";
-            value =  (f1, f2, f3, f4, f5, f6);
+            query += ") VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)";
+            value =  (f1, f2, f3, f4, f5, f6, f7, f8, f9);
 
             ## LOG:
             self.__print.show("VM_ID "+f2+" FROM "+f0+" IS RUNNING IN "+f4, 'I');
@@ -393,7 +423,7 @@ class MCT_Referee(RabbitMQ_Consume):
         else:
             query += ",timestamp_finished";
             query += ") VALUES (%s,%s,%s,%s,%s,%s,%s)";
-            value =  (f1, f2, f3, f4, f5, f6, f6);
+            value =  (f1, f2, f3, f4, f5, f6, f7, f8, f9, f9);
 
             ## LOG:
             self.__print.show("VM_ID "+f2+" FROM "+f0+" ISNT RUNNING IN "+f4,'I');
@@ -418,18 +448,20 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     def __del_instance_send_destiny(self, division, msg):
 
+        ## LOG:
+        self.__print.show('INI DEL SEND','I');
+
         ## Obtain the information about 'who' is executing the virtual machine
         ## instance.
-        query  = "SELECT ";
-        query += "destiny_add ";
-        query += "FROM INSTANCE WHERE ";
-        query += "origin_id='" + str(msg['reqId']) + "'";
+        fieldsDb = ['destiny_add', 'destiny_name'];
+        whereDb  = {'origin_id=':str(msg['reqId'])};
+        tableDb  = 'INSTANCE';
 
-        valRet = [] or self.__db.select_query(query);
+        valRet = self.__select_db(tableDb, fieldsDb, whereDb);
 
         if valRet != []:
             ## LOG:
-            self.__print.show('IDENTIFIED PLAYER ADDR '+str(valRet[0][0]),'I');
+            self.__print.show('DEL SEND: PLAYER ADDR '+str(valRet[0][0]),'I');
 
             ## Set the message to be a forward message (perform a map). Send it
             ## to the destine and waiting the return.
@@ -438,11 +470,19 @@ class MCT_Referee(RabbitMQ_Consume):
             ## Set the target address. The target addr is the player addrs that
             ## will accept the request.
             msg['destAddr'] = valRet[0][0];
+
+            ## Set the target name:
+            msg['destName'] = valRet[0][1];
+
+            ## LOG:
+            self.__print.show('DEL SEND: PLAYER VALUES '+str(msg),'I');
         else:
             ## LOG:
             self.__print.show('THERE IS NOT PLAYER EXECUTING THIS INST!', 'I');
             msg['status'] = 0;
 
+        ## LOG:
+        self.__print.show('END DEL SEND','I');
         return msg;
 
 
@@ -455,11 +495,17 @@ class MCT_Referee(RabbitMQ_Consume):
     def __del_instance_recv_destiny(self, division, msg):
 
         ## LOG:
+        self.__print.show('INI DEL RECV','I');
+
+        ## LOG:
         self.__print.show('RETURN FROM DEL_INSTANCE IS: '+str(msg['status']),'I');
 
         f1 = str(msg['reqId'  ]);
         f2 = str(msg['status' ]);
         f3 = str(datetime.datetime.now());
+
+        ## LOG:
+        self.__print.show('DELETE: PREPARE THE SQL!','I');
 
         query  = "UPDATE INSTANCE SET ";
         query += "status='"             + str(f2) + "', ";
@@ -468,6 +514,9 @@ class MCT_Referee(RabbitMQ_Consume):
         query += "origin_id='"          + str(f1) + "' " ;
         valRet = self.__db.update_query(query);
 
+        ## LOG:
+        self.__print.show('DELETE REQUEST!','I');
+
         ## Update all values of used resources. The table used is the "PLAYER"p.
         ## the table has all resources offer and used by the player.:
         self.__update_used_values(1, msg);
@@ -475,6 +524,8 @@ class MCT_Referee(RabbitMQ_Consume):
         msg['destAddr'] = '';
         msg['retId'   ] = '';
 
+        ## LOG:
+        self.__print.show('END DEL RECV','I');
         return msg;
 
 
@@ -484,15 +535,15 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM int division.
     ##
     def __get_resources_inf(self, division):
+
         resources = {};
 
         ## Mount the database query: 
-        query  = "SELECT ";
-        query += "vcpu, memory, disk, vcpu_used, memory_used, disk_used ";
-        query += "FROM PLAYER WHERE ";
-        query += "division='" + str(division) + "'";
+        fieldsDb=['vcpu','memory','disk','vcpu_used','memory_used','disk_used'];
+        whereDb ={'division=':str(division)};
+        tableDb ='PLAYER';
 
-        valRet = [] or self.__db.select_query(query);
+        valRet = self.__select_db(tableDb, fieldsDb, whereDb);
 
         if valRet != []:
             v0 = 0; v1 = 0; v2 = 0; v3 = 0; v4 = 0; v5 = 0;
@@ -526,6 +577,9 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     def __set_resources_inf(self, division, msg):
 
+        ## LOG:
+        self.__print.show('UPDATE RESOURCE TABLE: ' + str(msg), 'I');
+
         ## Get all data from the message. Vcpus, memory and disk avaliable in
         ## the player:
         f1 = msg['playerId']; 
@@ -556,11 +610,11 @@ class MCT_Referee(RabbitMQ_Consume):
        selectedPlayer = {};
 
        ## Genereate the query to select the players belong to specific division.
-       query  = "SELECT * FROM PLAYER WHERE ";
-       query += "division='" + str(division) + "' and ";
-       query += "name!='"    + str(playerId) + "'";
-       
-       valRet = [] or self.__db.select_query(query);
+       fieldsDb=[];
+       whereDb ={'division=':str(division), 'name!=':str(playerId)};
+       tableDb ='PLAYER';
+
+       valRet = self.__select_db(tableDb, fieldsDb, whereDb);
 
        if valRet != []:
 
@@ -589,47 +643,131 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     def __update_used_values(self, action, msg):
 
-        query  = "SELECT ";
-        query += "vcpu_used, memory_used, disk_used ";
-        query += "FROM PLAYER WHERE ";
-        query += "name='" + str(msg['playerId']) + "'";
+        ## LOG:
+        self.__print.show('UPDATE: ACTION: ' +str(action)+ ' ' +str(msg), 'I');
 
-        valRet = [] or self.__db.select_query(query);
+        record = {};
+
+        fieldsDb = ['vcpu_used','memory_used','disk_used','accepts','rejects','running','finished'];
+        whereDb  = {'name=':str(msg['destName'])};
+        tableDb  = 'PLAYER';
+
+        valRet = self.__select_db(tableDb, fieldsDb, whereDb);
+
+        ## LOG:
+        self.__print.show('UPDATE: VALRET: ' + str(valRet), 'I');
 
         if valRet != []:
-            v0 = int(valRet[0][0]);
-            v1 = int(valRet[0][1]);
-            v2 = int(valRet[0][2]);
- 
+
+            record['vcpu_used'  ] = int(valRet[0][0]);
+            record['memory_used'] = int(valRet[0][1]);
+            record['disk_used'  ] = int(valRet[0][2]);
+            record['accepts'    ] = int(valRet[0][3]);
+            record['rejects'    ] = int(valRet[0][4]);
+            record['running'    ] = int(valRet[0][5]);
+            record['finished'   ] = int(valRet[0][6]);
+
             ## When action is equal the 0 meaning that the values will be incre
             ## mented. 1 is decremented!
             if action == 0:
-                ## look the message status, equal 0 is error to create instance!
 
-                ###############################################################
-                ## TODO: esses valores tem que ser setado no destino pois pode#
-                ##       haver casos onde uma image que antenda tem mais cpus #
-                ##       que o requisitado.                                   #
-                ###############################################################
+                ## LOG:
+                self.__print.show('INCREMENT USAGE RESOURCE: ' + str(msg), 'I');
+
                 if msg['status'] != 0: 
-                    v0 += int(msg['data']['vcpus' ]);
-                    v1 += int(msg['data']['mem'   ]);
-                    v2 += int(msg['data']['disk'  ]);
+                    record['vcpu_used'  ] += int(msg['data']['vcpus']);
+                    record['memory_used'] += int(msg['data']['mem'  ]);
+                    record['disk_used'  ] += int(msg['data']['disk' ]);
+                    record['accepts'    ] += 1;
+                    record['running'    ] += 1;
+                else:
+                    record['rejects'    ] += 1;
+
+            ## If the action is delete:
             else:
-                v0 -= int(msg['data']['vcpus' ]);
-                v1 -= int(msg['data']['mem'   ]);
-                v2 -= int(msg['data']['disk'  ]);
+                ## LOG:
+                self.__print.show('DECREMENT USAGE RESOURCE: ' + str(msg), 'I');
+
+                ## Get the instance resources:
+                fieldsDb=['vcpus','mem','disk'];
+                whereDb ={'origin_id=':str(msg['reqId'])};
+                tableDb ='INSTANCE';
+
+                valRet = self.__select_db(tableDb, fieldsDb, whereDb);
+
+                if valRet != []:
+                    record['vcpu_used'  ] -= int(valRet[0][0]);
+                    record['memory_used'] -= int(valRet[0][1]);
+                    record['disk_used'  ] -= int(valRet[0][2]);
+                    record['running'    ] -= 1;
+                    record['finished'   ] += 1;
 
             ## Update the exposed player resources.
-            query  = "UPDATE PLAYER SET ";
-            query += "vcpu_used='"  + str(v0) + "', ";
-            query += "memory_used='"+ str(v1) + "', ";
-            query += "disk_used='"  + str(v2) + "'  ";
-            query += "WHERE ";
-            query += "name='"  + str(msg['playerId']) + "' " ;
-            valRet = self.__db.update_query(query);
+            self.__update_player_values_db(msg['destName'], record);
 
         return 0;
+
+
+    ###########################################################################
+    ## DATABASE                                                              ##
+    ###########################################################################
+    ##
+    ## BRIEF: select fields from tables.
+    ## ------------------------------------------------------------------------
+    ## @PARAM table == table name;
+    ## @PARAM fieldsObtain == list of fields to obtain from table;
+    ## @PARAM fieldsWhere  == a set of rules to select the rows from table.
+    ##
+    def __select_db(self, table, fieldsObtain, fieldsWhere):
+        fields = '';
+        where  = '';
+
+        ## Fields to obtain from register:
+        if fieldsObtain != []:
+            for fieldObtain in fieldsObtain:
+                fields += fieldObtain + ', ';
+
+            fields = fields[:-2];
+        else:
+            fields = '* ';
+
+        ## Check if the clause was defined. If yes, build the string that will
+        ## make the where.
+        if fieldsWhere != {}:
+            for key in fieldsWhere.keys():
+                where += str(key) + "'" + str(fieldsWhere[key]) + "' and ";
+
+            where = "WHERE " + where[:-5]
+
+        query  = "SELECT " + fields + " FROM " + table + " " + where;
+        valRet = [] or self.__db.select_query(query);
+
+        return valRet;
+        
+    
+    ##
+    ## BRIEF: update fields in PLAYER table.
+    ## ------------------------------------------------------------------------
+    ## @PARAM str player  == player identifier.
+    ## @PARAM dict record == dictionary with fields to update.
+    ##
+    def __update_player_values_db(self, player, record):
+
+        valRet = None;
+
+        if record != {}:
+
+            fields = '';
+            for key in record.keys():
+               fields += str(key) + "='" + str(record[key]) + "', ";
+
+            fields = fields[:-2];
+
+            ## Update the exposed player resources.
+            query  = "UPDATE PLAYER SET " +fields+ " WHERE name='" +player+ "'";
+            valRet = self.__db.update_query(query);
+
+        return valRet;
 ## END.
 
 
