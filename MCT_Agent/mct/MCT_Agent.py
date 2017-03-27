@@ -216,18 +216,30 @@ class MCT_Agent(RabbitMQ_Consume):
             ## suspend instance e resume instance): 
             ## Create:
             if   message['code'] == CREATE_INSTANCE:
+                ## LOG:
+                self.__print.show('CREATE!', 'I');
+
                 status = self.__create_server(message);
 
             ## Delete:
             elif message['code'] == DELETE_INSTANCE:
+                ## LOG:
+                self.__print.show('DELETE!', 'I');
+
                 status = self.__delete_server(message);
 
             ## Suspend:
             elif message['code'] == SUSPND_INSTANCE:
+                ## LOG:
+                self.__print.show('SUSPND!', 'I');
+
                 status = self.__suspnd_server(message);
 
             ## Resume:
             elif message['code'] == RESUME_INSTANCE:
+                ## LOG:
+                self.__print.show('RESUME!', 'I');
+
                 status = self.__resume_server(message);
 
             ## The MCT_Agent support more than one cloud framework.So is neces-
@@ -236,7 +248,7 @@ class MCT_Agent(RabbitMQ_Consume):
             message['status'] = self.__convert_status(status, message['code']); 
 
             ## LOG:
-            self.__print.show('RETURN TO DISPATCH!', 'I');
+            self.__print.show('RETURN TO DISPATCH:' + str(message), 'I');
 
             ## Return data to MCT_Dispatch.
             self.__publishExt.publish(message, self.__routeExt);
@@ -321,6 +333,9 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict message == received message.
     ##
     def __delete_server(self, message):
+        
+        ## LOG:
+        self.__print.show('INI DEL: ' + str(message), 'I');
 
         ## Obtain the local ID from MAP table.
         destId = self.__get_map_inst_id(message['reqId']);
@@ -332,6 +347,9 @@ class MCT_Agent(RabbitMQ_Consume):
 
         if status == 'HARD_DELETED':
             self.__get_map_inst_id(message['reqId'], True);
+
+        ## LOG:
+        self.__print.show('END DEL!', 'I');
 
         return status;
 
@@ -433,7 +451,7 @@ class MCT_Agent(RabbitMQ_Consume):
 
             destId = dataReceived[0]['uuid_dst'];
 
-            if delete:
+            if delete == True:
                 filterRules = {
                     0 : Map.uuid_dst == destId
                 };

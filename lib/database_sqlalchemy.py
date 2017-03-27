@@ -423,8 +423,6 @@ class MCT_Database_SQLAlchemy:
         ## of them back to the last commit by calling session.rollback();
         session = DBSession();
 
-        session.expire_all();
-
         session.add(row);
         session.commit();
 
@@ -441,19 +439,34 @@ class MCT_Database_SQLAlchemy:
     ##
     def delete_reg(self, table, filterRules):
 
-        ## Execute the query:
-        querySql = self.session.query(table)
+        DBSession = sessionmaker(bind=self.__engine)
 
-        ## Filter:
+        ## A DBSession() instance establishes all conversations with the databa
+        ## se and represents a staging zone for all the objects loaded into the
+        ## database session object. Any change made against the objects in the 
+        ## session won't be persisted into the database until you call session.
+        ## commit(). If you are not happy about the changes, you can revert all
+        ## of them back to the last commit by calling session.rollback();
+        session = DBSession();
+
+        ## Execute the query:
+        querySql = session.query(table);
+
+        #valRet = session.query(table).filter(filterRules[0]).delete(synchronize_session=False);
+        #print valRet;
+        #print 2
+
+        ### Filter:
         for attr, value in filterRules.items():
             if querySql:
                 querySql = querySql.filter(value);
 
-        ## Delete element found in the table:
-        registry = querySql.delete();
+        ### Delete element found in the table:
+        registry = querySql.delete(synchronize_session=False);
 
-        self.session.commit();
+        session.commit();
 
+        session.close();
         return 0;
 
 
@@ -472,4 +485,33 @@ class MCT_Database_SQLAlchemy:
         return dictionary
 ## END CLASS.
 
+
+
+
+
+
+
+
+
+###############################################################################
+## MAIN                                                                      ##
+###############################################################################
+if __name__ == "__main__":
+
+    config = {
+        'user' : 'mct',
+        'pass' : 'password',
+        'base' : 'mct',
+        'host' : 'localhost'
+    };
+
+    db = MCT_Database_SQLAlchemy(config);
+
+
+    filterRules = {
+        0 : Map.uuid_dst == '2628788d-7e48-432f-b642-24e88a99d4ed',
+        1 : Map.uuid_src == 'playerVirtual0_3338579772'
+    };
+
+    valRet = db.delete_reg(Map, filterRules);
 ## END.

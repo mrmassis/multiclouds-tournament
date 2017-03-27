@@ -59,9 +59,9 @@ PACK_KEYS = DEFAULT;
 -- ---------------------------------------------------------------------------
 -- CREATE USER
 -- ---------------------------------------------------------------------------
-CREATE USER 'mct'@'localhost' IDENTIFIED BY 'password';
-GRANT ALL PRIVILEGES ON mct.* TO 'mct'@'localhost';
-FLUSH PRIVILEGES;
+-- CREATE USER 'mct'@'localhost' IDENTIFIED BY 'password';
+-- GRANT ALL PRIVILEGES ON mct.* TO 'mct'@'localhost';
+-- FLUSH PRIVILEGES;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
