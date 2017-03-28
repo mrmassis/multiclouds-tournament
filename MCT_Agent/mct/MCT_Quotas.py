@@ -147,9 +147,10 @@ class MCT_Quotas:
             quota = self.__get_quota();
 
             data = {
-                'vcpus' : quota['vcpus' ],
-                'memory': quota['memory'],
-                'disk'  : quota['disk'  ]
+                'vcpus' : quota['vcpus'    ],
+                'memory': quota['memory'   ],
+                'disk'  : quota['disk'     ],
+                'max'   : quota['instances']
             }
 
             message['data'] = data;
@@ -177,9 +178,10 @@ class MCT_Quotas:
         
         if quota == {}:
             quota = {
-                'vcpus' : 0,
-                'memory': 0,
-                'disk'  : 0
+                'vcpus'    : 0,
+                'memory'   : 0,
+                'disk'     : 0,
+                'instances': 0 
             };
       
         return quota;

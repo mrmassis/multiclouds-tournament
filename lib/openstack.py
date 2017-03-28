@@ -390,14 +390,16 @@ class MCT_Openstack_Nova:
         try:
             valRet = self.__nova.quotas.defaults(self.__project).to_dict();
 
-            defaultQuotas['vcpus' ] = valRet['cores'];
-            defaultQuotas['memory'] = valRet['ram'  ];
-            defaultQuotas['disk'  ] = DISK_FAKE;
+            defaultQuotas['vcpus'    ] = valRet['cores'    ];
+            defaultQuotas['memory'   ] = valRet['ram'      ];
+            defaultQuotas['instances'] = valRet['instances'];
+            defaultQuotas['disk'     ] = DISK_FAKE;
 
         except:
-            defaultQuotas['vcpus' ] = 0;
-            defaultQuotas['memory'] = 0;
-            defaultQuotas['disk'  ] = 0;
+            defaultQuotas['vcpus'    ] = 0;
+            defaultQuotas['memory'   ] = 0;
+            defaultQuotas['disk'     ] = 0;
+            defaultQuotas['instances'] = 0;
 
         return defaultQuotas;
 
