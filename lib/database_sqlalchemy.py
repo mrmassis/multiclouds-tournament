@@ -59,11 +59,11 @@ class Simulation(Base):
     id          = Column(BIGINT(20) , nullable=False, primary_key=True); 
     time        = Column(BIGINT(20) , nullable=False);
     machineId   = Column(BIGINT(20) , nullable=False);
-    eventType   = Column(INT        , nullable=False);
+    eventType   = Column(INT(11)    , nullable=False);
     plataformId = Column(VARCHAR(45), nullable=True );
     cpu         = Column(FLOAT      , nullable=False);
     memory      = Column(FLOAT      , nullable=False);
-    valid       = Column(INT        , default=0);
+    valid       = Column(INT(11)    , default=0);
         
     id.autoincrement = True;
 
