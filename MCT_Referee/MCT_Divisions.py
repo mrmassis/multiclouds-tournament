@@ -1,15 +1,6 @@
 #!/usr/bin/env python
 
 
-
-
-
-
-
-
-###############################################################################
-## DEFINITIONS                                                               ##
-###############################################################################
 import time;
 import sys;
 import os;
@@ -26,13 +17,10 @@ from multiprocessing  import Process, Queue, Lock;
 
 
 
-
-
-
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE   = '/etc/mct/mct-divisions.ini';
+CONFIG_FILE   = '/etc/mct/mct_divisions.ini';
 LOG_NAME      = 'MCT_Divisions';
 LOG_FORMAT    = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
 LOG_FILENAME  = '/var/log/mct/mct_divisions.log';
@@ -50,8 +38,8 @@ LOG_FILENAME  = '/var/log/mct/mct_divisions.log';
 ## Create a handler and define the output filename and the max size and max nun
 ## ber of the files (1 mega = 1048576 bytes).
 handler= logging.handlers.RotatingFileHandler(LOG_FILENAME,
-                                              maxBytes=10485760,
-                                              backupCount=100);
+                                              maxBytes=1048576,
+                                              backupCount=10);
 
 ## Create a foramatter that specific the format of log and insert it in the log
 ## handler. 
@@ -86,40 +74,27 @@ class Division(Process):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __interval     = None;
-    __index        = None;
-    __round        = None;
-    __dbConnection = None;
-    __lock         = None;
-    __print        = None;
+    __dNumb = None;
+    __dName = None;
+    __dConf = None;
+    __dBase = None;
+    __dLock = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    ##
-    ## BRIEF: initialize the object.
-    ## ------------------------------------------------------------------------
-    ## @PARAM dict dbConnection == database connection with locker.
-    ## @PARAM dict cfg          == dictionary with MCT_Agent configs.
-    ## @PARAM obj  logger       == logger object.
-    ##
-    def __init__(self, cfg, dbConnection, logger):
-        super(Division, self).__init__(name=self.name);
+    def __init__(self, dNumb, dName, dConf, dBase, dLock):
+        super(Division, self).__init__(name=dName);
 
-        self.__dbConnection = dbConnection;
-
-        ## Obtain the loop interval, the division index and the round time from
-        ## division.
-        self.__interval = cfg['interval'];
-        self.__index    = cfg['number'  ];
-        self.__round    = cfg['round'   ];
-        
-        ## Get the option that define to where the logs will are sent to show.
-        self.__print = Show_Actions(cfg['print'], logger)
+        self.__dNumb = dNumb;
+        self.__dName = dName;
+        self.__dConf = dConf;
+        self.__dBase = dBase;
+        self.__dLock = dLock;
 
         ## LOG:
-        self.__print.show('INITIALIZE DIVISION ' + self.name, 'I');
+        logger.info('STARTED DIVISION %s', dName);
 
 
     ###########################################################################
@@ -144,10 +119,10 @@ class Division(Process):
             ## round.
             eT = timeNow - timeOld;
 
-            if divmod(eT.total_seconds(),60)[0] >= int(self.__round):
+            if divmod(eT.total_seconds(),60)[0] >= int(self.__dConf['round']):
 
                  ## LOG:
-                 self.__print.show(self.name + ' ROUND FINISHED!', 'I');
+                 logger.info('ROUND FINISHED!');
 
                  ## Calculates attributes (score and history) of each player in
                  ## the division.
@@ -155,7 +130,7 @@ class Division(Process):
 
                  timeOld = datetime.datetime.now();
 
-            time.sleep(float(self.__interval));
+            time.sleep(float(self.__dConf['interval']));
 
         return 0;
 
@@ -168,17 +143,16 @@ class Division(Process):
     ## ------------------------------------------------------------------------
     ## 
     def __calculate_attributes(self):
-
         ## LOG:
-        logger.info("CALC ATTRIBUTES TO PLAYER FROM DIVISION: %s", self.name);
+        logger.info("CALC ATTRBS TO PLAYER FROM DIVISION: %s", self.__dName);
 
         ## Generate the query to get all players belong to division of interest.
         query  = 'SELECT name, score, historic FROM PLAYER ';
-        query += "WHERE division='"+ self.__index + "'";
+        query += "WHERE division='"+ str(self.__dNumb) + "'";
 
-        self.__dbConnection['lock'].acquire();
-        valRet = [] or self.__dbConnection['dbase'].select_query(query);
-        self.__dbConnection['lock'].relase();
+        self.__dLock.acquire();
+        valRet = [] or self.__dBase.select_query(query);
+        self.__dLock.release();
 
         ## Convert the query's result (string) to the python dictionary format.
         attributesPlayers = [];
@@ -187,24 +161,24 @@ class Division(Process):
             ## Get the last idx from REQUEST table that will be considerated to
             ## get request results.
             query  = "SELECT idx FROM LAST_IDX ";
-            query += "WHERE division='" + self.__index + "'";
+            query += "WHERE division='" + str(self.__dNumb) + "'";
 
-            self.__dbConnection['lock'].acquire();
-            index = self.__dbConnection['dbase'].select_query(query)[0][0];
-            self.__dbConnection['lock'].relase();
+            self.__dLock.acquire();
+            index = self.__dBase.select_query(query)[0][0];
+            self.__dLock.release();
 
             ## Get all request from a player. The result considers all requests
             ## before the idx.
             query  = "SELECT * FROM REQUEST ";
+
             query += "WHERE ";
             query += "player_id='"+ player[0] +"' and id >='"+ str(index)+"' ";
 
-            self.__dbConnection['lock'].acquire();
-            valRet = [] or self.__dbConnection['dbase'].select_query(query);
-            self.__dbConnection['lock'].relase();
+            self.__dLock.acquire();
+            valRet = [] or self.__dBase.select_query(query);
+            self.__dLock.release();
 
             if valRet == []:
-
                 ## Get the last ID obtained from query:
                 nIndex = 0
 
@@ -218,17 +192,17 @@ class Division(Process):
                 query += "division='"   + str(nDivis)    + "', ";
                 query += "WHERE name='" + str(player[0]) + "'  ";
 
-                self.__dbConnection['lock'].acquire();
-                valRet = self.__dbConnection['base'].update_query(query);
-                self.__dbConnection['lock'].relase();
+                self.__dLock.acquire();
+                valRet = self.__dBase.update_query(query);
+                self.__dLock.release();
                 
                 query  = "UPDATE LAST_IDX SET "
-                query += "idx='"            +str(nIndex)  + "' ";
-                query += "WHERE divison='" + self.__index + "' ";
+                query += "idx='"            +str(nIndex)       + "' ";
+                query += "WHERE divison='" + str(self.__dNumb) + "' ";
                 
-                self.__dbConnection['lock'].acquire();
-                valRet = self.__dbConnection['dbase'].update_query(query);
-                self.__dbConnection['lock'].relase();
+                self.__dLock.acquire();
+                valRet = self.__dBase.update_query(query);
+                self.__dLock.release();
 
         return 0;
 
@@ -245,7 +219,7 @@ class Division(Process):
         ## deve ser considerada a divisao atual, e o ultimo  checkpoint de
         ## round.
         ## LOG:
-        self.__print.show(self.name + ' CALCULATE SCORE!', 'I');
+        logger.info("CALCULATE SCORE");
         return oldScore;
 
 
@@ -258,7 +232,7 @@ class Division(Process):
         ## TODO:
         ## obter a media do score da divisao.
         ## LOG:
-        self.__print.show(self.name + ' CALCULATE HISTORIC!', 'I');
+        logger.info("CALCULATE HISTC");
         return oldHistc;
 ## END CLASS.
 
@@ -284,46 +258,41 @@ class MCT_Divisions:
     ###########################################################################
     __threadsId = None;
     __interval  = None;
-    __print     = None;
+    __lock      = None;
+    __db        = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    ##
-    ## BRIEF: initialize the object.
-    ## ------------------------------------------------------------------------
-    ## @PARAM dict cfg    == dictionary with configurations about MCT_Agent.
-    ## @PARAM obj  logger == logger object.
-    ##
-    def __init__(self, cfg, logger):
+    def __init__(self):
 
-        ## Get the option that define to where the logs will are sent to show.
-        self.__print = Show_Actions(cfg['main']['print'], logger);
-
-        ## LOG:
-        self.__print.show('INITIALIZE MCT_DIVISIONS!', 'I');
+        ## Get the configurations related to the execution of the divisions de
+        ## fined by the User.
+        configs = get_configs(CONFIG_FILE);
 
         ## Intance a new object to handler all operation in the local database
-        dbConnection = {
-            'dbase': MCT_Database(cfg['database']),
-            'lock' : Lock()
-        }
+        self.__db = MCT_Database(configs['database']);
+
+        ## Get a new lock from package process. This lock is to be used inside
+        ## the thread division.
+        self.__lock = Lock();
 
         ## Time to waiting until next loop:
-        self.__interval = cfg['main']['interval'];
+        self.__interval = config['main']['interval'];
 
         ## Create all threads. The number of threads are defineds in the conf.
         ## file.
-        for divNumb in range(1, int(cfg['main']['num_divisions']) + 1):
-            name = 'division' + str(divNumb);
+        for divNumb in range(1, int(configs['main']['num_divisions']) + 1):
+            divName = 'division' + str(divNumb);
+            divConf = configs[divName];
 
-            division = Division(cfg[name], dbConnection, logger);
-            division.name   = name;
+            division = Division(divNumb,divName,divConf,self.__db,self.__lock);
             division.daemon = True;
             division.start();
 
             self.__threadsId.append(division);
+
 
 
     ###########################################################################
@@ -354,8 +323,30 @@ class MCT_Divisions:
             thread.join();
 
         ## LOG:
-        self.__print.show('GRACEFULL STOP...', 'I');
+        logger.info('GRACEFULL STOP ...');
         return 0;
+
+
+    ##
+    ## BRIEF: get config options.
+    ## ------------------------------------------------------------------------
+    ## @PARAM str configName == file with configuration.
+    ##
+#    def __get_configs(self, configName):
+#        cfg = {};
+
+#        config = ConfigParser.ConfigParser();
+#        config.readfp(open(configName));
+
+        ## Scan the configuration file and get the relevant informations and sa
+        ## ve then in cfg dictionary.
+#        for section in config.sections():
+#            cfg[section] = {};
+
+#            for option in config.options(section):
+#                cfg[section][option] = config.get(section,option);
+
+#        return cfg;
 ## END.
 
 
@@ -369,18 +360,18 @@ class MCT_Divisions:
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
-
-    ## Get all configs parameters presents in the config file localized in
-    ## CONFIG_FILE path.
-    cfg = get_configs(CONFIG_FILE);
+    ## LOG:
+    logger.info('EXECUTION STARTED...');
 
     try:
-        mctDivisions = MCT_Divisions(cfg, logger);
+        mctDivisions = MCT_Divisions();
         mctDivisions.run();
 
     except KeyboardInterrupt, error:
         mctDivisions.gracefull_stop();
 
+    ## LOG:
+    logger.info('EXECUTION FINISHED...');
     sys.exit(0);
 ## EOF.
 
