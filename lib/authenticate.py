@@ -69,7 +69,6 @@ class MCT_Authenticate(object):
         self.__serverAddr = serverAddr;
         self.__serverPort = serverPort;
 
-
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
     ###########################################################################

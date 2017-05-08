@@ -87,10 +87,11 @@ class MCT_Database(object):
             cursor = self.__dbConnection.cursor();
             cursor.execute(query, value);
             self.__dbConnection.commit();
+
             cursor.close();
 
-        except mysql.connector.Error as mysqlError:
-            raise mysqlError;
+        except mysql.connector.Error as err:
+            print(err);
 
         return 1;
 
@@ -112,7 +113,7 @@ class MCT_Database(object):
             cursor.close();
 
         except mysql.connector.Error as err:
-            raise mysqlError;
+            print(err);
 
         return entry;
 
@@ -131,7 +132,7 @@ class MCT_Database(object):
             cursor.close();
 
         except mysql.connector.Error as err:
-            raise mysqlError;
+            print(err);
 
         return 1;
 
@@ -151,7 +152,7 @@ class MCT_Database(object):
             cursor.close();
 
         except mysql.connector.Error as err:
-            raise mysqlError;
+            print(err);
 
         return 1;
 
@@ -204,9 +205,19 @@ class MCT_Database(object):
             connection = mysql.connector.connect(**dbData);
 
         ## Case is not possible to perform the db connection, handles the error.
-        except mysql.connector.Error as mysqlError:
-            raise mysqlError;
-            return None;
+        except mysql.connector.Error as err:
+
+            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+                print("Something is wrong with your user name or password");
+                return None;
+
+            elif err.errno == errorcode.ER_BAD_DB_ERROR:
+                print("Database does not exist");
+                return None;
+
+            else:
+                print(err);
+                return None;
 
         return connection;
 

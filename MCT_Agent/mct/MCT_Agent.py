@@ -85,7 +85,7 @@ class MCT_Agent(RabbitMQ_Consume):
     __routeExt     = None;
     __publishInt   = None;
     __publishExt   = None;
-    __my_ip        = None;
+    __myIp        = None;
     __cloud        = None;
     __cloudType    = None;
     __db           = None;
@@ -105,7 +105,7 @@ class MCT_Agent(RabbitMQ_Consume):
         self.__print = Show_Actions(config['main']['print'], logger);
 
         ## Local address:
-        self.__my_ip = config['main']['agent_address'];
+        self.__myIp = config['main']['agent_address'];
 
         ## Get which route is used to deliver the msg to the 'correct destine'.
         self.__routeExt = config['amqp_external_publish']['route'];
@@ -145,22 +145,22 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM pika.spec.BasicProperties properties = 
     ## @PARAM str                       message    = message received.
     ##
-    def callback(self, channel, method, properties, message):
+    def callback(self, channel, method, properties, msg):
 
         ## Send to source an ack msg to ensuring that the message was received.
         self.chn.basic_ack(method.delivery_tag);
 
         ## Convert the json format to a structure than can handle by the python
-        message = json.loads(message);
+        msg = json.loads(msg);
 
         ## Check if is a request received from players or a return from a divi-
         ## sions. The identifier is the properties.app_id.
         if properties.app_id == DISPATCH_NAME:
-            if self.__inspect_request(message) == 0:
-                self.__recv_message_dispatch(message, properties.app_id);
+            if self.__inspect_request(msg) == 0:
+                self.__recv_message_dispatch(msg);
         else:
-            if self.__inspect_request(message) == 0:
-                self.__send_message_dispatch(message, properties.app_id);
+            if self.__inspect_request(msg) == 0:
+                self.__send_message_dispatch(msg);
 
         return 0;
 
@@ -171,27 +171,23 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     ## BRIEF: send message to MCT_Dispatch.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict message == received message.
+    ## @PARAM dict msg == received message.
     ##
-    def __send_message_dispatch(self, message, appId):
+    def __send_message_dispatch(self, msg):
 
         ## LOG:
-        self.__print.show('MESSAGE TO DISPATCH ' + str(message), 'I');
-
-        ##
-        ## TODO: check authToken to know if the player has permission grant!!!!
-        ##
+        self.__print.show('DISPATCH '+str(msg)+' ACTION '+str(msg['code']),'I');
 
         ## Publish the message to MCT_Dispatch via AMQP. The MCT_Dispatch is in
         ## the remote server. 
-        valRet = self.__publishExt.publish(message, self.__routeExt);
+        valRet = self.__publishExt.publish(msg, self.__routeExt);
 
         if valRet == False:
             ## LOG:
-            logger.error("IT WAS NOT POSSIBLE TO SEND THE MSG TO DISPATCH!");
+            self.__print.show("IT WAS NOT POSSIBLE TO SEND THE MESSAGE!", 'E');
         else:
             ## LOG:
-            logger.info ('MESSAGE SENT TO DISPATCH!');
+            self.__print.show('MESSAGE SENT TO DISPATCH!', 'E');
       
         return 0;
 
@@ -199,59 +195,44 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     ## BRIEF: receive message from MCT_Dispatch.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict message == received message.
+    ## @PARAM dict msg == received message.
     ##
-    def __recv_message_dispatch(self, message, appId):
+    def __recv_message_dispatch(self, msg):
 
         ## LOG:
-        self.__print.show('MESSAGE RETURNED FROM DISPATCH: '+str(message), 'I');
+        self.__print.show('MESSAGE RETURNED FROM DISPATCH: ' + str(msg), 'I');
 
         ## In this case, the MCT_Agent received actions to be performed locally.
-        if message['origAddr'] != self.__my_ip and message['destAddr'] != '':
+        if msg['origAddr'] != self.__myIp and msg['destAddr'] != '':
 
             ## LOG:
-            self.__print.show('PROCESSING REQUEST!', 'I');
+            self.__print.show('PROC... REQ TO ACTION: '+str(msg["code"]),'I');
 
             ## Select the appropriate action (create instance, delete instance,
             ## suspend instance e resume instance): 
             ## Create:
-            if   message['code'] == CREATE_INSTANCE:
-                ## LOG:
-                self.__print.show('CREATE!', 'I');
-
-                status = self.__create_server(message);
+            if   msg['code'] == CREATE_INSTANCE:
+                status = self.__create_server(msg);
 
             ## Delete:
-            elif message['code'] == DELETE_INSTANCE:
-                ## LOG:
-                self.__print.show('DELETE!', 'I');
-
-                status = self.__delete_server(message);
+            elif msg['code'] == DELETE_INSTANCE:
+                status = self.__delete_server(msg);
 
             ## Suspend:
-            elif message['code'] == SUSPND_INSTANCE:
-                ## LOG:
-                self.__print.show('SUSPND!', 'I');
-
-                status = self.__suspnd_server(message);
+            elif msg['code'] == SUSPND_INSTANCE:
+                status = self.__suspnd_server(msg);
 
             ## Resume:
-            elif message['code'] == RESUME_INSTANCE:
-                ## LOG:
-                self.__print.show('RESUME!', 'I');
-
-                status = self.__resume_server(message);
+            elif msg['code'] == RESUME_INSTANCE:
+                status = self.__resume_server(msg);
 
             ## The MCT_Agent support more than one cloud framework.So is neces-
             ## sary prepare the return status to a generic format. Send back to
             ## dispatch the return for the request.
-            message['status'] = self.__convert_status(status, message['code']); 
-
-            ## LOG:
-            self.__print.show('RETURN TO DISPATCH:' + str(message), 'I');
+            msg['status'] = self.__convert_status(status, msg['code']); 
 
             ## Return data to MCT_Dispatch.
-            self.__publishExt.publish(message, self.__routeExt);
+            self.__send_message_dispatch(msg);
 
         ## Return from a action:
         else:
@@ -259,7 +240,7 @@ class MCT_Agent(RabbitMQ_Consume):
             self.__print.show('SEND TO DRIVE!', 'I');
 
             ## Update the database:
-            self.__update_database(message);
+            self.__update_database(msg);
 
         return 0;
 
@@ -345,11 +326,12 @@ class MCT_Agent(RabbitMQ_Consume):
 
         status = valret[0];
 
-        if status == 'HARD_DELETED':
-            self.__get_map_inst_id(message['reqId'], True);
+        ## TODO:
+        #if status == 'HARD_DELETED':
+        self.__get_map_inst_id(message['reqId'], True);
 
         ## LOG:
-        self.__print.show('END DEL!', 'I');
+        self.__print.show('END DEL WITH STATUS ' + str(status), 'I');
 
         return status;
 
@@ -457,6 +439,9 @@ class MCT_Agent(RabbitMQ_Consume):
                 };
 
                 valRet = self.__db.delete_reg(Map, filterRules);
+
+                ## LOG:
+                self.__print.show('LOG DELETE DB ' + str(valRet), 'I');
 
         return destId;
 ## END.
