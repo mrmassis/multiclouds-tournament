@@ -132,28 +132,6 @@ class Request(Base):
 
 
 
-class Map(Base):
-
-    """
-    Class Map:
-    ---------------------------------------------------------------------------
-    """
-
-    ###########################################################################
-    ## ATTRIBUTES                                                            ##
-    ###########################################################################
-    __tablename__ = 'MAP';
-
-    uuid_src = Column(VARCHAR(45), nullable=False, primary_key=True);
-    uuid_dst = Column(VARCHAR(45), nullable=False);
-    type_obj = Column(VARCHAR(45), nullable=False);
-    date     = Column(TIMESTAMP  , nullable=True);
-## END CLASS.
-
-
-
-
-
 
 
 class Fairness:
@@ -221,8 +199,7 @@ class MCT_Database_SQLAlchemy:
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    session  = None;
-    __engine = None;
+    session = None;
 
 
     ###########################################################################
@@ -244,7 +221,18 @@ class MCT_Database_SQLAlchemy:
         parameter += dbDictionary['base'];
 
         ##
-        self.__engine = create_engine(parameter);
+        engine = create_engine(parameter);
+
+        ##
+        DBSession = sessionmaker(bind=engine)
+
+        ## A DBSession() instance establishes all conversations with the databa
+        ## se and represents a staging zone for all the objects loaded into the
+        ## database session object. Any change made against the objects in the 
+        ## session won't be persisted into the database until you call session.
+        ## commit(). If you are not happy about the changes, you can revert all
+        ## of them back to the last commit by calling session.rollback();
+        self.session = DBSession();
 
 
     ###########################################################################
@@ -256,26 +244,14 @@ class MCT_Database_SQLAlchemy:
     ## @PARAM obj table == object that meaning one table in database.
     ##
     def all_regs(self, table):
-
-        DBSession = sessionmaker(bind=self.__engine)
-
-        ## A DBSession() instance establishes all conversations with the databa
-        ## se and represents a staging zone for all the objects loaded into the
-        ## database session object. Any change made against the objects in the 
-        ## session won't be persisted into the database until you call session.
-        ## commit(). If you are not happy about the changes, you can revert all
-        ## of them back to the last commit by calling session.rollback();
-        session = DBSession();
-
         rList = [];
 
         ## Obtain all registries from database:
-        allRegistries = session.query(table).all();
+        allRegistries = self.session.query(table).all();
 
         for registry in allRegistries:
             rList.append(self.__row2dict(registry));
 
-        session.close();
         return rList;
 
 
@@ -285,25 +261,12 @@ class MCT_Database_SQLAlchemy:
     ## @PARAM obj table == object that meaning one table in database.
     ##
     def first_reg(self, table):
-
-        DBSession = sessionmaker(bind=self.__engine)
-
-        ## A DBSession() instance establishes all conversations with the databa
-        ## se and represents a staging zone for all the objects loaded into the
-        ## database session object. Any change made against the objects in the 
-        ## session won't be persisted into the database until you call session.
-        ## commit(). If you are not happy about the changes, you can revert all
-        ## of them back to the last commit by calling session.rollback();
-        session = DBSession();
-
         rList = [];
 
         ## Obtain the first registry from database:
-        registry = session.query(table).first();
+        registry = self.session.query(table).first();
 
         rList.append(self.__row2dict(registry));
-
-        session.close();
 
         return rList;
 
@@ -315,26 +278,13 @@ class MCT_Database_SQLAlchemy:
     ## @PARAM dct filterRules== filters to apply.
     ##
     def all_regs_filter(self, table, filterRule):
-
-        DBSession = sessionmaker(bind=self.__engine)
-
-        ## A DBSession() instance establishes all conversations with the databa
-        ## se and represents a staging zone for all the objects loaded into the
-        ## database session object. Any change made against the objects in the 
-        ## session won't be persisted into the database until you call session.
-        ## commit(). If you are not happy about the changes, you can revert all
-        ## of them back to the last commit by calling session.rollback();
-        session = DBSession();
-
         rList = [];
 
         ## Obtain all registries from database:
-        allRegistries = session.query(table).filter(filterRule).all();
+        allRegistries = self.session.query(table).filter(filterRule).all();
 
         for registry in allRegistries:
             rList.append(self.__row2dict(registry));
-
-        session.close();
 
         return rList;
 
@@ -347,20 +297,10 @@ class MCT_Database_SQLAlchemy:
     ##
     def first_reg_filter(self, table, filterRules):
 
-        DBSession = sessionmaker(bind=self.__engine)
-
-        ## A DBSession() instance establishes all conversations with the databa
-        ## se and represents a staging zone for all the objects loaded into the
-        ## database session object. Any change made against the objects in the 
-        ## session won't be persisted into the database until you call session.
-        ## commit(). If you are not happy about the changes, you can revert all
-        ## of them back to the last commit by calling session.rollback();
-        session = DBSession();
-
         rList = [];
 
         ## Execute the query:
-        querySql = session.query(table)
+        querySql = self.session.query(table)
 
         ## Filter:
         for attr, value in filterRules.items():
@@ -374,8 +314,6 @@ class MCT_Database_SQLAlchemy:
         if registry:
             rList.append(self.__row2dict(registry));
 
-        session.close();
-
         return rList;
 
 
@@ -388,21 +326,9 @@ class MCT_Database_SQLAlchemy:
     ##
     def update_reg(self, table, filterRule, fieldsDict):
 
-        DBSession = sessionmaker(bind=self.__engine)
-
-        ## A DBSession() instance establishes all conversations with the databa
-        ## se and represents a staging zone for all the objects loaded into the
-        ## database session object. Any change made against the objects in the 
-        ## session won't be persisted into the database until you call session.
-        ## commit(). If you are not happy about the changes, you can revert all
-        ## of them back to the last commit by calling session.rollback();
-        session = DBSession();
-
         ## Update the registry:
-        session.query(table).filter(filterRule).update(fieldsDict);
-        session.commit();
-
-        session.close();
+        self.session.query(table).filter(filterRule).update(fieldsDict);
+        self.session.commit();
 
         return 0;
 
@@ -415,6 +341,7 @@ class MCT_Database_SQLAlchemy:
     ##
     def insert_reg(self, row):
 
+<<<<<<< HEAD
         DBSession = sessionmaker(bind=self.__engine)
 
         ## A DBSession() instance establishes all conversations with the databa
@@ -463,8 +390,11 @@ class MCT_Database_SQLAlchemy:
         registry = querySql.delete(synchronize_session=False);
 
         session.commit();
+=======
+        self.session.add(row);
+        self.session.commit();
+>>>>>>> 97d83ac5f11202bf8acdb187d826899f396f2beb
 
-        session.close();
         return 0;
 
 
@@ -483,33 +413,4 @@ class MCT_Database_SQLAlchemy:
         return dictionary
 ## END CLASS.
 
-
-
-
-
-
-
-
-
-###############################################################################
-## MAIN                                                                      ##
-###############################################################################
-if __name__ == "__main__":
-
-    config = {
-        'user' : 'mct',
-        'pass' : 'password',
-        'base' : 'mct',
-        'host' : 'localhost'
-    };
-
-    db = MCT_Database_SQLAlchemy(config);
-
-
-    filterRules = {
-        0 : Map.uuid_dst == '2628788d-7e48-432f-b642-24e88a99d4ed',
-        1 : Map.uuid_src == 'playerVirtual0_3338579772'
-    };
-
-    valRet = db.delete_reg(Map, filterRules);
 ## END.

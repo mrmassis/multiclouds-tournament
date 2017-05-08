@@ -117,14 +117,8 @@ class MCT_Referee(RabbitMQ_Consume):
 
         ## Select the scheduller algorithm responsible for selection of the be-
         ## st player in a division.
-        if   cfg['scheduller']['approach'] == 'roundrobin':
-            self.__scheduller = Roundrobin(cfg['scheduller']['restrict']);
-
-        elif cfg['scheduller']['approach'] == 'bestscores':
-            self.__scheduller = Bestscores(cfg['scheduller']['restrict']);
-
-        elif cfg['scheduller']['approach'] == 'clock':
-            self.__scheduller = Clock();
+        if cfg['scheduller']['approach'] == 'round_robin_imutable_list':
+            self.__scheduller = Round_Robin_Imutable_List();
 
 
     ###########################################################################
@@ -422,7 +416,7 @@ class MCT_Referee(RabbitMQ_Consume):
 
         else:
             query += ",timestamp_finished";
-            query += ") VALUES (%s,%s,%s,%s,%s,%s,%s)";
+            query += ") VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)";
             value =  (f1, f2, f3, f4, f5, f6, f7, f8, f9, f9);
 
             ## LOG:
@@ -461,7 +455,7 @@ class MCT_Referee(RabbitMQ_Consume):
 
         if valRet != []:
             ## LOG:
-            self.__print.show('DEL SEND: PLAYER ADDR '+str(valRet[0][0]),'I');
+            self.__print.show('DEL SEND: PLAYER ADDR '+str(valRet[-1][0]),'I');
 
             ## Set the message to be a forward message (perform a map). Send it
             ## to the destine and waiting the return.
@@ -469,10 +463,10 @@ class MCT_Referee(RabbitMQ_Consume):
 
             ## Set the target address. The target addr is the player addrs that
             ## will accept the request.
-            msg['destAddr'] = valRet[0][0];
+            msg['destAddr'] = valRet[-1][0];
 
             ## Set the target name:
-            msg['destName'] = valRet[0][1];
+            msg['destName'] = valRet[-1][1];
 
             ## LOG:
             self.__print.show('DEL SEND: PLAYER VALUES '+str(msg),'I');
@@ -589,11 +583,11 @@ class MCT_Referee(RabbitMQ_Consume):
 
         ## Update the exposed player resources.
         query  = "UPDATE PLAYER SET ";
-        query += "vcpu='"  + str(f2) + "', ";
-        query += "memory='"+ str(f3) + "', ";
-        query += "disk='"  + str(f4) + "'  ";
+        query += "vcpu='"          + str(f2) + "', ";
+        query += "memory='"        + str(f3) + "', ";
+        query += "disk='"          + str(f4) + "'  ";
         query += "WHERE ";
-        query += "name='"  + str(f1) + "' " ;
+        query += "name='"          + str(f1) + "' " ;
         valRet = self.__db.update_query(query);
 
         return {};
@@ -648,7 +642,7 @@ class MCT_Referee(RabbitMQ_Consume):
 
         record = {};
 
-        fieldsDb = ['vcpu_used','memory_used','disk_used','accepts','rejects','running','finished'];
+        fieldsDb = ['vcpu_used','memory_used','disk_used','accepts','rejects','running','finished','problem_del'];
         whereDb  = {'name=':str(msg['destName'])};
         tableDb  = 'PLAYER';
 
@@ -666,46 +660,84 @@ class MCT_Referee(RabbitMQ_Consume):
             record['rejects'    ] = int(valRet[0][4]);
             record['running'    ] = int(valRet[0][5]);
             record['finished'   ] = int(valRet[0][6]);
+            record['problem_del'] = int(valRet[0][7]);
 
             ## When action is equal the 0 meaning that the values will be incre
-            ## mented. 1 is decremented!
+            ## mented (create instance). 1 is decremented (delete instance)!
             if action == 0:
-
-                ## LOG:
-                self.__print.show('INCREMENT USAGE RESOURCE: ' + str(msg), 'I');
-
-                if msg['status'] != 0: 
-                    record['vcpu_used'  ] += int(msg['data']['vcpus']);
-                    record['memory_used'] += int(msg['data']['mem'  ]);
-                    record['disk_used'  ] += int(msg['data']['disk' ]);
-                    record['accepts'    ] += 1;
-                    record['running'    ] += 1;
-                else:
-                    record['rejects'    ] += 1;
-
-            ## If the action is delete:
+                record = self.__increment_value_database(record, msg);
             else:
-                ## LOG:
-                self.__print.show('DECREMENT USAGE RESOURCE: ' + str(msg), 'I');
-
-                ## Get the instance resources:
-                fieldsDb=['vcpus','mem','disk'];
-                whereDb ={'origin_id=':str(msg['reqId'])};
-                tableDb ='INSTANCE';
-
-                valRet = self.__select_db(tableDb, fieldsDb, whereDb);
-
-                if valRet != []:
-                    record['vcpu_used'  ] -= int(valRet[0][0]);
-                    record['memory_used'] -= int(valRet[0][1]);
-                    record['disk_used'  ] -= int(valRet[0][2]);
-                    record['running'    ] -= 1;
-                    record['finished'   ] += 1;
+                record = self.__decrement_value_database(record, msg);
 
             ## Update the exposed player resources.
             self.__update_player_values_db(msg['destName'], record);
 
         return 0;
+
+
+    ##
+    ## BRIEF: increment player values.
+    ## ------------------------------------------------------------------------
+    ## @PARAM record == values to update.
+    ## @PARAM msg    == message received.
+    ##
+    def __increment_value_database(self, record, msg):
+
+        ## LOG:
+        self.__print.show('---------------------------------------------','I');
+        self.__print.show('INCREMENT USAGE RESOURCE: ' + str(msg),        'I');
+        self.__print.show('values old: ' + str(record)                   ,'I');
+
+        if msg['status'] != 0:
+            record['vcpu_used'  ] += int(msg['data']['vcpus']);
+            record['memory_used'] += int(msg['data']['mem'  ]);
+            record['disk_used'  ] += int(msg['data']['disk' ]);
+            record['accepts'    ] += 1;
+            record['running'    ] += 1;
+        else:
+            record['rejects'    ] += 1;
+
+        self.__print.show('values new: ' + str(record)                   ,'I');
+        self.__print.show('-------------------------------------------\n','I');
+
+        return record;
+
+
+    ##
+    ## BRIEF: decrement player values.
+    ## ------------------------------------------------------------------------
+    ## @PARAM record == values to update.
+    ## @PARAM msg    == message received.
+    ##
+    def __decrement_value_database(self, record, msg):
+
+        ## LOG:
+        self.__print.show('-------------------------------------------\n','I');
+        self.__print.show('DECREMENT USAGE RESOURCE: ' + str(msg),        'I');
+        self.__print.show('values old: ' + str(record)                   ,'I');
+
+        if msg['status'] != 0:
+
+            ## Get the instance resources:
+            fieldsDb=['vcpus','mem','disk'];
+            whereDb ={'origin_id=':str(msg['reqId'])};
+            tableDb ='INSTANCE';
+
+            valRet = self.__select_db(tableDb, fieldsDb, whereDb);
+
+            if valRet != []:
+                record['vcpu_used'  ] -= int(valRet[0][0]);
+                record['memory_used'] -= int(valRet[0][1]);
+                record['disk_used'  ] -= int(valRet[0][2]);
+                record['running'    ] -= 1;
+                record['finished'   ] += 1;
+        else:
+            record['problem_del'] += 1;
+
+        self.__print.show('values new: ' + str(record)                   ,'I');
+        self.__print.show('-------------------------------------------\n','I');
+
+        return record;
 
 
     ###########################################################################
