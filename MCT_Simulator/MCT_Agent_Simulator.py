@@ -24,6 +24,9 @@ from mct.lib.emulator            import MCT_Emulator;
 from mct.lib.amqp                import RabbitMQ_Publish, RabbitMQ_Consume;
 from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy,Player,Request;
 from mct.lib.registry            import MCT_Registry;
+from mct.lib.security            import MCT_Security;
+from mct.lib.sanity              import MCT_Sanity;
+from mct.lib.instances           import MCT_Instances;
 
 
 
@@ -89,7 +92,6 @@ class MCT_Agent(RabbitMQ_Consume):
     PRIVATE METHODS:    
     ** __recv_message_referee == receive message from referee.
     ** __send_message_referee == send message to referee.
-    ** __inspect_request      == check if all necessary fields are in request.
     """
 
     ###########################################################################
@@ -104,7 +106,9 @@ class MCT_Agent(RabbitMQ_Consume):
     __cloudType    = None;
     __db           = None;
     __print        = None;
-    __insts        = {};
+    __security     = None;
+    __sanity       = None;
+    __instances    = None;
 
 
     ###########################################################################
@@ -134,11 +138,20 @@ class MCT_Agent(RabbitMQ_Consume):
         ## Instantiates an object to perform the publication of AMQP messages.
         self.__publishExt = RabbitMQ_Publish(cfg['amqp_external_publish']);
 
-        ## Intance a new object to handler all operation in the local database.
+        ## Instance a new object to handler all operation in the local databa-
+        ## se (use SQLAlchemy).
         self.__db = MCT_Database_SQLAlchemy(cfg['database']);
 
-        ## Setting the player's authentication token:
-        self.__authToken = authToken;
+        ## Instance a new object to hander all operation that cover security:
+        self.__security = MCT_Security(authToken);
+
+        ## Instance a new object to handler all operation that cover envirome-
+        ## nt sanity.
+        self.__sanity = MCT_Sanity('player');
+         
+        ## Instance a new object to handler all operation that cover instance
+        ## running in environment.
+        self.__instances = MCT_Instances();
 
         ## LOG:
         self.__print.show("\n###### START MCT_AGENT_SIMULATION ######\n",'I');
@@ -156,6 +169,9 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM str                       message    = message received.
     ##
     def callback(self, channel, method, properties, message):
+
+        ## LOG:
+        self.__print.show("MESSAGE RECEIVED: " + str(message),'I');
 
         ## Send to source an ack msg to ensuring that the message was received.
         self.chn.basic_ack(method.delivery_tag);
@@ -175,10 +191,10 @@ class MCT_Agent(RabbitMQ_Consume):
             ## Check if is a request received from players or a return from di-
             ## vision. The identifier is the properties.app_id.
             if properties.app_id == DISPATCH_NAME:
-                if self.__inspect_request(message) == 0:
+                if self.__sanity.inspect_request(message) == True:
                     self.__recv_message_dispatch(message, properties.app_id);
             else:
-                if self.__inspect_request(message) == 0:
+                if self.__sanity.inspect_request(message) == True:
                     self.__send_message_dispatch(message, properties.app_id);
 
         return 0;
@@ -194,27 +210,27 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM str  appId   == id from sender.
     ##
     def __send_message_dispatch(self, message, appId):
+        valRet = True;
 
-        ## LOG:
-        self.__print.show('MESSAGE TO DISPATCH ' + str(message), 'I');
+        ## Check if the virtual player has authorization to send msg to referee.
+        self.__security.check_player_access(message['playerId']);
 
-        ##
-        ## TODO: put in a specific module!!!
+        ## Check if is a request by new virtual machine creation or to delation.
+        if   message['code'] == 1:
+            valRet = self.__instances.insert(message);
+        elif message['code'] == 2:
+            valRet = self.__instances.check(message);
 
-        ## Verify if the vPlayer has authorization to send mssg to MCT_Referee.
-        valRet = self.__check_vplayer_access(message['playerId']);
+        ## If the instance is not running exit and dont send to 'dispatch'.
+        if valRet != True:
+            self.__update_database(message);
+            return 0;
 
-        ## Publish the message to MCT_Dispatch via AMQP. The MCT_Dispatch is in
-        ## the remote server. 
+        ## Publish the message to dispatch (locate in remote server) via AMQP.
         valRet = self.__publishExt.publish(message, self.__routeExt);
 
-        if valRet == False:
-            ## LOG:
-            logger.error("IT WAS NOT POSSIBLE TO SEND THE MSG TO DISPATCH!");
-        else:
-            ## LOG:
-            logger.info ('MESSAGE SENT TO DISPATCH!');
-      
+        ## LOG:
+        self.__print.show('MSG SENT '+str(message)+' ACKRET '+str(valRet),'I');
         return 0;
 
 
@@ -253,9 +269,19 @@ class MCT_Agent(RabbitMQ_Consume):
 
         ## Return from a action:
         else:
+            ## Check the return, if the action is to insert and return was suc-
+            ## cefull: store the new vm instance in a special dictionary.
+            if   message['code'] == 1:
+                self.__instances.update(message);
+            elif message['code'] == 2:
+                self.__instances.remove(message);
+
+
             ## Update the database:
             self.__update_database(message);
 
+            ## LOG:
+            self.__print.show("INSTS [B]: " +self.__instances.show(),'I');
         return 0;
 
 
@@ -287,56 +313,24 @@ class MCT_Agent(RabbitMQ_Consume):
 
         status = 'ERROR';
 
-        ## Obtain the name of player that will accepted the new request!
-        name = msg['destName'];
-
         filterRules = {
-            0 : Player.player_id == name
+            0 : Player.player_id == msg['destName']
         };
 
         ## Check if is possible create the new server (vcpu, memory, and disk).
-        dReceived=self.__db.first_reg_filter(Player, filterRules);
+        dReceived = self.__db.first_reg_filter(Player, filterRules);
 
         if dReceived != []:
 
-            ## Get the index that meaning the flavors.(vcpus, memory, and disk).
-            i =FLV_NAME.keys()[FLV_NAME.values().index(msg['data']['flavor'])];
-
-            newVcpuUsed = int(dReceived[0]['vcpus_used'    ])+int(CPU_INFO[i]);
-            newMemoUsed = int(dReceived[0]['memory_mb_used'])+int(MEM_INFO[i]);
-            newDiskUsed = int(dReceived[0]['local_gb_used' ])+int(DSK_INFO[i]);
-
-            ## LOG:
-            self.__print.show('IN ' + name + ' ' + str(dReceived[0]), 'I');
-
-            ## Check if there are 'avaliable' resources to accept the instance.
-            if  newVcpuUsed <= int(dReceived[0]['vcpus'   ]) and \
-                newMemoUsed <= int(dReceived[0]['memory'  ]) and \
-                newDiskUsed <= int(dReceived[0]['local_gb']):
-
-                ## LOG:
-                self.__print.show('Player ' + name + ' has resources','I');
-
-                ## Update the specific entry in dbase with new resource values.
-                fieldsToUpdate = {
-                    'vcpus_used'     : newVcpuUsed,
-                    'memory_mb_used' : newMemoUsed,  
-                    'local_gb_used'  : newDiskUsed
-                };
-
-                valRet=self.__db.update_reg(Player, 
-                                            Player.player_id == name,
-                                            fieldsToUpdate);
-
-                ## Store the new virtual machine instance in a special structu-
-                ## re. A dictionary:
-                self.__insert_instance_to_dictionary(msg);
-
-                status = 'ACTIVE';
-            else:
-                ## LOG:
-                self.__print.show('Player ' + name +' dont has resources','I');
-
+            ## Max number of instances that the player can accept to be running.
+            newInst = int(dReceived[0]['instance_used']) + 1;
+            maxInst = int(dReceived[0]['max_instance' ]);
+ 
+            if newInst <= maxInst:
+                ## Check if exist the enough resources to alocate neu instance.
+                if self.__check_resources(dReceived[0], msg) == True:
+                    status = 'ACTIVE';
+            
         ## LOG:
         self.__print.show('>> STATUS ['+ status + '] FROM REQ '+str(msg), 'I');
 
@@ -346,6 +340,44 @@ class MCT_Agent(RabbitMQ_Consume):
         msg['status'] = GENERIC_STATUS[msg['code']][status]; 
 
         return msg;
+
+
+    ##
+    ## BRIEF:  Check if exist the enough resources to alocate neu instance.
+    ## ------------------------------------------------------------------------
+    ## @PARAM playerInfo == information about the player;
+    ## @PARAM msg        == msg received.
+    ##
+    def __check_resources(self, playerInfo, msg):
+
+        ## Obtain the index that enable to get the flavor:
+        i = FLV_NAME.keys()[FLV_NAME.values().index(msg['data']['flavor'])];
+
+        newVcpuUsed = int(playerInfo['vcpus_used'    ]) + int(CPU_INFO[i]);
+        newMemoUsed = int(playerInfo['memory_mb_used']) + int(MEM_INFO[i]);
+        newDiskUsed = int(playerInfo['local_gb_used' ]) + int(DSK_INFO[i]);
+        newInstUsed = int(playerInfo['instance_used' ]) + 1;
+
+        ## Check if there are 'avaliable' resources to accept the instance.
+        if  newVcpuUsed <= int(playerInfo['vcpus'   ]) and \
+            newMemoUsed <= int(playerInfo['memory'  ]) and \
+            newDiskUsed <= int(playerInfo['local_gb']):
+
+            ## Update the specific entry in dbase with new resource values.
+            fieldsToUpdate = {
+                'vcpus_used'     : newVcpuUsed,
+                'memory_mb_used' : newMemoUsed,
+                'local_gb_used'  : newDiskUsed,
+                'instance_used'  : newInstUsed
+            };
+
+            valRet=self.__db.update_reg(Player,
+                                        Player.player_id ==  msg['destName'],
+                                        fieldsToUpdate);
+
+            return True;
+        
+        return False;
 
 
     ##
@@ -363,34 +395,30 @@ class MCT_Agent(RabbitMQ_Consume):
 
         if dReceived != []:
 
-            ## Remove a virtual machine instance in a special structure. A dic-
-            ## tionary:
-            flavorId = self.__remove_instance_from_dictionary(msg);
-
             ## Get the index that meaning the flavors.(vcpus, memory, and disk).
-            i = FLV_NAME.keys()[FLV_NAME.values().index(flavorId)];
+            i = self.__instances.flavor(msg);
 
             newVcpuUsed = int(dReceived[0]['vcpus_used'    ])-int(CPU_INFO[i]);
             newMemoUsed = int(dReceived[0]['memory_mb_used'])-int(MEM_INFO[i]);
             newDiskUsed = int(dReceived[0]['local_gb_used' ])-int(DSK_INFO[i]);
+            newInstUsed = int(dReceived[0]['instance_used' ])-1;
 
             ## Update the specific entry in database with new resource values.
             fieldsToUpdate = {
                 'vcpus_used'     : newVcpuUsed,
                 'memory_mb_used' : newMemoUsed,  
-                'local_gb_used'  : newDiskUsed
+                'local_gb_used'  : newDiskUsed,
+                'instance_used'  : newInstUsed
             };
 
             valRet=self.__db.update_reg(Player, 
-                                        Player.player_id == msg['dstName'],
+                                        Player.player_id == msg['destName'],
                                         fieldsToUpdate);
 
             msg['data']['vcpus'] = int(CPU_INFO[i]);
-            msg['data']['mem'  ] = int(MEN_INFO[i]);
+            msg['data']['mem'  ] = int(MEM_INFO[i]);
             msg['data']['disk' ] = int(DSK_INFO[i]);
-
         else:
-
             msg['data']['vcpus'] = 0;
             msg['data']['mem'  ] = 0;
             msg['data']['disk' ] = 0;
@@ -404,85 +432,6 @@ class MCT_Agent(RabbitMQ_Consume):
         msg['status'] = GENERIC_STATUS[msg['code']]['HARD_DELETED']; 
 
         return msg;
-
-
-    ##
-    ## BRIEF: check if all necessary fields are in the request.
-    ## ------------------------------------------------------------------------
-    ## @PARAM dict request == received request.
-    ##
-    def __inspect_request(self, request):
-        return 0;
-
-
-    ##
-    ## BRIEF: insert an instance in structure.
-    ## ------------------------------------------------------------------------
-    ## @PARAM msg == message with instance data.
-    ##
-    def __insert_instance_to_dictionary(self, msg):
-
-        if not msg['destName'] in self.__insts:
-          self.__insts[msg['destName']] = {}
-
-        ##  Insert the instance in dictionary:
-        self.__insts[msg['destName']][msg['reqId']] = msg['data']['flavor'];
-
-        ## Format the data to show in LOG:
-        T = 0; S = 0; M = 0;
-
-        aux = '';
-
-        for vp in self.__insts.keys():
-            t = 0; s = 0; m = 0;
-
-            for instUUID in self.__insts[vp]:
-                if   self.__insts[vp][instUUID] == 'm1.tiny'  :
-                    t += 1; T += 1;
-
-                elif self.__insts[vp][instUUID] == 'm1.small' :
-                    s += 1; S += 1;
-
-                elif self.__insts[vp][instUUID] == 'm1.medium':
-                    m += 1; M += 1;
-
-            ## Store the local information about the virtual machines intances
-            ## running in each virtual player:
-            aux += vp + ';t:' + str(t) + ';s:' + str(s) + ';m:' + str(m) + ' ';
-
-        ## LOG:
-        self.__print.show('ALLINSTS: ' + str(self.__insts), 'I');
-
-        ## LOG:
-        self.__print.show('INTANCES|' + aux + '|T:' + str(T)
-                                            + ',S:' + str(S)
-                                            + ',M:' + str(M), 'I');
-
-
-    ##
-    ## BRIEF: remove an instance from structure.
-    ## ------------------------------------------------------------------------
-    ## @PARAM msg == message with instance data.
-    ##
-    def __remove_instance_from_dictionary(self, message):
-
-        ## Remove the instance entry from dictionary and return the flavorID.
-        flavorId = self.__insts[msg['destName']].pop([msg['reqId']], None);
-
-        ## LOG:
-        self.__print.show('[INSTANCES RUNNING] - ' + str(self.__insts), 'I');
-
-        return flavorId;
-
-
-    ##
-    ## TODO: put in the specific module!
-    ## BRIEF: verify if vPlayer has authorization to send msg to MCT_Referee.
-    ## ------------------------------------------------------------------------
-    ## @PARAM playerId == player identification
-    ##
-    def __check_vplayer_access(self, playerId):
-        return 0;
 
 ## END.
 

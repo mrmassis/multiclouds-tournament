@@ -917,13 +917,14 @@ class MCT_VPlayer(Process):
         getSetInfRepeat = Repeated_Timer(self.__interval, self.__get_set_info);
 
         while True:
-            ## Get resources info:
-            #self.__get_resources_info();
 
             ## Get a new action from database through the MCT_DB_Proxy service.
             message = self.__mctStates.give_me_state_from_database();
       
             if message['valid'] != 2:
+
+                ## TESTT:
+                ## self.__set_resources_info();
 
                 if   message['action'] == 0:
                      message['action'] = CREATE_INSTANCE;
@@ -944,12 +945,12 @@ class MCT_VPlayer(Process):
                 ## Dispatch the action to MCT_Dispatch:
                 dataRecv = self.__mctAction.dispatch(message);
 
-            else:
-                getSetInfRepeat.stop();
-                break;
+                ## TEST:
+                ## self.__get_resources_info();
 
-            ## Set resources info:
-            #self.__set_resources_info();
+            else:
+                #getSetInfRepeat.stop();
+                break;
 
         ## LOG:
         self.__print.show('END SIMULATION PLAYER: ' + self.__name, 'I');
@@ -975,10 +976,11 @@ class MCT_VPlayer(Process):
 
         player = Player();
 
-        player.player_id = self.__name;
-        player.vcpus     = rDict['vcpus' ];
-        player.memory    = rDict['memory'];
-        player.local_gb  = rDict['disk'  ];
+        player.player_id     = self.__name;
+        player.vcpus         = rDict['vcpus' ];
+        player.memory        = rDict['memory'];
+        player.local_gb      = rDict['disk'  ];
+        player.max_instance  = rDict['max'   ];
 
         ## In the first time, create a new entry (user( in the respective table
         try:
@@ -1042,9 +1044,10 @@ class MCT_VPlayer(Process):
         rDict = yaml.load(stream);
 
         data = {
-            'vcpus'    : rDict['vcpus' ],
-            'memory'   : rDict['memory'],
-            'local_gb' : rDict['disk'  ]
+            'vcpus'        : rDict['vcpus' ],
+            'memory'       : rDict['memory'],
+            'local_gb'     : rDict['disk'  ],
+            'max_instance' : rDict['max'   ]
         };
 
         ## Execute in exclusive mode - lock block - the database update action.

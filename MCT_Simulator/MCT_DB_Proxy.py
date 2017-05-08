@@ -99,13 +99,14 @@ class MCT_DB_Proxy:
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __count    = 1;
-    __db       = None;
-    __state    = {};
-    __tmpTable = None;
-    __port     = SOCKET_PORT
-    __print    = None;
-    __sTable   = None;
+    __count      = 1;
+    __db         = None;
+    __state      = {};
+    __tmpTable   = None;
+    __port       = SOCKET_PORT
+    __print      = None;
+    __sTable     = None;
+    __newVMCount = None;
 
 
     ###########################################################################
@@ -118,6 +119,9 @@ class MCT_DB_Proxy:
 
         ## Intance a new object to handler all operation in the local database.
         self.__db = MCT_Database_SQLAlchemy(cfg['database']);
+
+        ##
+        self.__newVMCount = 0;
 
 
     ###########################################################################
@@ -172,7 +176,7 @@ class MCT_DB_Proxy:
 
            if messageDictSend['valid'] == 2:
                ## LOG:
-               self.__print.show('THE ACTIONS FINISH, DATABASE EMPTY!!!', 'I');
+               self.__print.show('DB EMPTY! VMS: '+str(self.__newVMCount), 'I');
                break;
 
         return 0;
@@ -221,6 +225,7 @@ class MCT_DB_Proxy:
 
                 ## Case the action is to create a VM, return the action's data.
                 if data['action'] == ADD_VM_INSTANCE:
+                    self.__newVMCount += 1;
 
                     ## Invalid (set with valid = 1) the used action that id is:
                     self.__invalid_action(self.__state[player]['count']-1);

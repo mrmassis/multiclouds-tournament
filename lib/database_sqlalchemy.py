@@ -195,6 +195,8 @@ class Player(Base):
     local_gb_used  = Column(INT        , nullable=True , default=0);
     memory         = Column(INT        , nullable=True , default=0);
     memory_mb_used = Column(INT        , nullable=True , default=0);
+    max_instance   = Column(INT        , nullable=True , default=0);
+    instance_used  = Column(INT        , nullable=True , default=0);
     requests       = Column(INT        , nullable=True , default=0);
     accepted       = Column(INT        , nullable=True , default=0);
     fairness       = Column(FLOAT      , nullable=True , default=0);
@@ -451,10 +453,6 @@ class MCT_Database_SQLAlchemy:
 
         ## Execute the query:
         querySql = session.query(table);
-
-        #valRet = session.query(table).filter(filterRules[0]).delete(synchronize_session=False);
-        #print valRet;
-        #print 2
 
         ### Filter:
         for attr, value in filterRules.items():

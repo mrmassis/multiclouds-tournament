@@ -117,7 +117,9 @@ class RabbitMQ_Publish(object):
         ## Returns a boolean value indicating the success of the operation.
         ack = self.__chn.basic_publish(self.__exchange, rKey, jData,properties);
 
-        return True;
+        ## Disconnect from server:
+        self.__disconnect(); 
+        return ack;
 
    
     ###########################################################################
@@ -163,6 +165,9 @@ class RabbitMQ_Publish(object):
            ## nel numbers.
            self.__chn = self.__connection.channel();
 
+           ## Confirm message delivery:
+           self.__chn.confirm_delivery();
+
            ## This method creates an exchange if it does not already exist, and
            ## if the exchange exists, verifies that it is of the correct and ex
            ## pected class.
@@ -190,6 +195,28 @@ class RabbitMQ_Publish(object):
         LOG.info('SUCESS!');
         return True;
 
+
+    ##
+    ## BRIEF: connect to amqp server.
+    ## ------------------------------------------------------------------------
+    ##
+    def __disconnect(self):
+        try:
+            ## Stop by closing the channel and connection. 
+            self.__chn.close();
+
+            ## Close the connection:
+            self.__connection.close();
+
+            ## The IOLoop is started because this method is invoked by the Try/
+            ## Catch below when KeyboardInterrupt is caught.Starting the IOLoop
+            ## again will allow the publisher to cleanly disconnect from Rabbi.
+            self.___connection.ioloop.start();
+
+        except:
+            pass;
+
+        return 0;
 ## END.
 
 
