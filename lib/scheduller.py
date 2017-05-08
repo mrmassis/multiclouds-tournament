@@ -131,4 +131,72 @@ class Clock:
         ## Return the selected player. 
         return selected;
 
+
+
+
+
+
+
+
+
+class Round_Robin_Imutable_List:
+
+    """
+    Round_Robin_Imutable_List: round robin with imutable list.
+    ---------------------------------------------------------------------------
+    * run == execute the scheduller.
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __lastPosition = 0;
+
+
+    ###########################################################################
+    ## SPECIAL METHODS                                                       ##
+    ###########################################################################
+    def __init__(self):
+        self.__lastPosition = 0;
+
+
+    ###########################################################################
+    ## PUBLIC METHODS                                                        ##
+    ###########################################################################
+    ##
+    ## Brief: choice the best player considered position in clock.
+    ## ------------------------------------------------------------------------
+    ## @PARAM list players == a list of player from a specific division.
+    ##
+    def run(self, players):
+        selectedPlayer = players[self.__lastPosition];
+        
+        ## Increment to get the next element in next request:
+        self.__lastPosition += 1;
+
+        ## If the list in the end, reset the index to begin of the player list.
+        if self.__lastPosition == len(players):
+            self.__lastPosition = 0;
+
+        selected = self.__return_player(selectedPlayer);
+
+        return selected;
+        
+
+    ###########################################################################
+    ## PRIVATE METHODS                                                       ##
+    ###########################################################################
+    ##
+    ## BRIEF: format the return.
+    ## ------------------------------------------------------------------------
+    ## @PARAM selectedPlayer == player selected.
+    ##
+    def __return_player(self, selectedPlayer):
+        selected = {
+            'name' : selectedPlayer[1],
+            'addr' : selectedPlayer[2]
+        };
+
+        return selected;
+
 ## EOF.
