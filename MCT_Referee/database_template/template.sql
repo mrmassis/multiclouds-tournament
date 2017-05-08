@@ -42,19 +42,24 @@ PACK_KEYS = DEFAULT;
 DROP TABLE IF EXISTS `mct`.`PLAYER` ;
 
 CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) NULL,
-  `address` VARCHAR(45) NULL,
-  `division` INT NULL,
-  `score` FLOAT NULL,
-  `historic` INT NULL,
-  `vcpu` INT NOT NULL ,
-  `memory` BIGINT NOT NULL ,
-  `disk` BIGINT NOT NULL ,
-  `vcpu_used` BIGINT NOT NULL ,
-  `memory_used` BIGINT NOT NULL ,
-  `disk_used` BIGINT NOT NULL ,
-  `token` VARCHAR(45) NULL,
+  `id`                 INT         NOT NULL AUTO_INCREMENT,
+  `name`               VARCHAR(45)     NULL,
+  `address`            VARCHAR(45)     NULL,
+  `division`           INT             NULL,
+  `score`              FLOAT           NULL,
+  `historic`           INT             DEFAULT 0,
+  `accepts`            INT             DEFAULT 0,
+  `rejects`            INT             DEFAULT 0,
+  `running`            INT             DEFAULT 0,
+  `finished`           INT             DEFAULT 0,
+  `problem_del`        INT             DEFAULT 0,
+  `vcpu`               INT         NOT NULL ,
+  `memory`             BIGINT      NOT NULL ,
+  `disk`               BIGINT      NOT NULL ,
+  `vcpu_used`          BIGINT      NOT NULL ,
+  `memory_used`        BIGINT      NOT NULL ,
+  `disk_used`          BIGINT      NOT NULL ,
+  `token`              VARCHAR(45)     NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -65,14 +70,17 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `mct`.`INSTANCE` ;
 
 CREATE  TABLE IF NOT EXISTS `mct`.`INSTANCE` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `origin_add` VARCHAR(45) NOT NULL,
-  `origin_id` VARCHAR(45) NOT NULL,
-  `destiny_add` VARCHAR(45) NOT NULL,
-  `destiny_name` VARCHAR(45) NOT NULL,
-  `status` TINYINT(1) NOT NULL,
-  `timestamp_received` TIMESTAMP NULL,
-  `timestamp_finished` TIMESTAMP NULL,
+  `id`                 INT         NOT NULL AUTO_INCREMENT,
+  `origin_add`         VARCHAR(45) NOT NULL,
+  `origin_id`          VARCHAR(45) NOT NULL,
+  `destiny_add`        VARCHAR(45) NOT NULL,
+  `destiny_name`       VARCHAR(45) NOT NULL,
+  `status`             TINYINT(1)  NOT NULL,
+  `vcpus`              INT         NOT NULL,
+  `mem`                BIGINT      NOT NULL,
+  `disk`               BIGINT      NOT NULL,
+  `timestamp_received` TIMESTAMP       NULL,
+  `timestamp_finished` TIMESTAMP       NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 

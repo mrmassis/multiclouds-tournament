@@ -142,7 +142,7 @@ TIME_TO_WAIT = 2;
 INSTANCE_UNKNOW_ERROR   = 'NOSTATE'; 
 INSTANCE_LIMITS_REACHED = 'NOSTATE';
 
-DISK_FAKE=9394
+
 
 
 
@@ -392,27 +392,12 @@ class MCT_Openstack_Nova:
 
             defaultQuotas['vcpus' ] = valRet['cores'];
             defaultQuotas['memory'] = valRet['ram'  ];
-            defaultQuotas['disk'  ] = DISK_FAKE;
+            defaultQuotas['disk'  ] = 0;
 
         except:
             defaultQuotas['vcpus' ] = 0;
             defaultQuotas['memory'] = 0;
             defaultQuotas['disk'  ] = 0;
-
-        return defaultQuotas;
-
-
-    ##
-    ## Brief: show empty quota.
-    ## ------------------------------------------------------------------------
-    ## 
-    def get_quota_empty(self):
-
-        defaultQuotas = {};
-
-        defaultQuotas['vcpus' ] = 0;
-        defaultQuotas['memory'] = 0;
-        defaultQuotas['disk'  ] = 0;
 
         return defaultQuotas;
 ## END.       
@@ -464,12 +449,6 @@ if __name__ == "__main__":
             print valret[0];
             print valret[1];
 
-        elif sys.argv[1] == 'quota':
-
-            valret =  framework.get_quota();
-
-            print 'QUOTA --------------------------------------------------- ';
-            print valret;
     except:
         print 'Usage: openstackAPI create <name>'
         print 'Usage: openstackAPI delete <uuid>'
