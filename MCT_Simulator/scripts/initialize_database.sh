@@ -35,7 +35,7 @@ echo "INITIALIZING MCT DATABASE..."
 
 ## Init all tables utilized by MCT simulation components. This table is used by
 ## suport the simulation (virtual players) actions.
-mysql -u${DB_USER} -p${DB_PASS} ${DB_BASE} < ${DBTEMPLATE}
+mysql -u${DB_USER} -p${DB_PASS} < ${DBTEMPLATE}
 
 ## Load machine data to SIMULATION table in MCT database. This records are used
 ## to generate actions in enviroment.

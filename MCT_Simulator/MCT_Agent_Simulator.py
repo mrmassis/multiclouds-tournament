@@ -54,6 +54,8 @@ DISPATCH_NAME= 'MCT_Dispatch';
 ###############################################################################
 ## LOG                                                                       ##
 ###############################################################################
+logging.basicConfig()
+
 ## Create a handler and define the output filename and the max size and max nun
 ## ber of the files (1 mega = 1048576 bytes).
 handler= logging.handlers.RotatingFileHandler(LOG_FILENAME,
@@ -247,13 +249,13 @@ class MCT_Agent(RabbitMQ_Consume):
             ## Check the return, if the action is to insert and return was suc-
             ## cefull: store the new vm instance in a special dictionary.
             if   message['code'] == CREATE_INSTANCE:
-                self.__instances.add(message);
+                self.__instances.add_inst(message);
 
                 ## LOG:
                 self.__print.show("VMs Running: " +self.__instances.show(),'I');
 
             elif message['code'] == DELETE_INSTANCE:
-                self.__instances.del(message);
+                self.__instances.del_inst(message);
 
                 ## LOG:
                 self.__print.show("VMs Running: " +self.__instances.show(),'I');

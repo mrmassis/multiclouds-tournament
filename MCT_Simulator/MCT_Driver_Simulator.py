@@ -57,7 +57,7 @@ INTERVAL     = 60
 ###############################################################################
 ## LOG                                                                       ##
 ###############################################################################
-#logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.CRITICAL)
+logging.basicConfig()
 
 ## Create a handler and define the output filename and the max size and max nun
 ## ber of the files (1 mega = 1048576 bytes).
