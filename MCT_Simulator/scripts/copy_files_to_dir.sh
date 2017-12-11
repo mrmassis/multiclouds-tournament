@@ -45,6 +45,10 @@ mkdir -p ${PATH_VCFG_DST}
 mkdir -p ${PATH_VQTA_DST}
 mkdir -p ${PATH_LOGS_DST}
 
+## Create __init__.py file in lib folder. This is used to enable the modules to
+## used.
+touch ${PATH_CODE_DST}/__init__.py
+
 ## Copy the service file to respectives place in the system.
 for SERVICE in ${SERVICES}; do
     ## Copy:
