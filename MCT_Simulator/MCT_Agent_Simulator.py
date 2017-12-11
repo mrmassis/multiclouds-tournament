@@ -120,7 +120,7 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict cfg    == dictionary with configurations about MCT_Agent.
     ## @PARAM obj  logger == logger object.
     ##
-    def __init__(self, cfg, authToken):
+    def __init__(self, cfg):
 
         ## Get the option that define to where the logs will are sent to show.
         self.__print = Show_Actions(cfg['main']['print'], logger);
@@ -141,9 +141,6 @@ class MCT_Agent(RabbitMQ_Consume):
         ## Instance a new object to handler all operation in the local databa-
         ## se (use SQLAlchemy).
         self.__db = MCT_Database_SQLAlchemy(cfg['database']);
-
-        ## Instance a new object to hander all operation that cover security:
-        self.__security = MCT_Security(authToken);
 
         ## Instance a new object to handler all operation that cover envirome-
         ## nt sanity.
@@ -179,23 +176,14 @@ class MCT_Agent(RabbitMQ_Consume):
         ## Convert the json format to a structure than can handle by the python
         message = json.loads(message);
 
-        ## Check if is to finish the service:
-        if message['code'] == 1000:
-            self.amqpPikaExitControl = False;
-            self.chn_basic_stop();
-
-            ## LOG:
-            self.__print.show("\n#### STOPT MCT_AGENT_SIMULATION ####\n",'I');
-
+        ## Check if is a request received from players or a return from MCT.The
+        ## identifier is the properties.app_id.
+        if properties.app_id == DISPATCH_NAME:
+             if self.__sanity.inspect_request(message) == True:
+                 self.__recv_message_dispatch(message, properties.app_id);
         else:
-            ## Check if is a request received from players or a return from di-
-            ## vision. The identifier is the properties.app_id.
-            if properties.app_id == DISPATCH_NAME:
-                if self.__sanity.inspect_request(message) == True:
-                    self.__recv_message_dispatch(message, properties.app_id);
-            else:
-                if self.__sanity.inspect_request(message) == True:
-                    self.__send_message_dispatch(message, properties.app_id);
+             if self.__sanity.inspect_request(message) == True:
+                 self.__send_message_dispatch(message, properties.app_id);
 
         return 0;
 
@@ -211,20 +199,6 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     def __send_message_dispatch(self, message, appId):
         valRet = True;
-
-        ## Check if the virtual player has authorization to send msg to referee.
-        self.__security.check_player_access(message['playerId']);
-
-        ## Check if is a request by new virtual machine creation or to delation.
-        if   message['code'] == 1:
-            valRet = self.__instances.insert(message);
-        elif message['code'] == 2:
-            valRet = self.__instances.check(message);
-
-        ## If the instance is not running exit and dont send to 'dispatch'.
-        if valRet != True:
-            self.__update_database(message);
-            return 0;
 
         ## Publish the message to dispatch (locate in remote server) via AMQP.
         valRet = self.__publishExt.publish(message, self.__routeExt);
@@ -243,9 +217,10 @@ class MCT_Agent(RabbitMQ_Consume):
     def __recv_message_dispatch(self, message, appId):
 
         ## LOG:
-        self.__print.show('MESSAGE RETURNED FROM DISPATCH: '+str(message), 'I');
+        self.__print.show('MESSAGE RECEIVED FROM DISPATCH: '+str(message),'I');
 
-        ## In this case, the MCT_Agent received actions to be performed locally.
+        ## In this case,the MCT_Agent received actions from MCT to be performed
+        ## locally. Execute and return to MCT dispatch.
         if message['destAddr'] != '':
 
             ## LOG:
@@ -253,35 +228,39 @@ class MCT_Agent(RabbitMQ_Consume):
 
             ## Select the appropriate action (create instance, delete instance,
             ## suspend instance e resume instance): 
-            ## Create:
             if   message['code'] == CREATE_INSTANCE:
                 message = self.__create_server(message);
 
-            ## Delete:
             elif message['code'] == DELETE_INSTANCE:
                 message = self.__delete_server(message);
 
             ## LOG:
-            self.__print.show('RETURN TO DISPATCH!', 'I');
+            self.__print.show('RETURN EXECUTION VALUE TO MCT DISPATCH!', 'I');
 
             ## Return data to MCT_Dispatch.
             self.__publishExt.publish(message, self.__routeExt);
 
-        ## Return from a action:
+        ## The second case, the message received from MCT Dispatch has the resu
+        ## lt of action performed in other player.
         else:
+
             ## Check the return, if the action is to insert and return was suc-
             ## cefull: store the new vm instance in a special dictionary.
-            if   message['code'] == 1:
-                self.__instances.update(message);
-            elif message['code'] == 2:
-                self.__instances.remove(message);
+            if   message['code'] == CREATE_INSTANCE:
+                self.__instances.add(message);
 
+                ## LOG:
+                self.__print.show("VMs Running: " +self.__instances.show(),'I');
+
+            elif message['code'] == DELETE_INSTANCE:
+                self.__instances.del(message);
+
+                ## LOG:
+                self.__print.show("VMs Running: " +self.__instances.show(),'I');
 
             ## Update the database:
             self.__update_database(message);
 
-            ## LOG:
-            self.__print.show("INSTS [B]: " +self.__instances.show(),'I');
         return 0;
 
 
@@ -449,33 +428,7 @@ if __name__ == "__main__":
     config = get_configs(CONFIG_FILE);
 
     try:
-        ##
-        tokens = [];
-
-        ## Case this agent is virtual (to emulate), open the file with vagents
-        ## specification.
-        for i in range(int(config['main']['vplayers'])):
-            vName = 'vplayer' + str(i);
-
-            ## Get configuration options to the virtual player (amqp,quote etc)
-            vCfg = config[vName];
-    
-            try:
-                mct_registry = MCT_Registry(vCfg);
-
-                ## Register the virtual player in the tournament. Return status
-                ## and the authentication token.
-                authStatus, authToken = mct_registry.registry();
-
-                ## Store the token:
-                tokens.append({'name'      : vName,
-                               'authStatus': authStatus,
-                               'authToken' : authToken}
-                             );
-            except:
-                pass;
-
-        mct = MCT_Agent(config, tokens);
+        mct = MCT_Agent(config);
         mct.consume();
 
     except KeyboardInterrupt:

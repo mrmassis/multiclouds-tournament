@@ -26,6 +26,7 @@ import pika;
 import threading;
 import mysql;
 import yaml;
+import os;
 
 from threading                   import Timer;
 from multiprocessing             import Process, Queue, Lock;
@@ -353,38 +354,38 @@ class MCT_Action(object):
     ##
     ## BRIEF: iniatialize the object.
     ## ------------------------------------------------------------------------
-    ## @PARAM config  == configuration dictionary.
-    ## @PARAM db      == connection with database.
-    ## @PARAM logger  == log object.
+    ## @PARAM vCfg   == configuration dictionary.
+    ## @PARAM db     == connection with database.
+    ## @PARAM logger == log object.
     ##
-    def __init__(self, config, db, logger):
+    def __init__(self, vCfg, db, logger):
         
         ## Get the option that define to where the logs will are sent to show.
-        self.__print = Show_Actions(config['print'], logger);
+        self.__print = Show_Actions(vCfg['print'], logger);
 
         ## Get which route is used to deliver the msg to the 'correct destine'.
-        self.__route = config['amqp_route'];
+        self.__route = vCfg['amqp_route'];
 
         ## Get player identifier:
-        self.__vplayerName = config['name'];
+        self.__name = vCfg['name'];
 
         ## Iteraction number and time to wainting response between iteractions.
-        self.__requestPendingWaiting = float(config['request_pending_waiting']);
-        self.__requestPendingIteract =   int(config['request_pending_iteract']);
+        self.__requestPendingWaiting = float(vCfg['request_pending_waiting']);
+        self.__requestPendingIteract =   int(vCfg['request_pending_iteract']);
 
         amqpConfig = {
-            'user'      : config['amqp_user'      ],
-            'pass'      : config['amqp_pass'      ],
-            'route'     : config['amqp_route'     ],
-            'identifier': config['amqp_identifier'],
-            'address'   : config['amqp_address'   ],
-            'exchange'  : config['amqp_exchange'  ],
-            'queue'     : config['amqp_queue_name'],
-            'print'     : config['print'          ]
+            'user'      : vCfg['amqp_user'      ],
+            'pass'      : vCfg['amqp_pass'      ],
+            'route'     : vCfg['amqp_route'     ],
+            'identifier': vCfg['amqp_identifier'],
+            'address'   : vCfg['amqp_address'   ],
+            'exchange'  : vCfg['amqp_exchange'  ],
+            'queue'     : vCfg['amqp_queue_name'],
+            'print'     : vCfg['print'          ]
         }
 
         ##
-        self.__myIp = config['agent_address'];
+        self.__myIp = vCfg['agent_address'];
 
         ## Instantiates an object to perform the publication of AMQP messages.
         self.__publish = MCT_Simple_AMQP_Publish(amqpConfig, logger);
@@ -407,25 +408,33 @@ class MCT_Action(object):
     ##
     ## BRIEF: receive request.
     ## ------------------------------------------------------------------------
-    ## @PARAM data == dictionary with data to dispatch.
+    ## @PARAM action == action to execute.
+    ## @PARAM data   == dictionary with data to dispatch.
     ##
-    def dispatch(self, data):
+    def dispatch(self, action, data):
        dataReceived = {};
 
+       ##
+       if   action == ADD_REG_PLAYER:
+           dataReceived = self.addreg_vplayer(data);
+
+       elif action == DELREG_PLAYER:
+           dataReceived = self.delreg_vplayer(data);
+
        ## Get resouces information from mct_referee. 
-       if   data['action'] == GETINF_RESOURCE:
+       if   action == GETINF_RESOURCE:
            dataReceived = self.getinf_resource();
 
        ## Set resources information to  mct_referee.
-       elif data['action'] == SETINF_RESOURCE:
+       elif action == SETINF_RESOURCE:
            dataReceived = self.setinf_resource(data);
 
        ## Create a 'virtual' server in remote hosts.
-       elif data['action'] == CREATE_INSTANCE:
+       elif action == CREATE_INSTANCE:
            dataReceived = self.create_instance(data);
 
        ## Delete a 'virtual' server in remote hosts.
-       elif data['action'] == DELETE_INSTANCE:
+       elif action == DELETE_INSTANCE:
            dataReceived = self.delete_instance(data);
 
        return dataReceived;
@@ -441,7 +450,7 @@ class MCT_Action(object):
         self.__print.show('GETTING MCT RESOURCE INFORMATION!', 'I');
 
         ## Create an idx to identify the request for the resources information.
-        idx = self.__vplayerName + '_' + self.__create_index();
+        idx = self.__name + '_' + self.__create_index();
 
         ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
         ## to exec de action.
@@ -453,14 +462,14 @@ class MCT_Action(object):
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
         if valret != -1:
-            dataReceived = self.__waiting_return(self.__vplayerName, idx);
+            dataReceived = self.__waiting_return(self.__name, idx);
         else:
             dataReceived = {};
 
         ## LOG:
         self.__print.show('|GETINF| - data received: '+str(dataReceived), 'I');
 
-        ## Return the all datas about resouces avaliable in player's division.
+        ## Return the data:
         return dataReceived;
 
 
@@ -475,16 +484,16 @@ class MCT_Action(object):
         self.__print.show('SETING MCT RESOURCE INFORMATION!', 'I');
 
         ## Create an idx to identify the request for the resources information.
-        idx = self.__vplayerName + '_' + self.__create_index();
+        idx = self.__name + '_' + self.__create_index();
 
         ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
         ## to exec de action.
         msgToSend = self.__create_basic_message(SETINF_RESOURCE, idx);
 
         vmData = {
-            'vcpus' : data['vcpus' ],
-            'memory': data['memory'],
-            'disk'  : data['disk'  ]
+            'vcpus' : data['vcpus'   ],
+            'memory': data['memory'  ],
+            'disk'  : data['local_gb']
         }
 
         msgToSend['data'] = vmData;
@@ -495,14 +504,14 @@ class MCT_Action(object):
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
         if valret != -1:
-            dataReceived = self.__waiting_return(self.__vplayerName, idx);
+            dataReceived = self.__waiting_return(self.__name, idx);
         else:
             dataReceived = {};
 
         ## LOG:
         self.__print.show('|SETINF| - data received: '+str(dataReceived), 'I');
 
-        ## Return the all datas about resouces avaliable in player's division.
+        ## Return the data:
         return dataReceived;
 
 
@@ -517,7 +526,7 @@ class MCT_Action(object):
         self.__print.show('SEND REQUEST TO CREATE A NEW INSTANCE!', 'I');
 
         ## Obtain the request identifier (use the "UUID" created by OpenStack).
-        idx = self.__vplayerName + '_' + str(data['machineID']);
+        idx = self.__name + '_' + str(data['machineID']);
 
         ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
         ## to exec de action.
@@ -542,14 +551,14 @@ class MCT_Action(object):
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
         if valret != -1:
-            dataReceived = self.__waiting_return(self.__vplayerName, idx);
+            dataReceived = self.__waiting_return(self.__name, idx);
         else:
             dataReceived = {};
 
         ## LOG:
         self.__print.show('|CREATE| - data received: '+str(dataReceived), 'I');
 
-        ## Returns the status of the creation of the instance:
+        ## Returns the data:
         return dataReceived;
 
  
@@ -564,7 +573,7 @@ class MCT_Action(object):
         self.__print.show('SEND REQUEST TO DELETE AN INSTANCE!', 'I');
 
         ## Obtain the request identifier (use the "UUID" created by OpenStack).
-        idx = self.__vplayerName + '_' + str(data['machineID']);
+        idx = self.__name + '_' + str(data['machineID']);
 
         ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
         ## to exec de action.
@@ -583,15 +592,58 @@ class MCT_Action(object):
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
         if valret != -1:
-            dataReceived = self.__waiting_return(self.__vplayerName, idx);
+            dataReceived = self.__waiting_return(self.__name, idx);
         else:
             dataReceived = {};
 
         ## LOG:
         self.__print.show('|DELETE| - data received: '+str(dataReceived), 'I');
 
-        ## Returns the status of the creation of the instance:
+        ## Returns the data:
         return dataReceived;
+
+
+    ##
+    ## BRIEF: register the player - get the token.
+    ## ------------------------------------------------------------------------
+    ## @PARAM data == specific data to send.
+    ##
+    def addreg_vplayer(self, data):
+
+        ## LOG:
+        self.__print.show('REGISTER THE PLAYER ' +self.__name+ ' IN MCT', 'I');
+
+        ## Create an idx to identify the request for the resources information.
+        idx = self.__name + '_' + self.__create_index();
+
+        ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
+        ## to exec de action.
+        msgToSend = self.__create_basic_message(ADD_REG_PLAYER, idx);
+
+        ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
+        valret = self.__publish.publish(msgToSend);
+
+        ## Waiting for the answer is ready in database.The answer is ready when
+        ## MCT_Agent send the return.
+        if valret != -1:
+            dataReceived = self.__waiting_return(self.__name, idx);
+        else:
+            dataReceived = {};
+
+        ## LOG:
+        self.__print.show('|REGISTER| - data received: '+str(dataReceived), 'I');
+
+        ## Returns the data:
+        return dataReceived;
+ 
+
+    ##
+    ## BRIEF: unregister the player.
+    ## ------------------------------------------------------------------------
+    ## @PARAM data == specific data to send.
+    ##
+    def delreg_vplayer(self, data):
+        return {};
 
 
     ###########################################################################
@@ -721,10 +773,9 @@ class MCT_Action(object):
     ## @PARAM str index  = artefact index.
     ##
     def __create_basic_message(self, action, index):
-
         message = {
             'code'    : action,
-            'playerId': self.__vplayerName,
+            'playerId': self.__name,
             'status'  : 0,
             'reqId'   : index,
             'retId'   : '',
@@ -765,21 +816,21 @@ class MCT_States:
     ##
     ## BRIEF: iniatialize the object.
     ## ------------------------------------------------------------------------
-    ## @PARAM config == virtual player configuration.
+    ## @PARAM vCfg   == virtual player configuration.
     ## @PARAM logger == log object.
     ##
-    def __init__(self, config, logger):
+    def __init__(self, vCfg, logger):
   
        ## Get the option that define to where the logs will are sent to show.
-       self.__print = Show_Actions(config['print'], logger);
+       self.__print = Show_Actions(vCfg['print'], logger);
 
-       self.__addr   = config['addr'  ];
-       self.__port   = config['port'  ];
+       self.__addr   = vCfg['addr'  ];
+       self.__port   = vCfg['port'  ];
 
        self.__messageDictSend = {
            'authentication' : '',
            'action'         : '',
-           'player'         : config['name']
+           'player'         : vCfg['name']
        }
 
 
@@ -856,7 +907,8 @@ class MCT_VPlayer(Process):
     __memo                    = None;
     __disk                    = None;
     __print                   = None;
- 
+    __token                   = None;
+
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
@@ -864,18 +916,19 @@ class MCT_VPlayer(Process):
     ##
     ## BRIEF: iniatialize the object.
     ## ------------------------------------------------------------------------
-    ## @PARAM playerCfg == configuration file.
-    ## @PARAM db        == connection with database.
-    ## @PARAM logger    == log object.
+    ## @PARAM vCfg   == configuration file.
+    ## @PARAM db     == connection with database.
+    ## @PARAM logger == log object.
     ##
-    def __init__(self, playerCfg, playerState, db, logger):
+    def __init__(self, vCfg, db, logger):
+
         super(MCT_VPlayer, self).__init__();
 
         ## Get the option that define to where the logs will are sent to show.
-        self.__print = Show_Actions(playerCfg['print'], logger);
+        self.__print = Show_Actions(vCfg['print'], logger);
 
         ## Player name:
-        self.__name = playerCfg['name'];
+        self.__name = vCfg['name'];
 
         ## LOG:
         self.__print.show('INITIALIZE VPLAYER: ' + self.__name, 'I');
@@ -884,20 +937,18 @@ class MCT_VPlayer(Process):
         ## sary to use the lock object).
         self.__db = db;
 
-        ## Object that send actions to the MCT_Agent and other that generates
-        ## state to exec.
-        self.__mctAction = MCT_Action(playerCfg, self.__db, logger);
-        self.__mctStates = MCT_States(playerCfg, logger);
+        ## Instance object that generate actions that will be send to MCT_Agent
+        self.__mctStates = MCT_States(vCfg, logger);
+
+        ## Instance object that send actions generate by State to the MCT_Agent
+        self.__mctAction = MCT_Action(vCfg, self.__db, logger);
 
         ## Time to send get resource info and set resources info request to MCT
         ## referee:
-        self.__interval = float(playerCfg['get_set_resources_info_time']);
+        self.__interval = float(vCfg['get_set_resources_info_time']);
 
         ## The localization and name of the file with the resources information
-        self.__resourcesFile = playerCfg['resources_file'];
-
-        ## Init the avaliable resources database:
-        self.__init_avaliable_resources();
+        self.__resourcesFile = vCfg['resources_file'];
 
 
     ###########################################################################
@@ -908,32 +959,37 @@ class MCT_VPlayer(Process):
     ## ------------------------------------------------------------------------
     ##
     def run(self):
+
+        ## Register this virtual player. If the process is sucesfull get a to-
+        ## ken to comunication with MCT.
+        try:
+            self.__token = self.__addreg_me();
+        except:
+            ## LOG:
+            self.__print.show('IMPOSSIBLE GET TOKEN: ' + self.__name, 'E');
+            return 1;
+
         oldTime = 0;
 
         ## Set virtual players resources: 
         self.__set_resources_info();
 
-        ## Scheduller set and get information to/from MCT main components.
+        ## Scheduller set and get information action t/from MCT main components.
         getSetInfRepeat = Repeated_Timer(self.__interval, self.__get_set_info);
 
         while True:
 
             ## Get a new action from database through the MCT_DB_Proxy service.
-            message = self.__mctStates.give_me_state_from_database();
+            data = self.__mctStates.give_me_state_from_database();
       
-            if message['valid'] != 2:
-
-                ## TESTT:
-                ## self.__set_resources_info();
-
-                if   message['action'] == 0:
-                     message['action'] = CREATE_INSTANCE;
-
-                elif message['action'] == 1:
-                     message['action'] = DELETE_INSTANCE;
+            if data['valid'] != 2:
+                if   data['action'] == 0:
+                     action = CREATE_INSTANCE;
+                elif data['action'] == 1:
+                     action = DELETE_INSTANCE;
 
                 ## Calculate the new time to waiting until perform new action.
-                newTime = float(message['time']/(N_VALUE*N_FACTOR)) - oldTime; 
+                newTime = float(data['time']/(N_VALUE*N_FACTOR)) - oldTime; 
                 oldTime = newTime;
 
                 if newTime < 1.0:
@@ -942,14 +998,11 @@ class MCT_VPlayer(Process):
                 ## Wait X seconds to dispatich a new action to the 'MCT_Agent'.
                 time.sleep(float(newTime));
                    
+
                 ## Dispatch the action to MCT_Dispatch:
-                dataRecv = self.__mctAction.dispatch(message);
-
-                ## TEST:
-                ## self.__get_resources_info();
-
+                dataRecv = self.__mctAction.dispatch(action, data);
             else:
-                #getSetInfRepeat.stop();
+                getSetInfRepeat.stop();
                 break;
 
         ## LOG:
@@ -960,40 +1013,6 @@ class MCT_VPlayer(Process):
     ###########################################################################
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
-    ##
-    ## BRIEF: set initial avaliable resources to vplayer.
-    ## ------------------------------------------------------------------------
-    ##
-    def __init_avaliable_resources(self):
-
-        ## Obtain the path and the file name with the vplayer resources informa
-        ## mations (vcpu, memory, and disk):
-        stream = file(self.__resourcesFile, 'r');
- 
-        ## Obtain the dictionary with resource informations (vcpus, memory, and
-        ## disk).
-        rDict = yaml.load(stream); 
-
-        player = Player();
-
-        player.player_id     = self.__name;
-        player.vcpus         = rDict['vcpus' ];
-        player.memory        = rDict['memory'];
-        player.local_gb      = rDict['disk'  ];
-        player.max_instance  = rDict['max'   ];
-
-        ## In the first time, create a new entry (user( in the respective table
-        try:
-            with self.__db['lock']:
-                valRet = self.__db['connection'].insert_reg(player);
-        except:
-            pass;
-
-        ## LOG:
-        self.__print.show('INSERT RESOURCE VALUES IN TABLE!', 'I');
-        return 0;
-
-
     ##
     ## BRIEF: send request to get and set information.
     ## ------------------------------------------------------------------------
@@ -1017,16 +1036,12 @@ class MCT_VPlayer(Process):
     ##
     def __get_resources_info(self):
 
-        message = {
-            'action' : GETINF_RESOURCE
-        };
-
         ## LOG:
         self.__print.show('SEND REQUEST TO GET TOURNAMENT INFORMATION!','I');
 
         ## Send the request to get information to the MCT_Dispatch in the remo-
         ## te server.
-        dataRecv = self.__mctAction.dispatch(message);
+        dataRecv = self.__mctAction.dispatch(GETINF_RESOURCE, {});
 
 
     ##
@@ -1037,38 +1052,56 @@ class MCT_VPlayer(Process):
 
         errorDatabase = False;
 
-        ## Get the path and the file name with the player resources information
-        stream = file(self.__resourcesFile, 'r');
+        ## Obtain the dictionary with resource informations (vcpus, memory, and
+        ## disk).
+        try:
+            rDict = yaml.load(file(self.__resourcesFile, 'r')); 
 
-        ## Get the dictionary with resource information (vcpus,memory,and disk)
-        rDict = yaml.load(stream);
+            data = {
+                'vcpus'        : rDict['vcpus' ],
+                'memory'       : rDict['memory'],
+                'local_gb'     : rDict['disk'  ],
+                'max_instance' : rDict['max'   ]
+            };
 
-        data = {
-            'vcpus'        : rDict['vcpus' ],
-            'memory'       : rDict['memory'],
-            'local_gb'     : rDict['disk'  ],
-            'max_instance' : rDict['max'   ]
-        };
-
-        ## Execute in exclusive mode - lock block - the database update action.
-        with self.__db['lock']:
-            self.__db['connection'].update_reg(Player, 
+            ## Execute in exclusive mode-lock block-the database update action.
+            with self.__db['lock']:
+                self.__db['connection'].update_reg(Player, 
                                         Player.player_id == self.__name, data); 
 
-        ## Dont put this block inside the Try because the oper is in lock mode.
-        message = {
-               'action': SETINF_RESOURCE,
-               'vcpus' : rDict['vcpus' ],
-               'memory': rDict['memory'],
-               'disk'  : rDict['disk'  ]
-        };
+            ## Send the request to update 'resources' values to 'MCT_Dispatch':
+            dataRecv = self.__mctAction.dispatch(SETINF_RESOURCE, data);
 
-        ## Send the request to update 'resources' values to 'MCT_Dispatch':
-        dataRecv = self.__mctAction.dispatch(message);
+            ## LOG:
+            self.__print.show('UPDATE RESOURCE VALUES IN TABLE!','I');
+            return 0;
 
-        ## LOG:
-        self.__print.show('UPDATE RESOURCE VALUES IN TABLE!','I');
+        except yaml.reader.ReaderError:
+            pass;
 
+        return 1;
+
+
+    ##
+    ## BRIEF: register virtual player.
+    ## ------------------------------------------------------------------------ 
+    ##
+    def __addreg_me(self):
+        ## Send the request:
+        dataRecv = self.__mctAction.dispatch(ADD_REG_PLAYER, {});
+
+        return dataReceived;
+
+
+    ##
+    ## BRIEF: register virtual player.
+    ## ------------------------------------------------------------------------ 
+    ##
+    def __delreg_me(self):
+        ## Send the request:
+        dataRecv = self.__mctAction.dispatch(DELREG_PLAYER, {});
+
+        return dataRecv;
 ## END CLASS.
 
 
@@ -1087,11 +1120,13 @@ class MCT_Drive_Simulation:
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __vPlayers = [];
-    __db       = {};
-    __cfg      = None;
-    __print    = None;
-    __publish  = None;
+    __vPlayers           = [];
+    __db                 = {};
+    __cfg                = None;
+    __print              = None;
+    __publish            = None;
+    __virtualPlayersPath = None;
+    __vRunning           = {};
 
 
     ###########################################################################
@@ -1114,23 +1149,8 @@ class MCT_Drive_Simulation:
         ## Connect to database.
         self.__get_database();
 
-        ## Launch all player defined in configfile. Executing then in threads.
-        self.__launch_vplayers();
-
-        ## Dictionary with AMQ configuration:
-        amqpConfig = {
-            'user'      : self.__cfg['main']['amqp_user'      ],
-            'pass'      : self.__cfg['main']['amqp_pass'      ],
-            'route'     : self.__cfg['main']['amqp_route'     ],
-            'identifier': self.__cfg['main']['amqp_identifier'],
-            'address'   : self.__cfg['main']['amqp_address'   ],
-            'exchange'  : self.__cfg['main']['amqp_exchange'  ],
-            'queue'     : self.__cfg['main']['amqp_queue_name'],
-            'print'     : self.__cfg['main']['print'          ]
-        }
-
-        ## Instantiates an object to perform the publication of AMQP messages.
-        self.__publish = MCT_Simple_AMQP_Publish(amqpConfig, logger);
+        ## Obtain configuration options to the virtual player (amqp cfg, etc).
+        self.__virtualPlayersPath = self.__cfg['vplayers']['dir'];
 
 
     ###########################################################################
@@ -1145,15 +1165,32 @@ class MCT_Drive_Simulation:
         ## LOG:
         self.__print.show("\n####### START MCT_DRIVE_SIMULATION #######\n",'I');
 
-        ## Check if the threads (vPlayers) is already running:
-        while self.__vPlayers != []:
-             auxList = [];
-             for vPlayer in self.__vPlayers:
-                 if vPlayer.is_alive():
-                     auxList.append(vPlayer);
+        while True:
 
-             self.__vPlayers = auxList;
-             time.sleep(5);
+            for vPlayer in os.listdir(self.__virtualPlayersPath):
+                try:
+                    ## Open virtual player config:
+                    vCfg = yaml.load(file('/etc/mct/vplayers/' + vPlayer, 'r'));
+                except yaml.reader.ReaderError:
+                    pass;
+
+                if vCfg['enable'] == 1:
+                    ## Check if player already in the vplayer excuting list.
+                    if self.__vplayer_in_running_list(vCfg) == False:
+                        self.__add_vplayer(vCfg);
+
+                else:
+                    ## Check if player already in the vplayer excuting list.
+                    if self.__vplayer_in_running_list(vCfg) == True:
+                        self.__del_vplayer(vCfg);
+
+            ## Wait an unpredicable time.Insert some entropy in the enviroment.
+            mutable_time_to_waiting(0.3, 5.0);
+
+            if self.__vRunning == {}:
+                return False;
+
+        return True;
 
 
     ##
@@ -1166,25 +1203,11 @@ class MCT_Drive_Simulation:
         self.__print.show("\n###### FINISH MCT_DRIVE_SIMULATION ######\n",'I');
 
         ## Stop all virtual player executing in thread:
-        for vPlayer in self.__vPlayers:
-            vPlayer.terminate();
-            vPlayer.join();
+        for vPlayer in  self.__vRunning:
+            self.__vRunning[vPlayer].terminate();
+            self.__vRunning[vPlayer].join();
 
-        ## Send message of finish to MCT_Agent.
-        msgToSend = {
-            'code'    : 1000,
-            'playerId': '',
-            'status'  : 0,
-            'reqId'   : '',
-            'retId'   : '',
-            'origAddr': '',
-            'destAddr': '',
-            'destName': '',
-            'data'    : {}
-        };
-
-        ## Publish:
-        self.__publish.publish(msgToSend); 
+        return True;
 
 
     ###########################################################################
@@ -1218,31 +1241,55 @@ class MCT_Drive_Simulation:
         ## by a particular thread when locked.
         self.__db['lock'] = Lock();
 
+        return 0;
+
 
     ##
-    ## BRIEF: launch the vplayers.
+    ## BRIEF: check if the vplayer is in list and running.
     ## ------------------------------------------------------------------------
+    ## @PARAM vCfg == virtual player configuration.
     ##
-    def __launch_vplayers(self):
+    def __vplayer_in_running_list(self, vCfg):
+ 
+        if self.__vRunning.has_key(vCfg['name']):
 
-        ## To each player run in thread a simulation:
-        for i in range(int(self.__cfg['main']['vplayers'])):
+            ## Verify if the thread is running:
+            if self.__vRunning[vCfg['name']].is_alive():
+                return True;
 
-            ## Get configuration options to the virtual player (amqp cfg, etc).
-            vCfg = self.__cfg['vplayer' + str(i)];
+        return False;
 
-            ## Get the actual virtual player state stored in database.
-            ## ----------------------------------------------------------------
-            vState = get_virtual_player_state(vCfg['name'], self.__db);
 
-            ## Running vplayers in the threads:
-            self.__vPlayers.append(MCT_VPlayer(vCfg,vState,self.__db,logger));
-            self.__vPlayers[i].daemon = True;
-            self.__vPlayers[i].start();
+    ##
+    ## BRIEF: launch a vplayer.
+    ## ------------------------------------------------------------------------ 
+    ## @PARAM vCfg == virtual player configuration.
+    ##
+    def __add_vplayer(self, vCfg):
 
-            ## Wait the unpredicable time. 
-            mutable_time_to_waiting(0.3, 5.0);
+        ## Running vplayer in the thread:
+        self.__vRunning[vCfg['name']]=MCT_VPlayer(vCfg, self.__db, logger);
+        self.__vRunning[vCfg['name']].daemon = True;
+        self.__vRunning[vCfg['name']].start();
 
+        return True;
+
+
+    ##
+    ## BRIEF: remove a vplayer.
+    ## ------------------------------------------------------------------------ 
+    ## @PARAM vCfg == virtual player configuration.
+    ##
+    def __del_vplayer(self, vCfg):
+
+        ## Stop vplayer:
+        self.__vRunning[vCfg['name']].terminate();
+        self.__vRunning[vCfg['name']].join();
+
+        ## Remove entry:
+        del self.__vRunning[vCfg['name']];
+
+        return True;
 ## END CLASS.
 
 

@@ -103,7 +103,7 @@ class MCT_Instances:
     ## ------------------------------------------------------------------------
     ## @PARAM msg == message with instance data.
     ##
-    def insert(self, msg):
+    def add(self, msg):
  
         playerSrc = msg['playerId'];
         requestId = msg['reqId'   ];
@@ -135,7 +135,7 @@ class MCT_Instances:
     ## ------------------------------------------------------------------------
     ## @PARAM msg == message with instance data.
     ##
-    def remove(self, msg):
+    def del(self, msg):
 
         playerOrign = msg['playerId'];
 

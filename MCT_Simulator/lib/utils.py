@@ -34,6 +34,13 @@ RESUME_INSTANCE = 4
 RESETT_INSTANCE = 5
 GETINF_INSTANCE = 9
 
+## Administration operation code:
+ADD_REG_PLAYER  = 1002
+DEL_REG_PLAYER  = 1003
+
+## Reset Enviroment
+RESET_ENVIROMENT= 666
+
 ## Instances definitions (SIMULATION):
 IMG_NAME = 'cirros-0.3.3-x86_64';
 NET_NAME = 'demo-net';
