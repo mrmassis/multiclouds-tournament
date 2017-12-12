@@ -1,0 +1,23 @@
+###############################################################################
+## VIRTUAL PLAYERS RESOURCES INFORMATIONS                                    ##
+###############################################################################
+## Virtual player name:
+name: vPlayer0
+
+## Quantity of virtual CPUs that the player has. This vCPUS will be used to ena
+## ble virtual player instances.
+vcpus: 1023
+
+## Memory shared with others players. The memory will be used to enable virtual
+## player instances.
+memory: 1047552
+
+## Disk space enable to share with others players presentes in enviroment. This
+## will be used to enable virtual player instances.
+disk: 10230
+
+## Maximum number of virtual macines instances than the player can execute to-
+## gether.
+max: 20
+
+## END.

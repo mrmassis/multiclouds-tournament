@@ -1,0 +1,22 @@
+###############################################################################
+### VIRTUAL PLAYER                                                           ##
+###############################################################################
+name                        : playerVirtual0
+amqp_identifier             : playerVirtual0
+amqp_address                : localhost
+amqp_route                  : mct_agent
+amqp_exchange               : mct_exchange
+amqp_queue_name             : agent
+amqp_user                   : mct
+amqp_pass                   : password
+request_pending_iteract     : 10
+request_pending_waiting     : 60
+authenticate_address        : 192.168.0.201
+authenticate_port           : 2000
+agent_address               : 192.168.0.200
+resources_file              : /etc/mct/quotas/resources.yml
+port                        : 10000
+addr                        : localhost
+get_set_resources_info_time : 120
+print                       : logger
+enable                      : 1 
