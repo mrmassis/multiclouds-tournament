@@ -23,6 +23,7 @@ from sqlalchemy                 import *;
 from sqlalchemy.ext.declarative import declarative_base;
 from sqlalchemy.orm             import relation, sessionmaker, mapper;
 from sqlalchemy.dialects.mysql  import *;
+from sqlalchemy                 import or_, and_;
 
 
 
@@ -188,19 +189,24 @@ class Player(Base):
     ###########################################################################
     __tablename__ = 'PLAYER';
 
-    player_id      = Column(VARCHAR(45), nullable=False, primary_key=True); 
-    vcpus          = Column(INT        , nullable=True , default=0); 
-    vcpus_used     = Column(INT        , nullable=True , default=0); 
-    local_gb       = Column(INT        , nullable=True , default=0);
-    local_gb_used  = Column(INT        , nullable=True , default=0);
-    memory         = Column(INT        , nullable=True , default=0);
-    memory_mb_used = Column(INT        , nullable=True , default=0);
-    max_instance   = Column(INT        , nullable=True , default=0);
-    instance_used  = Column(INT        , nullable=True , default=0);
-    requests       = Column(INT        , nullable=True , default=0);
-    accepted       = Column(INT        , nullable=True , default=0);
-    fairness       = Column(FLOAT      , nullable=True , default=0);
-
+    name          = Column(VARCHAR(45), nullable=False, primary_key=True);
+    address       = Column(VARCHAR(45), nullable=True);
+    division      = Column(INT        , nullable=True);
+    score         = Column(FLOAT      , nullable=True , default=0.0);
+    history       = Column(INT        , nullable=True , default=0  );
+    accepts       = Column(INT        , nullable=True , default=0  );
+    rejects       = Column(INT        , nullable=True , default=0  );
+    running       = Column(INT        , nullable=True , default=0  );
+    finished      = Column(INT        , nullable=True , default=0  );
+    problem_del   = Column(INT        , nullable=True , default=0  );
+    vcpus         = Column(INT        , nullable=True , default=0  );
+    vcpus_used    = Column(INT        , nullable=True , default=0  );
+    memory        = Column(BIGINT(20) , nullable=True , default=0  );
+    memory_used   = Column(BIGINT(20) , nullable=True , default=0  );
+    local_gb      = Column(BIGINT(20) , nullable=True , default=0  );
+    local_gb_used = Column(BIGINT(20) , nullable=True , default=0  );
+    max_instance  = Column(INT        , nullable=True , default=0  );
+    token         = Column(VARCHAR(45), nullable=True);
 ## END CLASS.
 
 

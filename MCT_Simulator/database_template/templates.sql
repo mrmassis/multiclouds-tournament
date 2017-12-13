@@ -12,21 +12,26 @@ USE `mct` ;
 DROP TABLE IF EXISTS `mct`.`PLAYER` ;
 
 CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
-  `player_id`		VARCHAR(45) NOT NULL,
-  `vcpus`		INT NULL DEFAULT 0,
-  `vcpus_used`		INT NULL DEFAULT 0,
-  `local_gb`		INT NULL DEFAULT 0,
-  `local_gb_used`	INT NULL DEFAULT 0,
-  `memory`		INT NULL DEFAULT 0, 
-  `memory_mb_used`	INT NULL DEFAULT 0,
-  `max_instance`	INT NULL DEFAULT 0,
-  `instance_used`	INT NULL DEFAULT 0,
-  `requests`		INT NULL DEFAULT 0,
-  `accepted`		INT NULL DEFAULT 0,
-  `fairness`		FLOAT NULL DEFAULT 0.0,
-  PRIMARY KEY (`player_id`))
-ENGINE = InnoDB
-PACK_KEYS = DEFAULT;
+  `name`               VARCHAR(45) NOT NULL,
+  `address`            VARCHAR(45)     NULL,
+  `division`           INT             NULL,
+  `score`              FLOAT           DEFAULT 0.0,
+  `history`            INT             DEFAULT 0,
+  `accepts`            INT             DEFAULT 0,
+  `rejects`            INT             DEFAULT 0,
+  `running`            INT             DEFAULT 0,
+  `finished`           INT             DEFAULT 0,
+  `problem_del`        INT             DEFAULT 0,
+  `vcpus`              INT             DEFAULT 0,
+  `memory`             BIGINT(20)      DEFAULT 0,
+  `local_gb`           BIGINT(20)      DEFAULT 0,
+  `vcpus_used`         BIGINT(20)      DEFAULT 0,
+  `memory_used`        BIGINT(20)      DEFAULT 0,
+  `local_gb_used`      BIGINT(20)      DEFAULT 0,
+  `max_instance`       INT             DEFAULT 0,
+  `token`              VARCHAR(45)     NULL,
+  PRIMARY KEY (`name`))
+ENGINE = InnoDB;
 
 
 -- ----------------------------------------------------------------------------

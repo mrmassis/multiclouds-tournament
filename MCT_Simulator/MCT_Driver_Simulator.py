@@ -28,9 +28,10 @@ import mysql;
 import yaml;
 import os;
 
+from sqlalchemy                  import and_, or_;
 from threading                   import Timer;
 from multiprocessing             import Process, Queue, Lock;
-from mct.lib.database_sqlalchemy import *;
+from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Request, Player;
 from mct.lib.utils               import *;
 
 
@@ -102,7 +103,7 @@ def get_virtual_player_state(vPlayerName, db):
      };
 
      ## Perform a select to get all vm instances assign (running) in 'vPlayer'.
-     dataReceived = db['connection'].all_regs_filter(State,  
+     dataReceived = db['db'].all_regs_filter(State,  
                          State.player_id == vPlayerName and State.running == 1);
 
      if dataReceived != []:
@@ -418,7 +419,7 @@ class MCT_Action(object):
        if   action == ADD_REG_PLAYER:
            dataReceived = self.addreg_vplayer(data);
 
-       elif action == DELREG_PLAYER:
+       elif action == DEL_REG_PLAYER:
            dataReceived = self.delreg_vplayer(data);
 
        ## Get resouces information from mct_referee. 
@@ -661,28 +662,25 @@ class MCT_Action(object):
         ## Waiting for the answer arrive. When the status change status get it.
         while True and count < self.__requestPendingIteract:
 
-            self.__print.show(str(playerId) + " " + str(requestId), 'I');
-
-            filterRules = {
-                0 : Request.player_id  == playerId,
-                1 : Request.request_id == requestId
-            };
+            ## Create filter:
+            fColumns = and_(Request.player_id  == str(playerId) , 
+                            Request.request_id == str(requestId));
 
             with self.__db['lock']:
-                dataReceived = self.__db['connection'].first_reg_filter(Request, filterRules);
+                dRecv = self.__db['db'].all_regs_filter(Request, fColumns);
 
-            ## If there is return finish the process!
-            if dataReceived != []:
+            if dRecv != []:
 
                 valRet = {
-                    'status': int(dataReceived[0]['status']),
-                    'action': int(dataReceived[0]['action']),
-                    'data'  : ast.literal_eval(dataReceived[0]['message'])
+                    'status': int(dRecv[-1]['status']),
+                    'action': int(dRecv[-1]['action']),
+                    'data'  : ast.literal_eval(dRecv[0]['message'])
                 };
 
-                ## Calculate and update the player'satisfaction level.Check the
-                ## status;
-                self.__fairness(playerId, valRet);
+                ## Update the "player' satisfaction" level. Verify the status.
+                if dRecv[-1]['action'] == CREATE_INSTANCE:
+                    self.__fairness(dRecv[-1]['status'], dRecv[-1]['data']);
+
                 return valRet;
 
             ## Wating for a predefined time to check (pooling) the list again.
@@ -698,53 +696,51 @@ class MCT_Action(object):
     ##
     ## BRIEF: calculate the player's fairness level.
     ## ------------------------------------------------------------------------
-    ## @PARAM str playerId == identify of the player.
-    ## @PARAM dct message  == data dictionary with action, status and messeage.
+    ## @PARAM str status == status from action.
+    ## @PARAM str data   == data received from agent.
     ##
-    def __fairness(self, playerId, message):
+    def __fairness(self, status, data):
 
-        if message['action'] == CREATE_INSTANCE:
+        ## Create filter.
+        fColumns = (Player.name == self.__name);
 
-            filterRules = {
-                0 : Player.player_id == playerId
-            };
+        ## Select the requests number and calculate the fairness! Mount the se-
+        ## lect query.
+        with self.__db['lock']:
+            dReceived = self.__db['db'].all_regs_filter(Player, fColumns);
 
-            ## Select the requests number and calculate the fairness! Mount the
-            ## select query: 
-            with self.__db['lock']:
-                dataReceived = self.__db['connection'].first_reg_filter(Player, filterRules);
+        accepts = int(dReceived[-1]['accepts']);
+        rejects = int(dReceived[-1]['rejects']);
+        
+        totalRequest = accepts + rejects;
 
-            requests  = int(dataReceived[0]['requests']);
-            accepted  = int(dataReceived[0]['accepted']);
-            requests += 1;
+        ## Status "1" meaning that request for VM was accept by remote player!
+        if status == 1:
+            accepts += 1;
+        else:
+            rejects += 1;
 
-            ## Status 1 meaning that all ok!!!
-            if message['status'] == 1:
-                accepted += 1;
-
-            try:
-                ## Caculate the porcetage:
-                fairness = float((accepted*100)/requests);
-            except:
-                fairness = 0.0;
+        try:
+            ## Caculate the porcetage:
+            fairness = float((accepts*100)/requests);
+        except:
+            fairness = 0.0;
                 
-            data = {
-                'player_id': playerId,
-                'requests' : requests,
-                'accepted' : accepted,
-                'fairness' : fairness
-            };
+        data = {
+            'name'     : self.__name,
+            'accepts'  : accepts,
+            'rejects'  : rejects,
+            'fairness' : fairness
+        };
 
-            ## Update player status with the number of requests, accepted reque
-            ## sts, and the player's fairness.
-            with self.__db['lock']:
-                 self.__db['connection'].update_reg(Player,
-                                           Player.player_id == playerId, data);
+        ## Update player status:
+        with self.__db['lock']:
+            self.__db['db'].update_reg(Player,Player.name == self.__name,data);
             
-            ## LOG:
-            self.__print.show(playerId + ' REQUESTS: | ' + str(requests), 'I');
-            self.__print.show(playerId + ' ACCEPTED: | ' + str(accepted), 'I');
-            self.__print.show(playerId + ' FAIRNESS: | ' + str(fairness), 'I');
+        ## LOG:
+        self.__print.show(self.__name + ' REJECTS : | ' + str(rejects ), 'I');
+        self.__print.show(self.__name + ' ACCEPTS : | ' + str(accepts ), 'I');
+        self.__print.show(self.__name + ' FAIRNESS: | ' + str(fairness), 'I');
 
         return 0;
 
@@ -860,8 +856,7 @@ class MCT_States:
             ## Look for the response:
             mJsonRecv = sock.recv(1024);
 
-            ## Load the JSON message. Convert from JSON format to simple dicti-
-            ## onary.
+            ## Load the JSON msg.Convert from JSON format to simple dictionary.
             mDictRecv = json.loads(mJsonRecv);
 
         except socket.error as error:
@@ -897,6 +892,7 @@ class MCT_VPlayer(Process):
     __mctAction               = None;
     __mctStates               = None;
     __name                    = None;
+    __addr                    = None;
     __lock                    = None;
     __dbConnection            = None;
     __get_resources_info_time = None;
@@ -927,8 +923,9 @@ class MCT_VPlayer(Process):
         ## Get the option that define to where the logs will are sent to show.
         self.__print = Show_Actions(vCfg['print'], logger);
 
-        ## Player name:
+        ## Player name and address:
         self.__name = vCfg['name'];
+        self.__addr = vCfg['agent_address'];
 
         ## LOG:
         self.__print.show('INITIALIZE VPLAYER: ' + self.__name, 'I');
@@ -983,6 +980,7 @@ class MCT_VPlayer(Process):
             data = self.__mctStates.give_me_state_from_database();
       
             if data['valid'] != 2:
+
                 if   data['action'] == 0:
                      action = CREATE_INSTANCE;
                 elif data['action'] == 1:
@@ -1001,6 +999,7 @@ class MCT_VPlayer(Process):
 
                 ## Dispatch the action to MCT_Dispatch:
                 dataRecv = self.__mctAction.dispatch(action, data);
+
             else:
                 getSetInfRepeat.stop();
                 break;
@@ -1066,8 +1065,7 @@ class MCT_VPlayer(Process):
 
             ## Execute in exclusive mode-lock block-the database update action.
             with self.__db['lock']:
-                self.__db['connection'].update_reg(Player, 
-                                        Player.player_id == self.__name, data); 
+                self.__db['db'].update_reg(Player, Player.name == self.__name, data); 
 
             ## Send the request to update 'resources' values to 'MCT_Dispatch':
             dataRecv = self.__mctAction.dispatch(SETINF_RESOURCE, data);
@@ -1088,9 +1086,32 @@ class MCT_VPlayer(Process):
     ##
     def __addreg_me(self):
         ## Send the request:
-        dataRecv = self.__mctAction.dispatch(ADD_REG_PLAYER, {});
+        dReceived = self.__mctAction.dispatch(ADD_REG_PLAYER, {});
 
-        return dataReceived;
+        ## Get the token:
+        try:
+            token = dReceived['data']['token'];
+        except:
+             ## LOG:
+             self.__print.show('ERROR TO PARSE THE TOKEN!','I');
+             return {};
+        
+        try:
+            ## Insert the player in database:
+            player = Player();
+
+            player.name     = self.__name;
+            player.address  = self.__addr;
+            player.division = 0;
+            player.token    = token;
+
+            valRet = self.__db['db'].insert_reg(player);
+
+        except:
+            ## LOG:
+             self.__print.show('VPLAYER YET INSERTED IN LOCAL BASE!', 'I');
+
+        return token;
 
 
     ##
@@ -1185,10 +1206,13 @@ class MCT_Drive_Simulation:
                         self.__del_vplayer(vCfg);
 
             ## Wait an unpredicable time.Insert some entropy in the enviroment.
-            mutable_time_to_waiting(0.3, 5.0);
+            mutable_time_to_waiting(5.0, 10.0);
 
             if self.__vRunning == {}:
                 return False;
+
+            ## LOG:
+            self.__print.show("EXECUTE A LOOP", 'I');
 
         return True;
 
@@ -1235,7 +1259,7 @@ class MCT_Drive_Simulation:
     def __get_database(self):
         
         ## Connect to database (use the crendetiais defined in the cfg file):
-        self.__db['connection']=MCT_Database_SQLAlchemy(self.__cfg['database']);
+        self.__db['db'] = MCT_Database_SQLAlchemy(self.__cfg['database']);
 
         ## A primitive lock is a synchronization primitive that is not owned by
         ## by a particular thread when locked.
@@ -1251,10 +1275,9 @@ class MCT_Drive_Simulation:
     ##
     def __vplayer_in_running_list(self, vCfg):
  
-        if self.__vRunning.has_key(vCfg['name']):
-
+        if self.__vRunning.has_key(vCfg['name']) == True:
             ## Verify if the thread is running:
-            if self.__vRunning[vCfg['name']].is_alive():
+            if self.__vRunning[vCfg['name']].is_alive() == True:
                 return True;
 
         return False;
