@@ -2,6 +2,7 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ALLOW_INVALID_DATES';
 
+DROP DATABASE IF EXISTS `mct`;
 CREATE SCHEMA IF NOT EXISTS `mct` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
 USE `mct` ;
 
@@ -88,9 +89,8 @@ PACK_KEYS = DEFAULT;
 -- ---------------------------------------------------------------------------
 -- CREATE USER
 -- ---------------------------------------------------------------------------
--- CREATE USER 'mct'@'localhost' IDENTIFIED BY 'password';
--- GRANT ALL PRIVILEGES ON mct.* TO 'mct'@'localhost';
--- FLUSH PRIVILEGES;
+GRANT ALL PRIVILEGES ON mct.* TO 'mct'@'localhost' IDENTIFIED BY 'password'; 
+FLUSH PRIVILEGES;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
