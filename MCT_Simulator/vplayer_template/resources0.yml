@@ -14,10 +14,10 @@ memory: 1047552
 
 ## Disk space enable to share with others players presentes in enviroment. This
 ## will be used to enable virtual player instances.
-disk: 10230
+local_gb: 10230
 
 ## Maximum number of virtual macines instances than the player can execute to-
 ## gether.
-max: 20
+max_instance: 20
 
 ## END.

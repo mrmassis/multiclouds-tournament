@@ -355,7 +355,6 @@ class MCT_Agent(RabbitMQ_Consume):
             valRet=self.__db.update_reg(Player,
                                         Player.player_id ==  msg['destName'],
                                         fieldsToUpdate);
-
             return True;
         
         return False;

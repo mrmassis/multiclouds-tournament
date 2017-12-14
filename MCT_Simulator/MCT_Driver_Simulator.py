@@ -491,13 +491,11 @@ class MCT_Action(object):
         ## to exec de action.
         msgToSend = self.__create_basic_message(SETINF_RESOURCE, idx);
 
-        vmData = {
-            'vcpus' : data['vcpus'   ],
-            'memory': data['memory'  ],
-            'disk'  : data['local_gb']
+        msgToSend['data'] = {
+            'vcpus'   : data['vcpus'   ],
+            'memory'  : data['memory'  ],
+            'local_gb': data['local_gb']
         }
-
-        msgToSend['data'] = vmData;
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
         valret = self.__publish.publish(msgToSend);
@@ -533,7 +531,7 @@ class MCT_Action(object):
         ## to exec de action.
         msgToSend = self.__create_basic_message(CREATE_INSTANCE, idx);
 
-        vmData = {
+        msgToSend['data'] = {
            'name'  : idx,
            'uuid'  : idx,
            'flavor': FLV_NAME[data['vmType']],
@@ -543,8 +541,6 @@ class MCT_Action(object):
            'image' : IMG_NAME,
            'net'   : NET_NAME 
         }
-
-        msgToSend['data'] = vmData;
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
         valret = self.__publish.publish(msgToSend);
@@ -580,12 +576,10 @@ class MCT_Action(object):
         ## to exec de action.
         msgToSend = self.__create_basic_message(DELETE_INSTANCE, idx);
 
-        vmData = {
+        msgToSend['data'] = {
            'name'  : idx,
            'uuid'  : idx
         }
-
-        msgToSend['data'] = vmData;
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
         valret = self.__publish.publish(msgToSend);
@@ -1057,10 +1051,10 @@ class MCT_VPlayer(Process):
             rDict = yaml.load(file(self.__resourcesFile, 'r')); 
 
             data = {
-                'vcpus'        : rDict['vcpus' ],
-                'memory'       : rDict['memory'],
-                'local_gb'     : rDict['disk'  ],
-                'max_instance' : rDict['max'   ]
+                'vcpus'        : rDict['vcpus'       ],
+                'memory'       : rDict['memory'      ],
+                'local_gb'     : rDict['local_gb'    ],
+                'max_instance' : rDict['max_instance']
             };
 
             ## Execute in exclusive mode-lock block-the database update action.
