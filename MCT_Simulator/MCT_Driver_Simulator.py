@@ -1284,6 +1284,9 @@ class MCT_Drive_Simulation:
     ##
     def __add_vplayer(self, vCfg):
 
+        ## LOG:
+        self.__print.show("Player to register: " + str(vCfg),'I');
+
         ## Running vplayer in the thread:
         self.__vRunning[vCfg['name']]=MCT_VPlayer(vCfg, self.__db, logger);
         self.__vRunning[vCfg['name']].daemon = True;

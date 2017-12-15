@@ -294,22 +294,18 @@ class MCT_Agent(RabbitMQ_Consume):
 
         status = 'ERROR';
 
-        filterRules = {
-            0 : Player.player_id == msg['destName']
-        };
-
         ## Check if is possible create the new server (vcpu, memory, and disk).
-        dReceived = self.__db.first_reg_filter(Player, filterRules);
+        dRecv=self.__db.all_regs_filter(Player,Player.name == msg['destName']);
 
-        if dReceived != []:
+        if dRecv != []:
 
             ## Max number of instances that the player can accept to be running.
-            newInst = int(dReceived[0]['instance_used']) + 1;
-            maxInst = int(dReceived[0]['max_instance' ]);
+            newInst = int(dRecv[-1]['running'      ]) + 1;
+            maxInst = int(dRecv[-1]['max_instance' ]);
  
             if newInst <= maxInst:
                 ## Check if exist the enough resources to alocate neu instance.
-                if self.__check_resources(dReceived[0], msg) == True:
+                if self.__check_resources(dRecv[-1], msg) == True:
                     status = 'ACTIVE';
             
         ## LOG:
@@ -326,34 +322,34 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     ## BRIEF:  Check if exist the enough resources to alocate neu instance.
     ## ------------------------------------------------------------------------
-    ## @PARAM playerInfo == information about the player;
-    ## @PARAM msg        == msg received.
+    ## @PARAM playerInf == information about the player;
+    ## @PARAM msg       == msg received.
     ##
-    def __check_resources(self, playerInfo, msg):
+    def __check_resources(self, playerInf, msg):
 
         ## Obtain the index that enable to get the flavor:
-        i = FLV_NAME.keys()[FLV_NAME.values().index(msg['data']['flavor'])];
+        flavor=FLV_NAME.keys()[FLV_NAME.values().index(msg['data']['flavor'])];
 
-        newVcpuUsed = int(playerInfo['vcpus_used'    ]) + int(CPU_INFO[i]);
-        newMemoUsed = int(playerInfo['memory_mb_used']) + int(MEM_INFO[i]);
-        newDiskUsed = int(playerInfo['local_gb_used' ]) + int(DSK_INFO[i]);
-        newInstUsed = int(playerInfo['instance_used' ]) + 1;
+        nVcpuUsed = int(playerInf['vcpus_used'   ]) + int(CPU_INFO[flavor]);
+        nMemoUsed = int(playerInf['memory_used'  ]) + int(MEM_INFO[flavor]);
+        nDiskUsed = int(playerInf['local_gb_used']) + int(DSK_INFO[flavor]);
+        nInstUsed = int(playerInf['running'      ]) + 1;
 
         ## Check if there are 'avaliable' resources to accept the instance.
-        if  newVcpuUsed <= int(playerInfo['vcpus'   ]) and \
-            newMemoUsed <= int(playerInfo['memory'  ]) and \
-            newDiskUsed <= int(playerInfo['local_gb']):
+        if  nVcpuUsed <= int(playerInf['vcpus'   ]) and \
+            nMemoUsed <= int(playerInf['memory'  ]) and \
+            nDiskUsed <= int(playerInf['local_gb']):
 
             ## Update the specific entry in dbase with new resource values.
             fieldsToUpdate = {
-                'vcpus_used'     : newVcpuUsed,
-                'memory_mb_used' : newMemoUsed,
-                'local_gb_used'  : newDiskUsed,
-                'instance_used'  : newInstUsed
+                'vcpus_used'   : nVcpuUsed,
+                'memory_used'  : nMemoUsed,
+                'local_gb_used': nDiskUsed,
+                'running'      : nInstUsed
             };
 
             valRet=self.__db.update_reg(Player,
-                                        Player.player_id ==  msg['destName'],
+                                        Player.name ==  msg['destName'],
                                         fieldsToUpdate);
             return True;
         
@@ -367,32 +363,27 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     def __delete_server(self, msg):
 
-        filterRules = {
-            0 : Player.player_id == msg['destName']
-        };
+        dRecv=self.__db.all_regs_filter(Player,Player.name == msg['destName']);
 
-        dReceived=self.__db.first_reg_filter(Player, filterRules);
-
-        if dReceived != []:
+        if dRecv != []:
 
             ## Get the index that meaning the flavors.(vcpus, memory, and disk).
-            i = self.__instances.flavor(msg);
+            flavor = self.__instances.flavor(msg);
 
-            newVcpuUsed = int(dReceived[0]['vcpus_used'    ])-int(CPU_INFO[i]);
-            newMemoUsed = int(dReceived[0]['memory_mb_used'])-int(MEM_INFO[i]);
-            newDiskUsed = int(dReceived[0]['local_gb_used' ])-int(DSK_INFO[i]);
-            newInstUsed = int(dReceived[0]['instance_used' ])-1;
+            nVcpuUsed = int(dRecv[0]['vcpus_used'   ]) - int(CPU_INFO[flavor]);
+            nMemoUsed = int(dRecv[0]['memory_used'  ]) - int(MEM_INFO[flavor]);
+            nDiskUsed = int(dRecv[0]['local_gb_used']) - int(DSK_INFO[flavor]);
+            nInstUsed = int(dRecv[0]['running'      ]) - 1;
 
             ## Update the specific entry in database with new resource values.
             fieldsToUpdate = {
-                'vcpus_used'     : newVcpuUsed,
-                'memory_mb_used' : newMemoUsed,  
-                'local_gb_used'  : newDiskUsed,
-                'instance_used'  : newInstUsed
+                'vcpus_used'   : nVcpuUsed,
+                'memory_used'  : nMemoUsed,  
+                'local_gb_used': nDiskUsed,
+                'running'      : nInstUsed
             };
 
-            valRet=self.__db.update_reg(Player, 
-                                        Player.player_id == msg['destName'],
+            valRet=self.__db.update_reg(Player, Player.name == msg['destName'],
                                         fieldsToUpdate);
 
             msg['data']['vcpus'] = int(CPU_INFO[i]);
