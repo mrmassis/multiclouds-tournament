@@ -31,8 +31,9 @@ import os;
 from sqlalchemy                  import and_, or_;
 from threading                   import Timer;
 from multiprocessing             import Process, Queue, Lock;
-from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Request, Player;
+from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Request,Player;
 from mct.lib.utils               import *;
+from mct.lib.amqp                import MCT_Simple_AMQP_Publish;
 
 
 
@@ -44,13 +45,14 @@ from mct.lib.utils               import *;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE  = '/etc/mct/mct-simulation.ini';
-LOG_NAME     = 'MCT_Driver_Simulation';
-LOG_FORMAT   = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
-LOG_FILENAME = '/var/log/mct/mct_driver_simulation.log';
-N_FACTOR     = 1 
-N_VALUE      = 610
-INTERVAL     = 60
+CONFIG_FILE           = 'mct-simulation.ini';
+HOME_FOLDER           = os.path.join(os.environ['HOME'], CONFIG_FILE);
+RUNNING_FOLDER        = os.path.join('./'              , CONFIG_FILE);
+DEFAULT_CONFIG_FOLDER = os.path.join('/etc/mct/'       , CONFIG_FILE);
+
+
+
+
 
 
 
@@ -59,63 +61,6 @@ INTERVAL     = 60
 ## LOG                                                                       ##
 ###############################################################################
 logging.basicConfig()
-
-## Create a handler and define the output filename and the max size and max nun
-## ber of the files (1 mega = 1048576 bytes).
-handler= logging.handlers.RotatingFileHandler(LOG_FILENAME,
-                                              maxBytes=10485760,
-                                              backupCount=100);
-
-## Create a foramatter that specific the format of log and insert it in the log
-## handler. 
-formatter = logging.Formatter(LOG_FORMAT);
-handler.setFormatter(formatter);
-
-## Set up a specific logger with our desired output level (in this case DEBUG).
-## Before, insert the handler in the logger object.
-logger = logging.getLogger(LOG_NAME);
-logger.setLevel(logging.DEBUG);
-logger.addHandler(handler);
-
-
-
-
-
-
-
-
-###############################################################################
-## FUNCTION                                                                  ##
-###############################################################################
-##
-## BRIEF: mantain the virtual player state.
-## ----------------------------------------------------------------------------
-## @PARAM vPlayerName  == virtual player name.
-## @PARAM db           == database connection.
-##
-##
-def get_virtual_player_state(vPlayerName, db):
-
-     stateDictionary = {
-         'vPlayer': vPlayerName,
-         'vmsRcv' : [],
-         'vmsSnd' : []
-     };
-
-     ## Perform a select to get all vm instances assign (running) in 'vPlayer'.
-     dataReceived = db['db'].all_regs_filter(State,  
-                         State.player_id == vPlayerName and State.running == 1);
-
-     if dataReceived != []:
-         for vm in dataReceived:
-             if vm['player_id'] == vPlayerName:
-                 stateDictionary['vmsRcv'].append(vm);
-             else:
-                 stateDictionary['vmsSnd'].append(vm);
-
-     return stateDictionary;
-
-## END DEFINITION.
 
 
 
@@ -215,116 +160,6 @@ class Repeated_Timer(object):
 
 
 
-class MCT_Simple_AMQP_Publish:
-
-    """
-    Class MCT_Simple_AMQP_PUBLISH:perform the publish to the MCT_Agent service.
-    --------------------------------------------------------------------------
-    PUBLIC METHODS:
-    ** publish  == publish a message by the AMQP to MCT_Agent.
-    """
-
-    ###########################################################################
-    ## ATTRIBUTES                                                            ##
-    ###########################################################################
-    __exchange     = None;
-    __route        = None;
-    __channel      = None;
-    __print        = None;
-
-
-    ###########################################################################
-    ## SPECIAL METHODS                                                       ##
-    ###########################################################################
-    ##
-    ## BRIEF: initialize the object.
-    ## ------------------------------------------------------------------------
-    ## @PARAM cfg    == dictionary with MCT_Simple_AMPQ_Publish configuration.
-    ## @PARAM logger == log object.
-    ##
-    def __init__(self, cfg, logger):
-
-        ## Get the option that define to where the logs will are sent to show.
-        self.__print = Show_Actions(cfg['print'], logger);
-
-        ## LOG:
-        self.__print.show('INITIALIZE COMMUNICATION OBJECT', 'I');
-
-        self.__exchange = cfg['exchange'];
-        self.__route    = cfg['route'   ];
-
-        credentials = pika.PlainCredentials(cfg['user'], cfg['pass']);
-
-        ## Connection parameters object that is passed into the connection ada-
-        ## pter upon construction. 
-        parameters = pika.ConnectionParameters(host        = cfg['address'],
-                                               credentials = credentials);
-
-        ## The BlockingConnection creates a layer on top of Pika's asynchronous
-        ## core providing methods that will block until their expected response
-        ## has returned. 
-        connection = pika.BlockingConnection(parameters);
-
-        ## Create a new channel with the next available channel number or pass
-        ## in a channel number to use. 
-        self.channel = connection.channel();
-
-        ## This method creates an exchange if it does not already exist, and if
-        ## the exchange exists, verifies that it is of the correct and expected
-        ## class.
-        self.channel.exchange_declare(exchange=cfg['exchange'], type='direct');
-
-        ## Confirme delivery.
-        self.channel.confirm_delivery;
-
-
-    ###########################################################################
-    ## PUBLIC METHODS                                                        ##
-    ###########################################################################
-    ##
-    ## BRIEF: publish a message by the AMQP to MCT_Agent.
-    ## ------------------------------------------------------------------------
-    ## @PARAM message = data to publish.
-    ##
-    def publish(self, message):
-
-        ## LOG:
-        self.__print.show('PUBLISH MESSAGE: ' + str(message), 'I');
-
-        propertiesData = {
-            'delivery_mode': 2,
-            'app_id'       : 'Agent_Drive',
-            'content_type' : 'application/json',
-            'headers'      : message
-        }
-
-        properties = pika.BasicProperties(**propertiesData);
-
-        ## Serialize object to a JSON formatted str using this conversion table
-        ## If ensure_ascii is False, the result may contain non-ASCII characte-
-        ## rs and the return value may be a unicode instance.
-        jData = json.dumps(message, ensure_ascii=False);
-
-        ## Publish to the channel with the given exchange,routing key and body.
-        ## Returns a boolean value indicating the success of the operation.
-        try:
-            ack = self.channel.basic_publish(self.__exchange, 
-                                             self.__route, jData, properties);
-
-        except (pika.exceptions.AMQPConnectionError, pika.exceptions.AMQPChannelError), error:
-            ack = -1;
-
-        return ack;
-## END OF CLASS
-
-
-
-
-
-
-
-
-
 class MCT_Action(object):
 
     """
@@ -342,11 +177,16 @@ class MCT_Action(object):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    state           = None;
-    data            = None;
-    __dbConnection  = None;
-    __myIp          = None;
-    __print         = None;
+    state                   = None;
+    data                    = None;
+    __agentId               = None;
+    __db                    = None;
+    __name                  = None;
+    __myIp                  = None;
+    __print                 = None;
+    __route                 = None;
+    __requestPendingWaiting = None;
+    __requestPendingIteract = None;
 
 
     ###########################################################################
@@ -367,8 +207,10 @@ class MCT_Action(object):
         ## Get which route is used to deliver the msg to the 'correct destine'.
         self.__route = vCfg['amqp_route'];
 
-        ## Get player identifier:
-        self.__name = vCfg['name'];
+        ## Get player credentials (Name, IP, and ID):
+        self.__name    = vCfg['name'];
+        self.__myIp    = vCfg['agent_address'];
+        self.__agentId = vCfg['agent_id'];
 
         ## Iteraction number and time to wainting response between iteractions.
         self.__requestPendingWaiting = float(vCfg['request_pending_waiting']);
@@ -384,9 +226,6 @@ class MCT_Action(object):
             'queue'     : vCfg['amqp_queue_name'],
             'print'     : vCfg['print'          ]
         }
-
-        ##
-        self.__myIp = vCfg['agent_address'];
 
         ## Instantiates an object to perform the publication of AMQP messages.
         self.__publish = MCT_Simple_AMQP_Publish(amqpConfig, logger);
@@ -413,32 +252,34 @@ class MCT_Action(object):
     ## @PARAM data   == dictionary with data to dispatch.
     ##
     def dispatch(self, action, data):
-       dataReceived = {};
+       dRecv = {};
 
-       ##
+       ## Perform the new player register in MCT_Register. Get an access token.
        if   action == ADD_REG_PLAYER:
-           dataReceived = self.addreg_vplayer(data);
+           dRecv = self.addreg_vplayer(data);
 
+       ## Unregister the existent player from tournament. Put the player in sus
+       ## pense mode.
        elif action == DEL_REG_PLAYER:
-           dataReceived = self.delreg_vplayer(data);
+           dRecv = self.delreg_vplayer(data);
 
-       ## Get resouces information from mct_referee. 
+       ## Get resouces information from MCT_Referee. 
        if   action == GETINF_RESOURCE:
-           dataReceived = self.getinf_resource();
+           dRecv = self.getinf_resource();
 
-       ## Set resources information to  mct_referee.
+       ## Set resources information to  MCT_Referee.
        elif action == SETINF_RESOURCE:
-           dataReceived = self.setinf_resource(data);
+           dRecv = self.setinf_resource(data);
 
        ## Create a 'virtual' server in remote hosts.
        elif action == CREATE_INSTANCE:
-           dataReceived = self.create_instance(data);
+           dRecv = self.create_instance(data);
 
        ## Delete a 'virtual' server in remote hosts.
        elif action == DELETE_INSTANCE:
-           dataReceived = self.delete_instance(data);
+           dRecv = self.delete_instance(data);
 
-       return dataReceived;
+       return dRecv;
 
 
     ##
@@ -458,20 +299,20 @@ class MCT_Action(object):
         msgToSend = self.__create_basic_message(GETINF_RESOURCE, idx);
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        valret = self.__publish.publish(msgToSend);
+        valret = self.__publish.publish(msgToSend, 'Agent_Drive');
 
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
         if valret != -1:
-            dataReceived = self.__waiting_return(self.__name, idx);
+            dRecv = self.__waiting_return(self.__name, idx);
         else:
-            dataReceived = {};
+            dRecv = {};
 
         ## LOG:
-        self.__print.show('|GETINF| - data received: '+str(dataReceived), 'I');
+        self.__print.show('|GETINF| - data received: ' + str(dRecv), 'I');
 
         ## Return the data:
-        return dataReceived;
+        return dRecv;
 
 
     ##
@@ -498,20 +339,20 @@ class MCT_Action(object):
         }
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        valret = self.__publish.publish(msgToSend);
+        valret = self.__publish.publish(msgToSend, 'Agent_Drive');
 
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
         if valret != -1:
-            dataReceived = self.__waiting_return(self.__name, idx);
+            dRecv = self.__waiting_return(self.__name, idx);
         else:
-            dataReceived = {};
+            dRecv = {};
 
         ## LOG:
-        self.__print.show('|SETINF| - data received: '+str(dataReceived), 'I');
+        self.__print.show('|SETINF| - data received: ' + str(dRecv), 'I');
 
         ## Return the data:
-        return dataReceived;
+        return dRecv;
 
 
     ##
@@ -543,20 +384,20 @@ class MCT_Action(object):
         }
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        valret = self.__publish.publish(msgToSend);
+        valret = self.__publish.publish(msgToSend, 'Agent_Drive');
 
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
         if valret != -1:
-            dataReceived = self.__waiting_return(self.__name, idx);
+            dRecv = self.__waiting_return(self.__name, idx);
         else:
-            dataReceived = {};
+            dRecv = {};
 
         ## LOG:
-        self.__print.show('|CREATE| - data received: '+str(dataReceived), 'I');
+        self.__print.show('|CREATE| - data received: ' + str(dRecv), 'I');
 
         ## Returns the data:
-        return dataReceived;
+        return dRecv;
 
  
     ##
@@ -582,20 +423,20 @@ class MCT_Action(object):
         }
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        valret = self.__publish.publish(msgToSend);
+        valret = self.__publish.publish(msgToSend, 'Agent_Drive');
 
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
         if valret != -1:
-            dataReceived = self.__waiting_return(self.__name, idx);
+            dRecv = self.__waiting_return(self.__name, idx);
         else:
-            dataReceived = {};
+            dRecv = {};
 
         ## LOG:
-        self.__print.show('|DELETE| - data received: '+str(dataReceived), 'I');
+        self.__print.show('|DELETE| - data received: ' + str(dRecv), 'I');
 
         ## Returns the data:
-        return dataReceived;
+        return dRecv;
 
 
     ##
@@ -616,20 +457,20 @@ class MCT_Action(object):
         msgToSend = self.__create_basic_message(ADD_REG_PLAYER, idx);
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        valret = self.__publish.publish(msgToSend);
+        valret = self.__publish.publish(msgToSend, 'Agent_Drive');
 
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
         if valret != -1:
-            dataReceived = self.__waiting_return(self.__name, idx);
+            dRecv = self.__waiting_return(self.__name, idx);
         else:
-            dataReceived = {};
+            dRecv = {};
 
         ## LOG:
-        self.__print.show('|REGISTER| - data received: '+str(dataReceived), 'I');
+        self.__print.show('|REGISTER| - data received: ' + str(dRecv), 'I');
 
         ## Returns the data:
-        return dataReceived;
+        return dRecv;
  
 
     ##
@@ -898,6 +739,7 @@ class MCT_VPlayer(Process):
     __disk                    = None;
     __print                   = None;
     __token                   = None;
+    __ratio                   = None;
 
 
     ###########################################################################
@@ -941,6 +783,9 @@ class MCT_VPlayer(Process):
         ## The localization and name of the file with the resources information
         self.__resourcesFile = vCfg['resources_file'];
 
+        ## Value used to determined the time to waiting until the next action.
+        self.__ratio = int(vCfg['ratio']);
+
 
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
@@ -975,13 +820,8 @@ class MCT_VPlayer(Process):
       
             if data['valid'] != 2:
 
-                if   data['action'] == 0:
-                     action = CREATE_INSTANCE;
-                elif data['action'] == 1:
-                     action = DELETE_INSTANCE;
-
                 ## Calculate the new time to waiting until perform new action.
-                newTime = float(data['time']/(N_VALUE*N_FACTOR)) - oldTime; 
+                newTime = float(data['time'] / (self.__ratio)) - oldTime;
                 oldTime = newTime;
 
                 if newTime < 1.0:
@@ -992,7 +832,7 @@ class MCT_VPlayer(Process):
                    
 
                 ## Dispatch the action to MCT_Dispatch:
-                dataRecv = self.__mctAction.dispatch(action, data);
+                dataRecv = self.__mctAction.dispatch(data['action'], data);
 
             else:
                 getSetInfRepeat.stop();
@@ -1034,7 +874,7 @@ class MCT_VPlayer(Process):
 
         ## Send the request to get information to the MCT_Dispatch in the remo-
         ## te server.
-        dataRecv = self.__mctAction.dispatch(GETINF_RESOURCE, {});
+        dRecv = self.__mctAction.dispatch(GETINF_RESOURCE, {});
 
 
     ##
@@ -1059,10 +899,11 @@ class MCT_VPlayer(Process):
 
             ## Execute in exclusive mode-lock block-the database update action.
             with self.__db['lock']:
-                self.__db['db'].update_reg(Player, Player.name == self.__name, data); 
+                self.__db['db'].update_reg(Player, 
+                                           Player.name == self.__name, data); 
 
             ## Send the request to update 'resources' values to 'MCT_Dispatch':
-            dataRecv = self.__mctAction.dispatch(SETINF_RESOURCE, data);
+            dRecv = self.__mctAction.dispatch(SETINF_RESOURCE, data);
 
             ## LOG:
             self.__print.show('UPDATE RESOURCE VALUES IN TABLE!','I');
@@ -1114,9 +955,9 @@ class MCT_VPlayer(Process):
     ##
     def __delreg_me(self):
         ## Send the request:
-        dataRecv = self.__mctAction.dispatch(DELREG_PLAYER, {});
+        dRecv = self.__mctAction.dispatch(DELREG_PLAYER, {});
 
-        return dataRecv;
+        return dRecv;
 ## END CLASS.
 
 
@@ -1126,7 +967,8 @@ class MCT_VPlayer(Process):
 
 
 
-class MCT_Drive_Simulation:
+class Main:
+
     """
     Class MCT_Drive_Simulation: main class in the module.
     ---------------------------------------------------------------------------
@@ -1142,6 +984,7 @@ class MCT_Drive_Simulation:
     __publish            = None;
     __virtualPlayersPath = None;
     __vRunning           = {};
+    __logger             = None;
 
 
     ###########################################################################
@@ -1150,16 +993,18 @@ class MCT_Drive_Simulation:
     ##
     ## BRIEF: iniatialize the object.
     ## ------------------------------------------------------------------------
-    ## @PARAM logger    == log object.
     ##
-    def __init__(self, logger):
+    def __init__(self):
    
-        ## Try open and obtain all configs about the MCT_Drive_Simulation exe-
-        ## cution.
-        self.__get_configs(CONFIG_FILE);
+        ## Get the configurantion parameters.
+        self.__cfg = self.__get_configs();
+
+        ## Configurate the logger. Use the parameters defineds in configuration
+        ## file.
+        self.__logger = self.__logger_setting(self.__cfg['log_drive']);
 
         ## Get the option that define to where the logs will are sent to show.
-        self.__print = Show_Actions(self.__cfg['main']['print'], logger);
+        self.__print = Show_Actions(self.__cfg['main']['print'], self.__logger);
 
         ## Connect to database.
         self.__get_database();
@@ -1172,10 +1017,10 @@ class MCT_Drive_Simulation:
     ## PUBLIC METHODS                                                        ##
     ###########################################################################
     ##
-    ## BRIEF: excute the MCT_Drive_Simulation.
+    ## BRIEF: start the MCT_Drive_Simulation.
     ## ------------------------------------------------------------------------
     ##
-    def run(self):
+    def start(self):
 
         ## LOG:
         self.__print.show("\n####### START MCT_DRIVE_SIMULATION #######\n",'I');
@@ -1232,21 +1077,6 @@ class MCT_Drive_Simulation:
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
     ##
-    ## BRIEF: get configuration from config file.
-    ## ------------------------------------------------------------------------
-    ##
-    def __get_configs(self, cfgFileName):
-
-        try:
-            self.__cfg = get_configs(cfgFileName);
-            return 0;
-
-        except ConfigParser.Error as cfgError:
-            print '[E] IT IS IMPOSSIBLE OBTAIN CFGS: ' + str(cfgError);
-            sys.exit(1);
-
-
-    ##
     ## BRIEF: connect to database.
     ## ------------------------------------------------------------------------
     ##
@@ -1288,7 +1118,7 @@ class MCT_Drive_Simulation:
         self.__print.show("Player to register: " + str(vCfg),'I');
 
         ## Running vplayer in the thread:
-        self.__vRunning[vCfg['name']]=MCT_VPlayer(vCfg, self.__db, logger);
+        self.__vRunning[vCfg['name']]=MCT_VPlayer(vCfg,self.__db,self.__logger);
         self.__vRunning[vCfg['name']].daemon = True;
         self.__vRunning[vCfg['name']].start();
 
@@ -1310,6 +1140,57 @@ class MCT_Drive_Simulation:
         del self.__vRunning[vCfg['name']];
 
         return True;
+
+
+    ##
+    ## BRIEF: get configuration from config file.
+    ## ------------------------------------------------------------------------
+    ##
+    def __get_configs(self):
+        cfgFileFound = '';
+
+        ## Lookin in three places:
+        ## 1 - user home.
+        ## 2 - running folder.
+        ## 3 - /etc/mct/
+        for cfgFile in [HOME_FOLDER, RUNNING_FOLDER, DEFAULT_CONFIG_FOLDER]:
+            if os.path.isfile(cfgFile):
+                cfgFileFound = cfgFile;
+                break;
+
+        if cfgFileFound == '':
+            raise ValueError('CONFIGURATION FILE NOT FOUND IN THE SYSTEM!');
+
+        return get_configs(cfgFileFound);
+
+
+    ## 
+    ## BRIEF: setting logger parameters.
+    ## ------------------------------------------------------------------------
+    ## @PARAM settings == logger configurations.
+    ##
+    def __logger_setting(self, settings):
+
+        ## Create a handler and define the output filename and the max size and
+        ## max number of the files (1 mega = 1048576 bytes).
+        handler = logging.handlers.RotatingFileHandler(
+                                  filename    = settings['log_filename'],
+                                  maxBytes    = int(settings['file_max_byte']),
+                                  backupCount = int(settings['backup_count']));
+
+        ## Create a foramatter that specific the format of log and insert it in
+        ## the log handler. 
+        formatter = logging.Formatter(settings['log_format']);
+        handler.setFormatter(formatter);
+
+        ## Set up a specific logger with our desired output level (in this case
+        ## DEBUG). Before, insert the handler in the logger object.
+        logger = logging.getLogger(settings['log_name']);
+        logger.setLevel(logging.DEBUG);
+        logger.addHandler(handler);
+
+        return logger;
+
 ## END CLASS.
 
 
@@ -1325,14 +1206,15 @@ class MCT_Drive_Simulation:
 if __name__ == "__main__":
 
     try:
-        mctDriveSimulation = MCT_Drive_Simulation(logger);
-        mctDriveSimulation.run();
+        main = Main();
+        main.start();
+
+    except ValueError as exceptionNotice:
+        print exceptionNotice;
 
     except KeyboardInterrupt:
-        pass;
-
-    mctDriveSimulation.stop();
+        main.stop();
+        print "BYE!";
 
     sys.exit(0);
-
 ## EOF.

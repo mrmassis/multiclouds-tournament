@@ -18,6 +18,7 @@ import logging.handlers;
 import pika;
 import datetime;
 import hashlib;
+import os;
 
 from mct.lib.utils               import *;
 from mct.lib.emulator            import MCT_Emulator;
@@ -38,11 +39,11 @@ from mct.lib.instances           import MCT_Instances;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE  = '/etc/mct/mct-simulation.ini';
-LOG_NAME     = 'MCT_Agent_Simulation';
-LOG_FORMAT   = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
-LOG_FILENAME = '/var/log/mct/mct_agent_simulation.log';
-DISPATCH_NAME= 'MCT_Dispatch';
+CONFIG_FILE           = 'mct-simulation.ini';
+HOME_FOLDER           = os.path.join(os.environ['HOME'], CONFIG_FILE);
+RUNNING_FOLDER        = os.path.join('./'              , CONFIG_FILE);
+DEFAULT_CONFIG_FOLDER = os.path.join('/etc/mct/'       , CONFIG_FILE);
+
 
 
 
@@ -55,23 +56,6 @@ DISPATCH_NAME= 'MCT_Dispatch';
 ## LOG                                                                       ##
 ###############################################################################
 logging.basicConfig()
-
-## Create a handler and define the output filename and the max size and max nun
-## ber of the files (1 mega = 1048576 bytes).
-handler= logging.handlers.RotatingFileHandler(LOG_FILENAME,
-                                              maxBytes=10485760,
-                                              backupCount=100);
-
-## Create a foramatter that specific the format of log and insert it in the log
-## handler. 
-formatter = logging.Formatter(LOG_FORMAT);
-handler.setFormatter(formatter);
-
-## Set up a specific logger with our desired output level (in this case DEBUG).
-## Before, insert the handler in the logger object.
-logger = logging.getLogger(LOG_NAME);
-logger.setLevel(logging.DEBUG);
-logger.addHandler(handler);
 
 
 
@@ -111,6 +95,7 @@ class MCT_Agent(RabbitMQ_Consume):
     __security     = None;
     __sanity       = None;
     __instances    = None;
+    __dispatchId   = None;
 
 
     ###########################################################################
@@ -122,20 +107,20 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict cfg    == dictionary with configurations about MCT_Agent.
     ## @PARAM obj  logger == logger object.
     ##
-    def __init__(self, cfg):
+    def __init__(self, cfg, logger):
 
         ## Get the option that define to where the logs will are sent to show.
         self.__print = Show_Actions(cfg['main']['print'], logger);
 
-        ## Local address:
-        self.__my_ip = cfg['main']['my_ip'];
-
-        ## Get which route is used to deliver the msg to the 'correct destine'.
-        self.__routeExt = cfg['amqp_external_publish']['route'];
+        ## Obtain some infomation that will necessary to correct running. The-
+        ## re are: local address, external route to dispach, and dispatch id.
+        self.__my_ip      = cfg['main']['my_ip'];
+        self.__dispatchId = cfg['main']['dispatch_id'];
+        self.__routeExt   = cfg['amqp_external_publish']['route'];
 
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
         ## defined in the configuration file.
-        RabbitMQ_Consume.__init__(self, config['amqp_consume']);
+        RabbitMQ_Consume.__init__(self, cfg['amqp_consume']);
 
         ## Instantiates an object to perform the publication of AMQP messages.
         self.__publishExt = RabbitMQ_Publish(cfg['amqp_external_publish']);
@@ -180,13 +165,24 @@ class MCT_Agent(RabbitMQ_Consume):
 
         ## Check if is a request received from players or a return from MCT.The
         ## identifier is the properties.app_id.
-        if properties.app_id == DISPATCH_NAME:
+        if properties.app_id == self.__dispatchId:
              if self.__sanity.inspect_request(message) == True:
                  self.__recv_message_dispatch(message, properties.app_id);
         else:
              if self.__sanity.inspect_request(message) == True:
                  self.__send_message_dispatch(message, properties.app_id);
 
+        return 0;
+
+
+    ##
+    ## BRIEF: consume stop.
+    ## ------------------------------------------------------------------------
+    ##
+    def stop(self):
+        self.chn.basic_cancel(self.consumeTag);
+        self.chn.close();
+        self.connection.close();
         return 0;
 
 
@@ -386,9 +382,9 @@ class MCT_Agent(RabbitMQ_Consume):
             valRet=self.__db.update_reg(Player, Player.name == msg['destName'],
                                         fieldsToUpdate);
 
-            msg['data']['vcpus'] = int(CPU_INFO[i]);
-            msg['data']['mem'  ] = int(MEM_INFO[i]);
-            msg['data']['disk' ] = int(DSK_INFO[i]);
+            msg['data']['vcpus'] = int(CPU_INFO[flavor]);
+            msg['data']['mem'  ] = int(MEM_INFO[flavor]);
+            msg['data']['disk' ] = int(DSK_INFO[flavor]);
         else:
             msg['data']['vcpus'] = 0;
             msg['data']['mem'  ] = 0;
@@ -404,7 +400,126 @@ class MCT_Agent(RabbitMQ_Consume):
 
         return msg;
 
+## END CLASS.
+
+
+
+
+
+
+
+
+class Main:
+
+    """
+    Class Main: main class.
+    --------------------------------------------------------------------------
+    PUBLIC METHODS:
+    ** start == start the process.
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __cfg     = None;
+    __logger  = None;
+    __print   = None;
+    __running = None;
+
+
+    ###########################################################################
+    ## SPECIAL METHODS                                                       ##
+    ###########################################################################
+    ##
+    ## BRIEF: iniatialize the object.
+    ## ------------------------------------------------------------------------
+    ##
+    def __init__(self):
+
+        ## Get the configurantion parameters.
+        self.__cfg    = self.__get_configs();
+
+        ## Configurate the logger. Use the parameters defineds in configuration
+        ## file.
+        self.__logger = self.__logger_setting(self.__cfg['log_agent']);
+
+
+    ###########################################################################
+    ## PUBLIC                                                                ##
+    ###########################################################################
+    ##
+    ## BRIEF: start the MCT_DB_Proxy.
+    ## ------------------------------------------------------------------------
+    ##
+    def start(self):
+        self.__running = MCT_Agent(self.__cfg, self.__logger);
+        self.__running.consume();
+        return 0;
+
+
+    ##
+    ## BRIEF: stiop the MCT_DB_Proxy.
+    ## ------------------------------------------------------------------------
+    ##
+    def stop(self):
+        self.__running.stop();
+        return 0;
+
+
+    ###########################################################################
+    ## PRIVATE                                                               ##
+    ###########################################################################
+    ##
+    ## BRIEF: get configuration from config file.
+    ## ------------------------------------------------------------------------
+    ##
+    def __get_configs(self):
+        cfgFileFound = '';
+
+        ## Lookin in three places:
+        ## 1 - user home.
+        ## 2 - running folder.
+        ## 3 - /etc/mct/
+        for cfgFile in [HOME_FOLDER, RUNNING_FOLDER, DEFAULT_CONFIG_FOLDER]:
+            if os.path.isfile(cfgFile):
+                cfgFileFound = cfgFile;
+                break;
+
+        if cfgFileFound == '':
+            raise ValueError('CONFIGURATION FILE NOT FOUND IN THE SYSTEM!');
+
+        return get_configs(cfgFileFound);
+
+
+    ## 
+    ## BRIEF: setting logger parameters.
+    ## ------------------------------------------------------------------------
+    ## @PARAM settings == logger configurations.
+    ##
+    def __logger_setting(self, settings):
+
+        ## Create a handler and define the output filename and the max size and
+        ## max number of the files (1 mega = 1048576 bytes).
+        handler = logging.handlers.RotatingFileHandler(
+                                  filename    = settings['log_filename'],
+                                  maxBytes    = int(settings['file_max_byte']),
+                                  backupCount = int(settings['backup_count']));
+
+        ## Create a foramatter that specific the format of log and insert it in
+        ## the log handler. 
+        formatter = logging.Formatter(settings['log_format']);
+        handler.setFormatter(formatter);
+
+        ## Set up a specific logger with our desired output level (in this case
+        ## DEBUG). Before, insert the handler in the logger object.
+        logger = logging.getLogger(settings['log_name']);
+        logger.setLevel(logging.DEBUG);
+        logger.addHandler(handler);
+
+        return logger;
+
 ## END.
+
 
 
 
@@ -417,14 +532,16 @@ class MCT_Agent(RabbitMQ_Consume):
 ###############################################################################
 if __name__ == "__main__":
 
-    config = get_configs(CONFIG_FILE);
-
     try:
-        mct = MCT_Agent(config);
-        mct.consume();
+        main = Main();
+        main.start();
+
+    except ValueError as exceptionNotice:
+        print exceptionNotice;
 
     except KeyboardInterrupt:
-        pass;
+        main.stop();
+        print "BYE!";
 
     sys.exit(0);
 ## EOF

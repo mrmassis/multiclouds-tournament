@@ -197,7 +197,7 @@ class RabbitMQ_Publish(object):
 
 
     ##
-    ## BRIEF: connect to amqp server.
+    ## BRIEF: disconnect to amqp server.
     ## ------------------------------------------------------------------------
     ##
     def __disconnect(self):
@@ -241,8 +241,9 @@ class RabbitMQ_Consume(object):
     amqpPikaExitControl = True;
     __data              = {};
     __qName             = None;
-    __connection        = None;
+    connection          = None;
     __chn               = None;
+    consumeTag          = None;
 
 
     ###########################################################################
@@ -271,7 +272,8 @@ class RabbitMQ_Consume(object):
             ## ssages for the consumer_tag to the consumer callback.If you do n
             ## ot pass in a consumer_tag, one will be automatically generated f
             ## or you. Returns the consumer tag.
-            self.chn.basic_consume(self.callback, self.__qName, no_ack=False);
+            self.consumeTag = self.chn.basic_consume(self.callback, 
+                                                     self.__qName,no_ack=False);
 
             ## Processes I/O events and dispatches timers and basic_consume cal
             ## lbacks until all consumers are cancelled.
@@ -336,13 +338,13 @@ class RabbitMQ_Consume(object):
                 ## s methods if you'd like to receive messages from RabbitMQ us
                 ## ing basic_consume or if you want to be notified of a deliver
                 ## y failure when using basic_publish. 
-                self.__connection = pika.BlockingConnection(parameters);
+                self.connection = pika.BlockingConnection(parameters);
 
                 ## Create a new channel with the next available channel numb. o
                 ## r pass in a channel number to use. Must be non-zero if you w
                 ## ould like to specify but it is recommended that you let Pika
                 ##  manage the channel numbers.
-                self.chn = self.__connection.channel();
+                self.chn = self.connection.channel();
 
                 ## This method creates an exchange if it does not already exist
                 ## i, and if the exchange exists, verifies that it is of the co
@@ -390,5 +392,116 @@ class RabbitMQ_Consume(object):
         ## LOG:
         LOG.info('SUCESS!');
         return True;
-## EOF.
+## END CLASS.
 
+
+
+
+
+
+
+
+class MCT_Simple_AMQP_Publish:
+
+    """
+    Class MCT_Simple_AMQP_PUBLISH:perform the publish to the MCT_Agent service.
+    --------------------------------------------------------------------------
+    PUBLIC METHODS:
+    ** publish  == publish a message by the AMQP to MCT_Agent.
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __exchange     = None;
+    __route        = None;
+    __channel      = None;
+    __print        = None;
+
+
+    ###########################################################################
+    ## SPECIAL METHODS                                                       ##
+    ###########################################################################
+    ##
+    ## BRIEF: initialize the object.
+    ## ------------------------------------------------------------------------
+    ## @PARAM cfg    == dictionary with MCT_Simple_AMPQ_Publish configuration.
+    ## @PARAM logger == log object.
+    ##
+    def __init__(self, cfg, logger):
+
+        ## Get the option that define to where the logs will are sent to show.
+        self.__print = Show_Actions(cfg['print'], logger);
+
+        ## LOG:
+        self.__print.show('INITIALIZE COMMUNICATION OBJECT', 'I');
+
+        self.__exchange = cfg['exchange'];
+        self.__route    = cfg['route'   ];
+
+        credentials = pika.PlainCredentials(cfg['user'], cfg['pass']);
+
+        ## Connection parameters object that is passed into the connection ada-
+        ## pter upon construction. 
+        parameters = pika.ConnectionParameters(host        = cfg['address'],
+                                               credentials = credentials);
+
+        ## The BlockingConnection creates a layer on top of Pika's asynchronous
+        ## core providing methods that will block until their expected response
+        ## has returned. 
+        connection = pika.BlockingConnection(parameters);
+
+        ## Create a new channel with the next available channel number or pass
+        ## in a channel number to use. 
+        self.channel = connection.channel();
+
+        ## This method creates an exchange if it does not already exist, and if
+        ## the exchange exists, verifies that it is of the correct and expected
+        ## class.
+        self.channel.exchange_declare(exchange=cfg['exchange'], type='direct');
+
+        ## Confirme delivery.
+        self.channel.confirm_delivery;
+
+
+    ###########################################################################
+    ## PUBLIC METHODS                                                        ##
+    ###########################################################################
+    ##
+    ## BRIEF: publish a message by the AMQP to MCT_Agent.
+    ## ------------------------------------------------------------------------
+    ## @PARAM message == data to publish.
+    ## @PARAM appId   == id to identify the sender.
+    ##
+    def publish(self, message, appId):
+
+        ## LOG:
+        self.__print.show('PUBLISH MESSAGE: ' + str(message), 'I');
+
+        propertiesData = {
+            'delivery_mode': 2,
+            'app_id'       : appId,
+            'content_type' : 'application/json',
+            'headers'      : message
+        }
+
+        properties = pika.BasicProperties(**propertiesData);
+
+        ## Serialize object to a JSON formatted str using this conversion table
+        ## If ensure_ascii is False, the result may contain non-ASCII characte-
+        ## rs and the return value may be a unicode instance.
+        jData = json.dumps(message, ensure_ascii=False);
+
+        ## Publish to the channel with the given exchange,routing key and body.
+        ## Returns a boolean value indicating the success of the operation.
+        try:
+            ack = self.channel.basic_publish(self.__exchange,
+                                             self.__route, jData, properties);
+
+        except (pika.exceptions.AMQPConnectionError, pika.exceptions.AMQPChannelError), error:
+            ack = -1;
+
+        return ack;
+## END OF CLASS
+
+## EOF.

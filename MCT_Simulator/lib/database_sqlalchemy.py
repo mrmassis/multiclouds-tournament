@@ -346,46 +346,6 @@ class MCT_Database_SQLAlchemy:
 
 
     ##
-    ## BRIEF: return the first registry from database (with filter).
-    ## ------------------------------------------------------------------------
-    ## @PARAM obj table      == object that meaning one table in database.
-    ## @PARAM dct filterRules== filters to apply.
-    ##
-    def first_reg_filter(self, table, filterRules):
-
-        DBSession = sessionmaker(bind=self.__engine)
-
-        ## A DBSession() instance establishes all conversations with the databa
-        ## se and represents a staging zone for all the objects loaded into the
-        ## database session object. Any change made against the objects in the 
-        ## session won't be persisted into the database until you call session.
-        ## commit(). If you are not happy about the changes, you can revert all
-        ## of them back to the last commit by calling session.rollback();
-        session = DBSession();
-
-        rList = [];
-
-        ## Execute the query:
-        querySql = session.query(table)
-
-        ## Filter:
-        for attr, value in filterRules.items():
-            if querySql:
-                querySql = querySql.filter(value);
-
-        ## Get the first element found in the table:
-        registry = querySql.first();
-
-        ## Convert the object structure to a pythoninc dictionary format:
-        if registry:
-            rList.append(self.__row2dict(registry));
-
-        session.close();
-
-        return rList;
-
-
-    ##
     ## BRIEF: update a registry.
     ## ------------------------------------------------------------------------
     ## @PARAM obj table      == object that meaning one table in database.

@@ -19,6 +19,7 @@ import logging.handlers;
 import sys;
 import socket;
 import json;
+import os;
 
 from mct.lib.database_sqlalchemy  import MCT_Database_SQLAlchemy, Simulation;
 from mct.lib.utils                import *;
@@ -33,48 +34,10 @@ from mct.lib.utils                import *;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE      = '/etc/mct/mct-db-proxy.ini';
-LOG_NAME         = 'MCT_Db_Proxy';
-LOG_FORMAT       = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s';
-LOG_FILENAME     = '/var/log/mct/mct_db_proxy.log';
-SIMULATION_TABLE = 'SIMULATION'
-ADD_VM_INSTANCE  = 0
-DEL_VM_INSTANCE  = 1
-INF_VM_INSTANCE  = 2
-SOCKET_PORT      = 10000
-T_T_MIN          = 0.0
-T_T_MAX          = 0.3
-T_S_MIN          = 0.3
-T_S_MAX          = 0.6
-T_B_MIN          = 0.6
-T_B_MAX          = 1.1
-TIME_BASE        = 3277 ## 3277837725 microseconds: timestamp from first entry.
-
-
-
-
-
-
-
-###############################################################################
-## LOG                                                                       ##
-###############################################################################
-## Create a handler and define the output filename and the max size and max nun
-## ber of the files (1 mega = 1048576 bytes).
-handler= logging.handlers.RotatingFileHandler(LOG_FILENAME,
-                                              maxBytes=10485760,
-                                              backupCount=100);
-
-## Create a foramatter that specific the format of log and insert it in the log
-## handler. 
-formatter = logging.Formatter(LOG_FORMAT);
-handler.setFormatter(formatter);
-
-## Set up a specific logger with our desired output level (in this case DEBUG).
-## Before, insert the handler in the logger object.
-logger = logging.getLogger(LOG_NAME);
-logger.setLevel(logging.DEBUG);
-logger.addHandler(handler);
+CONFIG_FILE           = 'mct-db-proxy.ini';
+HOME_FOLDER           = os.path.join(os.environ['HOME'], CONFIG_FILE);
+RUNNING_FOLDER        = os.path.join('./'              , CONFIG_FILE);
+DEFAULT_CONFIG_FOLDER = os.path.join('/etc/mct/'       , CONFIG_FILE);
 
 
 
@@ -102,17 +65,28 @@ class MCT_DB_Proxy:
     __count      = 1;
     __db         = None;
     __state      = {};
-    __tmpTable   = None;
-    __port       = SOCKET_PORT
+    __port       = None;
     __print      = None;
-    __sTable     = None;
     __newVMCount = None;
+    __tBase      = None;
+    __tMin       = None;
+    __tMax       = None;
+    __sMin       = None;
+    __sMax       = None;
+    __bMin       = None;
+    __bMax       = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self, cfg):
+    ##
+    ## BRIEF: iniatialize the object.
+    ## ------------------------------------------------------------------------
+    ## @PARAM cfg    == configuration dictionary.
+    ## @PARAM logger == log object.
+    ##
+    def __init__(self, cfg, logger):
 
         ## Get the option that define to where the logs will are sent to show.
         self.__print = Show_Actions(cfg['main']['print'], logger);
@@ -120,7 +94,24 @@ class MCT_DB_Proxy:
         ## Intance a new object to handler all operation in the local database.
         self.__db = MCT_Database_SQLAlchemy(cfg['database']);
 
-        ##
+        ## Socket port that the SGDB is listen:
+        self.__port = cfg['database']['port'];
+
+        ## This value ensure that the entry is valid. The simulation has valid
+        ## entry after the tBase value.
+        self.__tBase = int(cfg['main']['time_base']);
+
+        ## Thresholds:
+        self.__tMin = float(cfg['threshold']['t_min']);
+        self.__tMax = float(cfg['threshold']['t_max']);
+
+        self.__sMin = float(cfg['threshold']['s_min']);
+        self.__sMax = float(cfg['threshold']['s_max']);
+
+        self.__bMin = float(cfg['threshold']['b_min']);
+        self.__bMax = float(cfg['threshold']['b_max']);
+
+        ## Count.
         self.__newVMCount = 0;
 
 
@@ -163,6 +154,9 @@ class MCT_DB_Proxy:
 
            ## Get an action:
            messageDictSend = self.__get_action(messageDictRecv['player']);
+
+           ## LOG:
+           self.__print.show('ACTION: ' + str(messageDictSend['action']), 'I');
 
            ## Convert the return value of the authentication from simple dictio
            ## nary format to json format.
@@ -218,13 +212,13 @@ class MCT_DB_Proxy:
 
             ## Accept only two actions: create a new instance and delete a exis
             ## tent instance in MCT.
-            if data['valid'] == 0 and data['action'] != INF_VM_INSTANCE:
+            if data['valid'] == 0 and data['action'] != GETINF_INSTANCE:
 
                 ## The machineID received from database through 'MCT_DB_Proxy'.
                 machineId = data['machineID'];
 
                 ## Case the action is to create a VM, return the action's data.
-                if data['action'] == ADD_VM_INSTANCE:
+                if data['action'] == CREATE_INSTANCE:
                     self.__newVMCount += 1;
 
                     ## Invalid (set with valid = 1) the used action that id is:
@@ -277,32 +271,26 @@ class MCT_DB_Proxy:
     def __get_next_action(self, idx):
 
         ## If the valid is equal 2, meaning that there isnt record in database.
-        actionData = {'valid':2};
+        actionData = {'valid' : 2};
 
-        filterDict = {
-            0 : Simulation.id == idx
-        };
+        dRecv = self.__db.all_regs_filter(Simulation, Simulation.id == idx);
 
-        dataReceived=self.__db.first_reg_filter(Simulation, filterDict);
+        if dRecv != []:
 
-        if dataReceived != []:
-
-            ## Fields: 0) id, 1) time, 2) machineId, 3) eventType, 4) plataform
-            ## Id, 5) cpu, 6) memory, and 7) valid.
-            actionData['id'       ] =   int(dataReceived[0]['id'       ]);
-            actionData['machineID'] =   int(dataReceived[0]['machineId']);
-            actionData['action'   ] =   int(dataReceived[0]['eventType']);
-            actionData['time'     ] =   int(dataReceived[0]['time'     ]);
-            actionData['valid'    ] =   int(dataReceived[0]['valid'    ]);
-            actionData['cpu'      ] = float(dataReceived[0]['cpu'      ]);
-            actionData['mem'      ] = float(dataReceived[0]['memory'   ]);
+            actionData['id'       ] =   int(dRecv[0]['id'       ]);
+            actionData['machineID'] =   int(dRecv[0]['machineId']);
+            actionData['action'   ] =   int(dRecv[0]['eventType']);
+            actionData['time'     ] =   int(dRecv[0]['time'     ]);
+            actionData['valid'    ] =   int(dRecv[0]['valid'    ]);
+            actionData['cpu'      ] = float(dRecv[0]['cpu'      ]);
+            actionData['mem'      ] = float(dRecv[0]['memory'   ]);
 
             ## Convert time from microseconds to seconds. Normalize the time too
-            actionData['time'] = int(actionData['time']/1000000) - TIME_BASE;
+            actionData['time'] = int(actionData['time']/1000000) - self.__tBase;
 
             ## Case the action is to create a new vm instance, check the type of
             ## instance:
-            if actionData['action'] == ADD_VM_INSTANCE:
+            if actionData['action'] == CREATE_INSTANCE:
                 cpu = actionData['cpu'];
                 mem = actionData['mem'];
 
@@ -324,13 +312,13 @@ class MCT_DB_Proxy:
         vmType = '';
 
         ## Use mem factor to decide which the vm type put inside the request.
-        if   memFactor >= T_T_MIN and memFactor < T_T_MAX:
+        if   memFactor >= self.__tMin and memFactor < self.__tMax:
             vmType = 'T';
 
-        elif memFactor >= T_S_MIN and memFactor < T_S_MAX:
+        elif memFactor >= self.__sMin and memFactor < self.__sMax:
             vmType = 'S';
 
-        elif memFactor >= T_B_MIN and memFactor < T_B_MAX:
+        elif memFactor >= self.__bMin and memFactor < self.__bMax:
             vmType = 'B';
 
         return vmType;
@@ -361,21 +349,139 @@ class MCT_DB_Proxy:
 
 
 
+class Main:
+
+    """
+    Class Main: main class.
+    --------------------------------------------------------------------------
+    PUBLIC METHODS:
+    ** start == start the process.
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __cfg     = None;
+    __logger  = None; 
+    __print   = None;
+    __running = None;
+
+
+    ###########################################################################
+    ## SPECIAL METHODS                                                       ##
+    ###########################################################################
+    ##
+    ## BRIEF: iniatialize the object.
+    ## ------------------------------------------------------------------------
+    ##
+    def __init__(self):
+
+        ## Get the configurantion parameters.
+        self.__cfg    = self.__get_configs();
+
+        ## Configurate the logger. Use the parameters defineds in configuration
+        ## file.
+        self.__logger = self.__logger_setting(self.__cfg['log']);
+
+
+    ###########################################################################
+    ## PUBLIC                                                                ##
+    ###########################################################################
+    ##
+    ## BRIEF: start the MCT_DB_Proxy.
+    ## ------------------------------------------------------------------------
+    ##
+    def start(self):
+        self.__running = MCT_DB_Proxy(self.__cfg, self.__logger);
+        self.__running.run();
+        return 0;
+
+
+    ##
+    ## BRIEF: stiop the MCT_DB_Proxy.
+    ## ------------------------------------------------------------------------
+    ##
+    def stop(self):
+        self.__running.stop();
+        return 0;
+
+
+    ###########################################################################
+    ## PRIVATE                                                               ##
+    ###########################################################################
+    ##
+    ## BRIEF: get configuration from config file.
+    ## ------------------------------------------------------------------------
+    ##
+    def __get_configs(self):
+        cfgFileFound = '';
+
+        ## Lookin in three places:
+        ## 1 - user home.
+        ## 2 - running folder.
+        ## 3 - /etc/mct/
+        for cfgFile in [HOME_FOLDER, RUNNING_FOLDER, DEFAULT_CONFIG_FOLDER]:
+            if os.path.isfile(cfgFile):
+                cfgFileFound = cfgFile;
+                break;
+
+        if cfgFileFound == '':
+            raise ValueError('CONFIGURATION FILE NOT FOUND IN THE SYSTEM!');
+
+        return get_configs(cfgFileFound);
+
+
+    ## 
+    ## BRIEF: setting logger parameters.
+    ## ------------------------------------------------------------------------
+    ## @PARAM settings == logger configurations.
+    ##
+    def __logger_setting(self, settings):
+
+        ## Create a handler and define the output filename and the max size and
+        ## max number of the files (1 mega = 1048576 bytes).
+        handler = logging.handlers.RotatingFileHandler(
+                                  filename    = settings['log_filename'],
+                                  maxBytes    = int(settings['file_max_byte']),
+                                  backupCount = int(settings['backup_count']));
+
+        ## Create a foramatter that specific the format of log and insert it in
+        ## the log handler. 
+        formatter = logging.Formatter(settings['log_format']);
+        handler.setFormatter(formatter);
+
+        ## Set up a specific logger with our desired output level (in this case
+        ## DEBUG). Before, insert the handler in the logger object.
+        logger = logging.getLogger(settings['log_name']);
+        logger.setLevel(logging.DEBUG);
+        logger.addHandler(handler);
+
+        return logger;
+
+## END CLASS.
+
+
+
+
+
+
+
+
 ###############################################################################
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
 
     try:
-        ## Get from configuration file all players and all respective paramters
-        cfg = get_configs(CONFIG_FILE);
+        main = Main();
+        main.start();
 
-        proxy_db_server = MCT_DB_Proxy(cfg);
-        proxy_db_server.run();
+    except ValueError as exceptionNotice:
+        print exceptionNotice;
 
     except KeyboardInterrupt:
-        pass;
+        main.stop();
+        print "BYE!";
 
-    proxy_db_server.stop();
     sys.exit(0);
 ## EOF.

@@ -9,6 +9,8 @@ amqp_exchange               : mct_exchange
 amqp_queue_name             : agent
 amqp_user                   : mct
 amqp_pass                   : password
+agent_id                    : agent_drive_0
+ratio                       : 610
 request_pending_iteract     : 10
 request_pending_waiting     : 60
 authenticate_address        : 192.168.0.201
