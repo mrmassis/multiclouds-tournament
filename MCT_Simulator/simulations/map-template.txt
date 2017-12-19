@@ -24,12 +24,13 @@
 ##
 ## Enable vplayer0 10 minutes after the mct started. The player will be 10vcpus
 ## 10 memory, 10 local_gb, and 10 max instance.
-## vplayer0-TIME_BEFORE=10-ADD-10_10_10_10
+## vplayer0-TIME_BEFORE==10-ADD-10_10_10_10
 ##
 ## Disable vplayer1 when it reach at 10 instance accepts.
-## vplayer1-ACCEPTS=10-DEL
+## vplayer1-ACCEPTS==10-DEL
 ##
 ## Disable vplayer2 10 minutes after the mct started.
-## vplayer0-TIME_BEFORE=10-DEL
+## vplayer0-TIME_BEFORE==10-DEL
 ##
+playerVirtual0-RUNNING==10-DEL
 ## EOF

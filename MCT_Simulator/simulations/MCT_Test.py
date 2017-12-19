@@ -15,7 +15,10 @@ import ast;
 import sys;
 import os;
 import operator;
+import mysql.connector;
+import mysql;
 
+from mysql.connector import RefreshOption, errorcode;
 from multiprocessing import Process, Queue, Lock;
 
 
@@ -31,6 +34,11 @@ from multiprocessing import Process, Queue, Lock;
 V_BASE = '.';
 R_BASE = '.';
 
+D_HOST = '192.168.0.201';
+D_USER = 'mct';
+D_PASS = 'password';
+D_BASE = 'mct';
+
 
 
 
@@ -44,8 +52,9 @@ R_BASE = '.';
 class MCT_Test(Process):
 
     """
-    CLASS:
+    CLASS: execute a set of test situations (by players).
     ---------------------------------------------------------------------------
+    ** run - execute in thread.
     """
 
     ###########################################################################
@@ -53,6 +62,8 @@ class MCT_Test(Process):
     ###########################################################################
     __mHandleConditions = None;
     __operators         = None;
+    __db                = None;
+    __testString        = None;
 
 
     ###########################################################################
@@ -77,6 +88,18 @@ class MCT_Test(Process):
 
         ## String with test:
         self.__testString = testString;
+
+        ## Database connection:
+        dbConfig = {
+            'host'             : D_HOST,
+            'user'             : D_USER,
+            'password'         : D_PASS,
+            'database'         : D_BASE,
+            'raise_on_warnings': True
+        };
+
+        self.__db = mysql.connector.connect(**dbConfig);
+        self.__db.autocommit = True;
 
 
     ###########################################################################
@@ -191,67 +214,129 @@ class MCT_Test(Process):
 
 
     ##
-    ## BRIEF:
+    ## BRIEF: obtain the player's division.
     ## ------------------------------------------------------------------------
+    ## @PARAM vplayer == virtual player name.
     ##
     def __get_division(self, vplayer):
-        return 0;
+        division = 0;
+        query    = 'select division from PLAYER where name="' + vplayer + '"';
+
+        dRecv=self.__select_query(query);
+
+        if dRecv != []:
+            for entry in dRecv:
+                division = entry[0];
+
+        return division;
 
 
     ##
-    ## BRIEF:
+    ## BRIEF: obtain the player's score.
     ## ------------------------------------------------------------------------
-    ##
-    def __get_division(self, vplayer):
-        return 0;
-
-
-    ##
-    ## BRIEF:
-    ## ------------------------------------------------------------------------
+    ## @PARAM vplayer == virtual player name.
     ##
     def __get_score(self, vplayer):
-        return 0;
+        score    = 0;
+        query    = 'select score from PLAYER where name="' + vplayer + '"';
+
+        dRecv = self.__select_query(query);
+
+        if dRecv != []:
+            for entry in dRecv:
+                score = entry[0];
+
+        return score;
 
 
     ##
-    ## BRIEF:
+    ## BRIEF: obtain the player's history.
     ## ------------------------------------------------------------------------
+    ## @PARAM vplayer == virtual player name.
     ##
     def __get_history(self, vplayer):
-        return 0;
+        history  = 0;
+        query    = 'select history from PLAYER where name="' + vplayer + '"';
+
+        dRecv = self.__select_query(query);
+
+        if dRecv != []:
+            for entry in dRecv:
+                history = entry[0];
+
+        return history;
 
 
     ##
-    ## BRIEF:
+    ## BRIEF: obtain the player's accepts vms.
     ## ------------------------------------------------------------------------
+    ## @PARAM vplayer == virtual player name.
     ##
     def __get_accepts(self, vplayer):
-        return 10;
+        accepts  = 0;
+        query    = 'select accepts from PLAYER where name="' + vplayer + '"';
+
+        dRecv = self.__select_query(query);
+
+        if dRecv != []:
+            for entry in dRecv:
+                accepts = entry[0];
+
+        return accepts;
 
 
     ##
-    ## BRIEF:
+    ## BRIEF: obtain the player's reject vms.
     ## ------------------------------------------------------------------------
+    ## @PARAM vplayer == virtual player name.
     ##
     def __get_rejects(self, vplayer):
-        return 0;
+        rejects  = 0;
+        query    = 'select rejects from PLAYER where name="' + vplayer + '"';
+
+        dRecv = self.__select_query(query);
+
+        if dRecv != []:
+            for entry in dRecv:
+                rejects = entry[0];
+
+        return rejects;
 
 
     ##
-    ## BRIEF:
+    ## BRIEF: obtain the player's running vms.
     ## ------------------------------------------------------------------------
+    ## @PARAM vplayer == virtual player name.
     ##
     def __get_running(self, vplayer):
-        return 0;
+        running  = 0;
+        query    = 'select running from PLAYER where name="' + vplayer + '"';
+
+        dRecv = self.__select_query(query);
+
+        if dRecv != []:
+            for entry in dRecv:
+                running = entry[0];
+
+        return running;
 
 
     ##
-    ## BRIEF:
+    ## BRIEF: obtain the player's finished vms.
     ## ------------------------------------------------------------------------
+    ## @PARAM vplayer == virtual player name.
     ##
     def __get_finished(self, vplayer):
-        return 0;
+        finished = 0;
+        query    = 'select finished from PLAYER where name="' + vplayer + '"';
+
+        dRecv = self.__select_query(query);
+
+        if dRecv != []:
+            for entry in dRecv:
+                print entry;
+
+        return finished;
 
 
     ##
@@ -369,6 +454,29 @@ class MCT_Test(Process):
             resources['max_instance'] = stringResources[3];
 
         return vplayer, condition, action, resources;
+
+
+    ##
+    ## BRIEF: performe a select in the database.
+    ## -----------------------------------------------------------------------
+    ## @PARAM query == the request.
+    ## 
+    def __select_query(self, query):
+        entry = [];
+
+        try:
+            cursor = self.__db.cursor();
+            cursor.execute(query);
+            for row in cursor:
+                entry.append(row);
+
+            cursor.close();
+
+        except mysql.connector.Error as err:
+            print(err);
+
+        return entry;
+
 ## END CLASS.
 
 
