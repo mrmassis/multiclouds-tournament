@@ -1,0 +1,35 @@
+###############################################################################
+## TEST MAP                                                                  ##
+## ------------------------------------------------------------------------- ##
+## Conditions: is performed an action when the conditions are satisfied.     ##
+## NAME-CONDITIONS-ACTION-RESOURCES                                          ##
+## ** RESOURCES is necessary only to ADD and UPD actions.                    ##
+##                                                                           ##
+## CONDITIONS:                                                               ##
+## * TIME_AFTER:                                                             ##
+## * DIVISION..:                                                             ##
+## * SCORE.....:                                                             ##
+## * HISTORY...:                                                             ##
+## * ACEPTS....:                                                             ##
+## * REJECTS...:                                                             ##
+## * RUNNING...:                                                             ##
+## * FINISHED..:                                                             ##
+##                                                                           ##
+## ACTION:                                                                   ##
+## ADD: addition new player.                                                 ##
+## DEL: remove an existent player.                                           ##
+## UPD: update player resources.                                             ##
+## ------------------------------------------------------------------------- ##
+## Examples:
+##
+## Enable vplayer0 10 minutes after the mct started. The player will be 10vcpus
+## 10 memory, 10 local_gb, and 10 max instance.
+## vplayer0-TIME_BEFORE=10-ADD-10_10_10_10
+##
+## Disable vplayer1 when it reach at 10 instance accepts.
+## vplayer1-ACCEPTS=10-DEL
+##
+## Disable vplayer2 10 minutes after the mct started.
+## vplayer0-TIME_BEFORE=10-DEL
+##
+## EOF
