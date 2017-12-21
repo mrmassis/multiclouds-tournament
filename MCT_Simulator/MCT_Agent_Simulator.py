@@ -196,13 +196,15 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM str  appId   == id from sender.
     ##
     def __send_message_dispatch(self, message, appId):
-        valRet = True;
+        ## LOG:
+        self.__print.show('MESSAGE RECEIVED FROM AGENT...: '+str(message),'I');
 
         ## Publish the message to dispatch (locate in remote server) via AMQP.
         valRet = self.__publishExt.publish(message, self.__routeExt);
 
         ## LOG:
         self.__print.show('MSG SENT '+str(message)+' ACKRET '+str(valRet),'I');
+
         return 0;
 
 

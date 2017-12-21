@@ -740,6 +740,7 @@ class MCT_VPlayer(Process):
     __print                   = None;
     __token                   = None;
     __ratio                   = None;
+    __runningVM               = ????;
 
 
     ###########################################################################
@@ -817,22 +818,38 @@ class MCT_VPlayer(Process):
 
             ## Get a new action from database through the MCT_DB_Proxy service.
             data = self.__mctStates.give_me_state_from_database();
-      
+ 
             if data['valid'] != 2:
 
-                ## Calculate the new time to waiting until perform new action.
+                ## TODO:
+                if data['action'] == DELETE_INSTANCE:
+                    ## Delete the VM instance is only possible if the VM is ru-
+                    ## nning, otherwise abor.
+                    if data[?????] in self.__runningVm:
+                        del self.__runningVm ?????; 
+                    else:
+                        ## Go to the next loop iteration. Dont send the request
+                        ## to the dispatch. This because there inst VM running.
+                        continue;      
+
+                ## Calculate the new time to waiting until perform "new action".
                 newTime = float(data['time'] / (self.__ratio)) - oldTime;
                 oldTime = newTime;
 
                 if newTime < 1.0:
                     newTime = 1;
 
-                ## Wait X seconds to dispatich a new action to the 'MCT_Agent'.
+                ## Wait nTime seconds to dispatch a new action to the MCT_Agent.
                 time.sleep(float(newTime));
-                   
 
                 ## Dispatch the action to MCT_Dispatch:
-                dataRecv = self.__mctAction.dispatch(data['action'], data);
+                dRecv = self.__mctAction.dispatch(data['action'], data);
+           
+                ## TODO:
+                ## Verified the return status. if VM creation is ok put it in
+                ## running instance:
+                if dRecv['action'] == CREATE_INSTANCE and dRecv['status'] == 1:
+                    self.__runningVm.append(?????);                 
 
             else:
                 getSetInfRepeat.stop();
