@@ -6,7 +6,6 @@
 
 
 
-
 ###############################################################################
 ## IMPORT                                                                    ##
 ###############################################################################
@@ -16,10 +15,10 @@ import datetime;
 import logging;
 import logging.handlers;
 import os;
+import hashlib;
 
-from sqlalchemy                  import and_, or_;
 from mct.lib.utils               import *;
-from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Request;
+from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Player;
 from mct.lib.amqp                import RabbitMQ_Publish, RabbitMQ_Consume;
 
 
@@ -32,14 +31,10 @@ from mct.lib.amqp                import RabbitMQ_Publish, RabbitMQ_Consume;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-CONFIG_FILE           = 'mct-dispatch.ini';
+CONFIG_FILE           = 'mct-register.ini';
 HOME_FOLDER           = os.path.join(os.environ['HOME'], CONFIG_FILE);
 RUNNING_FOLDER        = os.path.join('./'              , CONFIG_FILE);
 DEFAULT_CONFIG_FOLDER = os.path.join('/etc/mct/'       , CONFIG_FILE);
-AGENT_ROUTE           = 'mct_agent';
-AGENT_IDENTIFIER      = 'MCT_Dispatch';
-AGENT_EXCHANGE        = 'mct_exchange';
-AGENT_QUEUE           = 'agent';
 
 
 
@@ -51,27 +46,24 @@ AGENT_QUEUE           = 'agent';
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
-class MCT_Dispatch(RabbitMQ_Consume):
+class MCT_Register(RabbitMQ_Consume):
 
     """
-    Dispatch to appropriate destinations requires received from players or divi
-    sions.
+    CLASS MCT_Register: register the new player in the bollentin.
     ---------------------------------------------------------------------------
-    ** callback == method invoked when the pika receive a message.
+    ** callback == wait for new request to player register.
     ** stop     == consume stop.    
+
     """
 
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __publish_referee = None;
-    __publish_register= None;
-    __divisions       = [];
-    __configs         = None;
-    __dbConnection    = None;
-    __rabbitUser      = None;
-    __rabbitPass      = None;
-    __print           = None;
+    __addr           = None;
+    __port           = None;
+    __db             = None;
+    __print          = None;
+    __accessDivision = None;
 
 
     ###########################################################################
@@ -80,8 +72,8 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ##
     ## BRIEF: initialize the object.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict cfg    == dictionary with configurations about MCT_Agent.
-    ## @PARAM obj  logger == logger object.
+    ## @PARAM cfg    == dictionary with configurations about MCT_Agent.
+    ## @PARAM logger == logger object.
     ##
     def __init__(self, cfg, logger):
 
@@ -89,27 +81,26 @@ class MCT_Dispatch(RabbitMQ_Consume):
         self.__print = Show_Actions(cfg['main']['print'], logger);
 
         ## Get which 'route' is used to deliver the message to the MCT_Referee
-        ## and MCT_Register:
-        self.__routeReferee = cfg['amqp_publish_referee' ]['route'];
-        self.__routeRegister= cfg['amqp_publish_register']['route'];
-
-        ## Get password used to publish message to player (regular or virtual)
-        self.__rabbitUser   = cfg['amqp_publish_players']['user' ];
-        self.__rabbitPass   = cfg['amqp_publish_players']['pass' ];
+        ## and credentials:
+        self.__route      = cfg['amqp_publish']['route'];
+        self.__rabbitUser = cfg['amqp_publish']['user' ];
+        self.__rabbitPass = cfg['amqp_publish']['pass' ];
 
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
         ## defined in the configuration file.
         RabbitMQ_Consume.__init__(self, cfg['amqp_consume']);
 
         ## Instance a new object to perform the publication of 'AMQP' messages.
-        self.__publish_referee =RabbitMQ_Publish(cfg['amqp_publish_referee' ]);
-        self.__publish_register=RabbitMQ_Publish(cfg['amqp_publish_register']);
+        self.__publish=RabbitMQ_Publish(cfg['amqp_publish']);
 
         ## Intance a new object to handler all operation in the local database.
         self.__db = MCT_Database_SQLAlchemy(cfg['database']);
 
+        ## Obtain the access division:
+        self.__accessDivision = cfg['main']['access_division'];
+
         ## LOG:
-        self.__print.show("###### START MCT_DISPATCH ######\n",'I');
+        self.__print.show("###### START MCT_REGISTER ######\n",'I');
 
 
     ###########################################################################
@@ -131,18 +122,19 @@ class MCT_Dispatch(RabbitMQ_Consume):
         msg = json.loads(msg);
 
         ## LOG:
-        self.__print.show('MSG RECEIVED: ' + str(msg['code']), 'I');
+        self.__print.show('MSG RECEIVED FROM DISPATCH: '+str(msg['code']), 'I');
 
-        ## Check if is a request received from players or a return from a divi-
-        ## sions. The identifier is the properties.app_id.
-        if   properties.app_id == 'MCT_Referee' :
-            self.__recv_message_from_referee(msg, properties.app_id);
+        if   msg['code'] == ADD_REG_PLAYER:
+            msg = self.__authenticates(msg);
 
-        elif properties.app_id == 'MCT_Register':
-            self.__recv_message_from_register(msg,properties.app_id);
+        elif msg['code'] == SUS_REG_PLAYER:
+            msg = self.__suspendplayer(msg);
 
-        else:
-            self.__recv_message_from_players(msg, properties.app_id);
+        elif msg['code'] == DEL_REG_PLAYER:
+            msg = self.__remove_player(msg);
+
+        ## Send the message to MCT_Referee.
+        self.__publish.publish(msg, self.__route);
 
         ## LOG:
         self.__print.show('------------------------------------------\n', 'I');
@@ -159,7 +151,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
         self.connection.close();
 
         ## LOG:
-        self.__print.show("###### STOP MCT_DISPATCH ######\n",'I');
+        self.__print.show("###### STOP MCT_REGISTER ######\n",'I');
         return 0;
 
 
@@ -167,214 +159,173 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
     ##
-    ## BRIEF: receive message from referee.
+    ## BRIEF: receive message from players.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict msg   == received message.
-    ## @PARAM str  appId == source app id.
+    ## @PARAM dict message == received message.
     ##
-    def __recv_message_from_referee(self, msg, appId):
+    def __authenticates(self, msg):
+       valRet = FAILED;
 
-        ## LOG:
-        self.__print.show('MESSAGE RETURNED OF REFEREE: ' + str(msg), 'I');
+       if msg != {}:
+           ## Check if the player always registered in the BID. If already reg
+           ## ister return the token.
+           token = self.__check_player(msg['playerId']);
 
-        ## If status is equal the 'MESSAGE_PARSE_ERROR' the request had fields
-        ## missed.
-        if msg['status'] != MESSAGE_PARSE_ERROR:
-
-            if msg['retId'] == '':
-
-                ## Remove the message (put previous) in the pending requests di
-                ## ctionary.
-                valRet = self.__remove_query(msg['reqId'], msg['playerId']);
-
-                playerAddress = msg['origAddr'];
-
-            ## Make the request forward to player that will accept the request.
-            else:
-                playerAddress = msg['destAddr'];
-
-            ## Create the configuration about the return message.This configura
-            ## tion will be used to send the messagem to apropriate player.
-            config = {
-                'identifier': AGENT_IDENTIFIER,
-                'route'     : AGENT_ROUTE,
-                'exchange'  : AGENT_EXCHANGE,
-                'queue_name': AGENT_QUEUE,
-                'address'   : playerAddress,
-                'user'      : self.__rabbitUser,
-                'pass'      : self.__rabbitPass
-            };
-
-            targetPublish = RabbitMQ_Publish(config); 
-            targetPublish.publish(msg, AGENT_ROUTE);
-
-            del targetPublish;
-
-        return 0;
-
-
-    ##
-    ## BRIEF: receive message from register.
-    ## ------------------------------------------------------------------------
-    ## @PARAM dict msg   == received message.
-    ## @PARAM str  appId == source app id.
-    ##
-    def __recv_message_from_register(self, msg, appId):
-
-        ## LOG:
-        self.__print.show('MESSAGE RETURNED OF REGISTER: ' + str(msg), 'I');
-
-        ## Set the agent address. 
-        playerAddress = msg['origAddr'];
-
-        ## Create the configuration about the return message.This configuration
-        ## will be used to send the messagem to apropriate player.
-        config = {
-            'identifier': AGENT_IDENTIFIER,
-            'route'     : AGENT_ROUTE,
-            'exchange'  : AGENT_EXCHANGE,
-            'queue_name': AGENT_QUEUE,
-            'address'   : playerAddress,
-            'user'      : self.__rabbitUser,
-            'pass'      : self.__rabbitPass
-        };
-
-        targetPublish = RabbitMQ_Publish(config);
-        targetPublish.publish(msg, AGENT_ROUTE);
-
-        del targetPublish;
-
-        return 0;
-
-
-    ##
-    ## BRIEF: send message to the refereee.
-    ## ------------------------------------------------------------------------
-    ## @PARAM dict msg   == received message.
-    ## @PARAM str  appId == source app id.
-    ##
-    def __recv_message_from_players(self, msg, appId):
+           if token != '':
+               valRet, msg = self.__activate_player(msg, token);
+           else:
+               valRet, msg = self.__register_player(msg, token);
+       
+       ## Set the status!    
+       msg['status'] = valRet;
 
        ## LOG:
-       self.__print.show('RECV FROM PLAYER ' + str(msg)+ ' APPID ' +appId,'I');
-
-       ## Check if the player has access to tournament:
-       valid = self.__valid_action_player(msg);
-
-       if valid == True:
-           ## These actions described above is executed by MCT_Register module.
-           if   msg['code'] == ADD_REG_PLAYER or msg['code'] == DEL_REG_PLAYER:
-               self.__publish_register.publish(msg, self.__routeRegister);
-           else:
-               ## Get player name:
-               playerId = msg['playerId'];
-
-               ## Adds the message in the pending requests dictionary. If its al
-               ## ready inserted does not perform the action.
-               valRet = self.__append_query(playerId,msg['reqId'],msg['code']);
-
-               ## LOG:
-               self.__print.show('MSG SEND TO REFEREE: '+str(msg), 'I');
-
-               ## Send msg to referee.
-               self.__publish_referee.publish(msg, self.__routeReferee);
-
-       return 0;
+       self.__print.show('PLAYER REGISTERED: ' + msg['playerId'], 'I');
+       return msg;
 
 
     ##
-    ## BRIEF: valid the action (security).
+    ## BRIEF: suspend player from MCT.
     ## ------------------------------------------------------------------------
-    ## @PARAM msg == received message.
+    ## @PARAM dict message == received message.
     ##
-    def __valid_action_player(self, msg):
-        ## LOG:
-        self.__print.show('VALID THE ACTION: ' + str(msg), 'I');
+    def __suspendplayer(self, msg):
+        ## Timestamp:
+        timeStamp = str(datetime.datetime.now()); 
 
-        ## Get information about the player.
-        dRecv = self.__db.all_regs_filter(Player, (Playe.name == msg['']));
+        ## Set all data to update.
+        data = {
+            'enabled' : 0,
+            'suspend' : timeStamp
+        };
 
-        if dRecv != []:
-            ## Verify if the player is enabled and the token received is valid. 
-            if dRecv[-1]['enabled'] == 1 and dRecv[-1]['token'] == msg['token']: 
-                ## LOG:
-                self.__print.show('PLAYER VALID: ' + str(msg), 'I');
-                return True;
+        self.__db.update_reg(Player, Player.name == msg['playerId'], data);
 
         ## LOG:
-        self.__print.show('PLAYER NOT VALID TO EXECUTE ACTION: '+str(msg), 'I');
-        return False;
+        self.__print.show('PLAYER SUSPENDED: ' + msg['playerId'], 'I');
+        return msg;
 
 
     ##
-    ## BRIEF: stores the request identifier.
+    ## BRIEF: remove player from MCT.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict message == received message.
+    ##
+    def __remove_player(self, msg):
+        msg = {};
+
+        ## LOG:
+        self.__print.show('PLAYER REMOVED: ' + msg['playerId'], 'I');
+        return msg;
+
+
+    ##
+    ## BRIEF: check if the player exist in database.
     ## ------------------------------------------------------------------------
     ## @PARAM str playerId  == identifier of the player.
-    ## @PARAM str requestId == identifier of the request.
-    ## @PARAM str actionId  == identifier of the action.
     ##
-    def __append_query(self, playerId, requestId, actionId):
-        ## Get timestamp: 
-        timeStamp = timeStamp = str(datetime.datetime.now());
+    def __check_player(self, playerId):
 
         ## Check if the line that represent the request already in db. Perform
         ## a select.
-        fColumns = and_(Request.request_id == requestId,
-                        Request.player_id  == playerId);
+        filterRules = {0 : Player.name == playerId};
 
-        ##
-        dReceived = self.__db.all_regs_filter(Request, fColumns);
+        ## Check if is possible create the new server (vcpu, memory, and disk).
+        dReceived = self.__db.first_reg_filter(Player, filterRules);
 
         ## Verifies that the request already present in the requests 'database'
-        ## if not insert it. The second clause meaning the requests id repeat.
-        if dReceived == [] or dReceived[-1]['status'] != 0:
-
+        ## if not insert it.
+        if dReceived == []:
             ## LOG:
-            self.__print.show('MESSAGE PENDING ' + requestId, 'I');
+            self.__print.show('PLAYER ID NOT REGISTERED: '+str(playerId), 'I');
+            token  = '';
 
-            ## Insert a line in table REQUEST from database mct. Each line mean
-            ## a request finished or in execution.
-            request = Request();
+        else:
+            ## LOG:
+            self.__print.show('PLAYER ID YET REGISTERED: '+str(playerId), 'I');
+            token  = dReceived[0]['token'];
 
-            request.player_id          = playerId;
-            request.request_id         = requestId;
-            request.action             = actionId;
-            request.status             = 0;
-            request.timestamp_received = timeStamp;
-
-            valRet = self.__db.insert_reg(request);
-            return 0;
-
-        ## LOG:
-        self.__print.show('MESSAGE ALREADY PENDING ' + requestId, 'I');
-        return 1;
+        return token;
 
 
     ##
-    ## BRIEF: remove the request identifier.
+    ## BRIEF: register a player in de bid.
     ## ------------------------------------------------------------------------
-    ## @PARAM str playerId  == identifier of the player.
-    ## @PARAM str msgId == identifier of the request.
+    ## @PARAM msg   == message received.
+    ## @PARAM token == player token ID.
     ##
-    def __remove_query(self, playerId, requestId):
-        ## Obtain the finish timestamp. 
-        timeStamp = timeStamp = str(datetime.datetime.now());
+    def __register_player(self, msg, token):
 
-        ## Filter to update:
-        fColumns = and_(Request.request_id == requestId,
-                        Request.player_id  == playerId);
+        ## Calculate initial atts (score|history) to a new player in the MCT.
+        iScore, iHistory = self.__initial_attributes(msg['playerId']);
 
-        fieldsToUpdate = {
-            'status'             : 1,
-            'timestamp_finished' : timeStamp,
+        ## Create the token:
+        token = self.__generate_new_token();
+
+        player = Player();
+
+        player.name     = msg['playerId'];
+        player.address  = msg['origAddr'];
+        player.division = self.__accessDivision;
+        player.score    = iScore;
+        player.history  = iHistory;
+        player.token    = token;
+        player.enabled  = 1;
+
+        self.__db.insert_reg(player);
+
+        ## Set the player's token. It will be used in the future to enable the
+        ## player actions.
+        msg['data']['token'] = token;
+
+        return SUCCESS, msg;
+
+
+    ##
+    ## BRIEF: register a player in de bid.
+    ## ------------------------------------------------------------------------
+    ## @PARAM msg   == message received.
+    ## @PARAM token == player token ID.
+    ##
+    def __activate_player(self, msg, token):
+
+        ## Set all data to update.
+        data = {
+            'enabled' : 1
         };
 
-        ## Update the base.
-        valRet=self.__db.update_reg(Request, fColumns, fieldsToUpdate);
- 
-        ## LOG:
-        self.__print.show('MESSAGE '+requestId+' REMOVED FROM PENDING!', 'I');
-        return 0;
+        self.__db.update_reg(Player, Player.name == msg['playerId'], data);
+
+        ## Set the player's token. It will be used in the future to enable the
+        ## player actions.
+        msg['data']['token'] = token;
+
+        return SUCCESS, msg;
+
+
+    ##
+    ## BRIEF: create a new token.
+    ## ------------------------------------------------------------------------
+    ##
+    def __generate_new_token(self):
+
+        ## Generate a 128 bytes (40 character) safe token.
+        token = hashlib.sha1(os.urandom(128)).hexdigest();
+        return token;
+
+
+    ##
+    ## BRIEF: calcule the initial attributes to a new players..
+    ## ------------------------------------------------------------------------
+    ## @PARAM playerId == player identifier.
+    ##
+    def __initial_attributes(self, playerId):
+
+        ## Calcule the initials attributes to a new player.
+        score   = 0.0;
+        history = 0;
+
+        return score, history;
 ## END CLASS.
 
 
@@ -427,7 +378,7 @@ class Main:
     ## ------------------------------------------------------------------------
     ##
     def start(self):
-        self.__running = MCT_Dispatch(self.__cfg, self.__logger);
+        self.__running = MCT_Register(self.__cfg, self.__logger);
         self.__running.consume();
         return 0;
 
@@ -492,6 +443,7 @@ class Main:
         logger.addHandler(handler);
 
         return logger;
+
 ## END CLASS.
 
 

@@ -45,7 +45,7 @@ class Bestscores:
     ## @PARAM list playerList     == a list of player from a specific division.
     ##
     def run(self, players):
-        selected = {};
+        selectedPlayer = {};
        
         ## Sort the received playerList by player' score: 
         tempList = sorted(players, key=lambda field: field[4], reverse=True);
@@ -53,14 +53,9 @@ class Bestscores:
         if len(tempList) > 0:
 
             ## Select player from the main list. Remove the first list element.
-            returnedPosition = tempList.pop(0);
+            selectedPlayer = tempList.pop(0);
 
-            selected = { 
-                'name' : returnedPosition[1],
-                'addr' : returnedPosition[2] 
-            }
-
-        return selected;
+        return selectedPlayer;
 
 ## END CLASS.
 
@@ -98,7 +93,7 @@ class Clock:
     ## @PARAM list players == a list of player from a specific division.
     ##
     def run(self, players):
-        selected = {};
+        selectedPlayer = {};
        
         ## Create two main lists - the remove list: elements that will be remo-
         ## ved from original list (__clocker). The insert list has all elements
@@ -118,18 +113,13 @@ class Clock:
         if len(self.__clocker) > 0:
 
             ## Select player from the main list. Remove the first list element.
-            returnedPosition = self.__clocker.pop(0);
+            selectedPlayer = self.__clocker.pop(0);
 
             ## Insert the returned position to final list position (__clocker).
-            self.__clocker.append(returnedPosition);
-
-            selected = {
-                'name' : returnedPosition[1],
-                'addr' : returnedPosition[2] 
-            };
+            self.__clocker.append(selectedPlayer);
 
         ## Return the selected player. 
-        return selected;
+        return selectedPlayer;
 
 
 
@@ -178,25 +168,10 @@ class Round_Robin_Imutable_List:
         if self.__lastPosition == len(players):
             self.__lastPosition = 0;
 
-        selected = self.__return_player(selectedPlayer);
-
-        return selected;
+        return selectedPlayer;
         
 
     ###########################################################################
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
-    ##
-    ## BRIEF: format the return.
-    ## ------------------------------------------------------------------------
-    ## @PARAM selectedPlayer == player selected.
-    ##
-    def __return_player(self, selectedPlayer):
-        selected = {
-            'name' : selectedPlayer[1],
-            'addr' : selectedPlayer[2]
-        };
-
-        return selected;
-
 ## EOF.

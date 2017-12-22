@@ -73,7 +73,7 @@ class RabbitMQ_Publish(object):
     __host       = None;
     __exchange   = None;
     __appId      = None;
-    __connection = None;
+    connection   = None;
     __data       = {};
     __identifier = None;
 
@@ -157,13 +157,13 @@ class RabbitMQ_Publish(object):
            ## us methods if youi had like to receive messages from RabbitMQ usi
            ## ng basic_consume or if you want to be not ified of a delivery fai
            ## lure when using basic_publish . 
-           self.__connection = pika.BlockingConnection(parameters);
+           self.connection = pika.BlockingConnection(parameters);
 
            ## Create a new channel with the next available channel number or pa
            ## ssin a channel number to use.Must be non-zero if you would like t
            ## o specify but it is recommended that you let Pika manage the chan
            ## nel numbers.
-           self.__chn = self.__connection.channel();
+           self.__chn = self.connection.channel();
 
            ## This method creates an exchange if it does not already exist, and
            ## if the exchange exists, verifies that it is of the correct and ex
@@ -203,12 +203,12 @@ class RabbitMQ_Publish(object):
             self.__chn.close();
 
             ## Close the connection:
-            self.__connection.close();
+            self.connection.close();
 
             ## The IOLoop is started because this method is invoked by the Try/
             ## Catch below when KeyboardInterrupt is caught.Starting the IOLoop
             ## again will allow the publisher to cleanly disconnect from Rabbi.
-            self.___connection.ioloop.start();
+            self.connection.ioloop.start();
 
         except:
             pass;
@@ -237,8 +237,9 @@ class RabbitMQ_Consume(object):
     ###########################################################################
     __data       = {};
     __qName      = None;
-    __connection = None;
+    connection   = None;
     __chn        = None;
+    consumeTag   = None;
 
 
     ###########################################################################
@@ -266,7 +267,8 @@ class RabbitMQ_Consume(object):
             ## ssages for the consumer_tag to the consumer callback.If you do n
             ## ot pass in a consumer_tag, one will be automatically generated f
             ## or you. Returns the consumer tag.
-            self.chn.basic_consume(self.callback, self.__qName, no_ack=False);
+            self.consumeTag = self.chn.basic_consume(self.callback,
+                                                     self.__qName,no_ack=False);
 
             ## Processes I/O events and dispatches timers and basic_consume cal
             ## lbacks until all consumers are cancelled.
@@ -325,13 +327,13 @@ class RabbitMQ_Consume(object):
                 ## s methods if you'd like to receive messages from RabbitMQ us
                 ## ing basic_consume or if you want to be notified of a deliver
                 ## y failure when using basic_publish. 
-                self.__connection = pika.BlockingConnection(parameters);
+                self.connection = pika.BlockingConnection(parameters);
 
                 ## Create a new channel with the next available channel numb. o
                 ## r pass in a channel number to use. Must be non-zero if you w
                 ## ould like to specify but it is recommended that you let Pika
                 ##  manage the channel numbers.
-                self.chn = self.__connection.channel();
+                self.chn = self.connection.channel();
 
                 ## This method creates an exchange if it does not already exist
                 ## i, and if the exchange exists, verifies that it is of the co

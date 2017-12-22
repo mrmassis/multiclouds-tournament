@@ -24,15 +24,30 @@ MESSAGE_PARSE_ERROR = -10;
 ## Invalid division:
 DIVISION_INVALID = -1;
 
+## Return codes:
+SUCCESS = 1
+FAILED  = 0
+
+PLAYER_N_REG = 1;
+PLAYER_Y_REG = 0;
+
 ## Operation code:
-GETINF_RESOURCE = 0
-SETINF_RESOURCE = 8
-CREATE_INSTANCE = 1
-DELETE_INSTANCE = 2
-SUSPND_INSTANCE = 3
-RESUME_INSTANCE = 4
-RESETT_INSTANCE = 5
-GETINF_INSTANCE = 9
+CREATE_INSTANCE = 0
+DELETE_INSTANCE = 1
+GETINF_INSTANCE = 2
+GETINF_RESOURCE = 3
+SETINF_RESOURCE = 4
+SUSPND_INSTANCE = 5
+RESUME_INSTANCE = 6
+RESETT_INSTANCE = 7
+
+## Administration operation code:
+ADD_REG_PLAYER  = 1002
+SUS_REG_PLAYER  = 1003
+DEL_REG_PLAYER  = 1004
+
+## Reset Enviroment
+RESET_ENVIROMENT= 666
 
 ## Instances definitions (SIMULATION):
 IMG_NAME = 'cirros-0.3.3-x86_64';
@@ -77,7 +92,7 @@ def get_configs(configName):
             cfg[section] = {};
 
             for option in config.options(section):
-                cfg[section][option] = config.get(section,option);
+                cfg[section][option] = config.get(section,option, 1);
 
         return cfg;
 

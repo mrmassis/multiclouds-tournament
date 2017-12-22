@@ -7,7 +7,7 @@
 
 
 
-__all__ = ['MCT_Database_SQLAlchemy', 'Simulation', 'State', 'Request', 'Player', 'Fairness']
+__all__ = ['MCT_Database_SQLAlchemy', 'Request', 'Player', 'Vm']
 
 
 
@@ -44,65 +44,7 @@ Base = declarative_base();
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
-class Simulation(Base):
-
-    """
-    Class Simulation:
-    ---------------------------------------------------------------------------
-    """
-
-    ###########################################################################
-    ## ATTRIBUTES                                                            ##
-    ###########################################################################
-    __tablename__ = 'SIMULATION';
-
-    id          = Column(BIGINT(20) , nullable=False, primary_key=True); 
-    time        = Column(BIGINT(20) , nullable=False);
-    machineId   = Column(BIGINT(20) , nullable=False);
-    eventType   = Column(INT(11)    , nullable=False);
-    plataformId = Column(VARCHAR(45), nullable=True );
-    cpu         = Column(FLOAT      , nullable=False);
-    memory      = Column(FLOAT      , nullable=False);
-    valid       = Column(INT(11)    , default=0);
-        
-    id.autoincrement = True;
-
-## END CLASS.
-
-
-
-
-
-
-
-
-class State(Base):
-
-    """
-    Class State:
-    ---------------------------------------------------------------------------
-    """
-
-    ###########################################################################
-    ## ATTRIBUTES                                                            ##
-    ###########################################################################
-    __tablename__ = 'STATE';
-
-    player_id = Column(VARCHAR(45), nullable=False, primary_key=True); 
-    vm_id     = Column(VARCHAR(45), nullable=False);
-    vm_owner  = Column(VARCHAR(45), nullable=False);
-    vm_type   = Column(VARCHAR(45), nullable=False);
-    running   = Column(VARCHAR(45), nullable=False);
-
-## END CLASS.
-    
-
-
-
-
-
-
-
+## Used by MCT_Dispatch.
 class Request(Base):
 
     """
@@ -118,11 +60,10 @@ class Request(Base):
     id                 = Column(INT        , nullable=False, primary_key=True);
     player_id          = Column(VARCHAR(45), nullable=False);
     request_id         = Column(VARCHAR(45), nullable=False);
-    message            = Column(LONGTEXT   , nullable=False);
     action             = Column(INT        , nullable=True);
     timestamp_received = Column(TIMESTAMP  , nullable=True);
     timestamp_finished = Column(TIMESTAMP  , nullable=True);
-    status             = Column(TINYINT(1) , nullable=True);
+    status             = Column(TINYINT(1) , nullable=True , default=0 );
 
 ## END CLASS.
 
@@ -133,18 +74,30 @@ class Request(Base):
 
 
 
-
-class Fairness:
+class Vm(Base):
 
     """
-    Class Fairness:
+    Class Vm:
     ---------------------------------------------------------------------------
     """
 
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __tablename__ = 'FAIRNESS';
+    __tablename__ = 'VM';
+
+    id                 = Column(INT        , nullable=False, primary_key=True);
+    origin_add         = Column(VARCHAR(45), nullable=False);
+    origin_id          = Column(VARCHAR(45), nullable=False);
+    destiny_add        = Column(VARCHAR(45), nullable=False);
+    destiny_name       = Column(VARCHAR(45), nullable=False);
+    status             = Column(TINYINT(1) , nullable=False);
+    vcpus              = Column(INT        , nullable=False, default=0);
+    mem                = Column(BIGINT     , nullable=False, default=0);
+    disk               = Column(BIGINT     , nullable=False, default=0);
+    timestamp_received = Column(TIMESTAMP  , nullable=True);
+    timestamp_finished = Column(TIMESTAMP  , nullable=True);
+
 ## END CLASS.
 
 
@@ -154,6 +107,7 @@ class Fairness:
 
 
 
+## Used by MCT_Dispatch|MCT_Register.
 class Player(Base):
 
     """
@@ -166,17 +120,28 @@ class Player(Base):
     ###########################################################################
     __tablename__ = 'PLAYER';
 
-    player_id      = Column(VARCHAR(45), nullable=False, primary_key=True); 
-    vcpus          = Column(INT        , nullable=True , default=0); 
-    vcpus_used     = Column(INT        , nullable=True , default=0); 
-    local_gb       = Column(INT        , nullable=True , default=0);
-    local_gb_used  = Column(INT        , nullable=True , default=0);
-    memory         = Column(INT        , nullable=True , default=0);
-    memory_mb_used = Column(INT        , nullable=True , default=0);
-    requests       = Column(INT        , nullable=True , default=0);
-    accepted       = Column(INT        , nullable=True , default=0);
-    fairness       = Column(FLOAT      , nullable=True , default=0);
-
+    id            = Column(INT        , nullable=False, primary_key=True);
+    name          = Column(VARCHAR(45), nullable=False); 
+    address       = Column(VARCHAR(45), nullable=False); 
+    division      = Column(INT        , nullable=False);
+    score         = Column(FLOAT      , nullable=True , default=0.0);
+    history       = Column(INT        , nullable=True , default=0  );
+    accepts       = Column(INT        , nullable=True , default=0  ); 
+    rejects       = Column(INT        , nullable=True , default=0  );
+    running       = Column(INT        , nullable=True , default=0  );
+    finished      = Column(INT        , nullable=True , default=0  );
+    problem_del   = Column(INT        , nullable=True , default=0  );
+    vcpus         = Column(INT        , nullable=True , default=0  );
+    vcpus_used    = Column(INT        , nullable=True , default=0  );
+    memory        = Column(BIGINT(20) , nullable=True , default=0  );
+    memory_used   = Column(BIGINT(20) , nullable=True , default=0  );
+    local_gb      = Column(BIGINT(20) , nullable=True , default=0  );
+    local_gb_used = Column(BIGINT(20) , nullable=True , default=0  );
+    max_instance  = Column(INT        , nullable=True , default=0  );
+    token         = Column(VARCHAR(45), nullable=True);
+    suspend       = Column(TIMESTAMP  , nullable=True);
+    enabled       = Column(INT        , nullable=True , default=0  );
+    
 ## END CLASS.
 
 
@@ -197,7 +162,8 @@ class MCT_Database_SQLAlchemy:
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    session = None;
+    session  = None;
+    __engine = None;
 
 
     ###########################################################################
@@ -219,18 +185,7 @@ class MCT_Database_SQLAlchemy:
         parameter += dbDictionary['base'];
 
         ##
-        engine = create_engine(parameter);
-
-        ##
-        DBSession = sessionmaker(bind=engine)
-
-        ## A DBSession() instance establishes all conversations with the databa
-        ## se and represents a staging zone for all the objects loaded into the
-        ## database session object. Any change made against the objects in the 
-        ## session won't be persisted into the database until you call session.
-        ## commit(). If you are not happy about the changes, you can revert all
-        ## of them back to the last commit by calling session.rollback();
-        self.session = DBSession();
+        self.__engine = create_engine(parameter);
 
 
     ###########################################################################
@@ -242,14 +197,26 @@ class MCT_Database_SQLAlchemy:
     ## @PARAM obj table == object that meaning one table in database.
     ##
     def all_regs(self, table):
+
+        DBSession = sessionmaker(bind=self.__engine)
+
+        ## A DBSession() instance establishes all conversations with the databa
+        ## se and represents a staging zone for all the objects loaded into the
+        ## database session object. Any change made against the objects in the 
+        ## session won't be persisted into the database until you call session.
+        ## commit(). If you are not happy about the changes, you can revert all
+        ## of them back to the last commit by calling session.rollback();
+        session = DBSession();
+
         rList = [];
 
         ## Obtain all registries from database:
-        allRegistries = self.session.query(table).all();
+        allRegistries = session.query(table).all();
 
         for registry in allRegistries:
             rList.append(self.__row2dict(registry));
 
+        session.close();
         return rList;
 
 
@@ -259,12 +226,25 @@ class MCT_Database_SQLAlchemy:
     ## @PARAM obj table == object that meaning one table in database.
     ##
     def first_reg(self, table):
+
+        DBSession = sessionmaker(bind=self.__engine)
+
+        ## A DBSession() instance establishes all conversations with the databa
+        ## se and represents a staging zone for all the objects loaded into the
+        ## database session object. Any change made against the objects in the 
+        ## session won't be persisted into the database until you call session.
+        ## commit(). If you are not happy about the changes, you can revert all
+        ## of them back to the last commit by calling session.rollback();
+        session = DBSession();
+
         rList = [];
 
         ## Obtain the first registry from database:
-        registry = self.session.query(table).first();
+        registry = session.query(table).first();
 
         rList.append(self.__row2dict(registry));
+
+        session.close();
 
         return rList;
 
@@ -276,13 +256,26 @@ class MCT_Database_SQLAlchemy:
     ## @PARAM dct filterRules== filters to apply.
     ##
     def all_regs_filter(self, table, filterRule):
+
+        DBSession = sessionmaker(bind=self.__engine)
+
+        ## A DBSession() instance establishes all conversations with the databa
+        ## se and represents a staging zone for all the objects loaded into the
+        ## database session object. Any change made against the objects in the 
+        ## session won't be persisted into the database until you call session.
+        ## commit(). If you are not happy about the changes, you can revert all
+        ## of them back to the last commit by calling session.rollback();
+        session = DBSession();
+
         rList = [];
 
         ## Obtain all registries from database:
-        allRegistries = self.session.query(table).filter(filterRule).all();
+        allRegistries = session.query(table).filter(filterRule).all();
 
         for registry in allRegistries:
             rList.append(self.__row2dict(registry));
+
+        session.close();
 
         return rList;
 
@@ -295,10 +288,20 @@ class MCT_Database_SQLAlchemy:
     ##
     def first_reg_filter(self, table, filterRules):
 
+        DBSession = sessionmaker(bind=self.__engine)
+
+        ## A DBSession() instance establishes all conversations with the databa
+        ## se and represents a staging zone for all the objects loaded into the
+        ## database session object. Any change made against the objects in the 
+        ## session won't be persisted into the database until you call session.
+        ## commit(). If you are not happy about the changes, you can revert all
+        ## of them back to the last commit by calling session.rollback();
+        session = DBSession();
+
         rList = [];
 
         ## Execute the query:
-        querySql = self.session.query(table)
+        querySql = session.query(table)
 
         ## Filter:
         for attr, value in filterRules.items():
@@ -312,6 +315,8 @@ class MCT_Database_SQLAlchemy:
         if registry:
             rList.append(self.__row2dict(registry));
 
+        session.close();
+
         return rList;
 
 
@@ -324,9 +329,21 @@ class MCT_Database_SQLAlchemy:
     ##
     def update_reg(self, table, filterRule, fieldsDict):
 
+        DBSession = sessionmaker(bind=self.__engine)
+
+        ## A DBSession() instance establishes all conversations with the databa
+        ## se and represents a staging zone for all the objects loaded into the
+        ## database session object. Any change made against the objects in the 
+        ## session won't be persisted into the database until you call session.
+        ## commit(). If you are not happy about the changes, you can revert all
+        ## of them back to the last commit by calling session.rollback();
+        session = DBSession();
+
         ## Update the registry:
-        self.session.query(table).filter(filterRule).update(fieldsDict);
-        self.session.commit();
+        session.query(table).filter(filterRule).update(fieldsDict);
+        session.commit();
+
+        session.close();
 
         return 0;
 
@@ -339,9 +356,56 @@ class MCT_Database_SQLAlchemy:
     ##
     def insert_reg(self, row):
 
-        self.session.add(row);
-        self.session.commit();
+        DBSession = sessionmaker(bind=self.__engine)
 
+        ## A DBSession() instance establishes all conversations with the databa
+        ## se and represents a staging zone for all the objects loaded into the
+        ## database session object. Any change made against the objects in the 
+        ## session won't be persisted into the database until you call session.
+        ## commit(). If you are not happy about the changes, you can revert all
+        ## of them back to the last commit by calling session.rollback();
+        session = DBSession();
+
+        session.add(row);
+        session.commit();
+
+        session.close();
+
+        return 0;
+
+
+    ##
+    ## BRIEF: delete an existent register in table;
+    ## ------------------------------------------------------------------------
+    ## @PARAM obj table      == object that meaning one table in database.
+    ## @PARAM str filterRule == filter to apply.
+    ##
+    def delete_reg(self, table, filterRules):
+
+        DBSession = sessionmaker(bind=self.__engine)
+
+        ## A DBSession() instance establishes all conversations with the databa
+        ## se and represents a staging zone for all the objects loaded into the
+        ## database session object. Any change made against the objects in the 
+        ## session won't be persisted into the database until you call session.
+        ## commit(). If you are not happy about the changes, you can revert all
+        ## of them back to the last commit by calling session.rollback();
+        session = DBSession();
+
+        ## Execute the query:
+        querySql = session.query(table);
+
+        ### Filter:
+        for attr, value in filterRules.items():
+            if querySql:
+                querySql = querySql.filter(value);
+
+        ### Delete element found in the table:
+        registry = querySql.delete(synchronize_session=False);
+
+        session.commit();
+
+        session.close();
         return 0;
 
 
@@ -360,4 +424,33 @@ class MCT_Database_SQLAlchemy:
         return dictionary
 ## END CLASS.
 
+
+
+
+
+
+
+
+
+###############################################################################
+## MAIN                                                                      ##
+###############################################################################
+if __name__ == "__main__":
+
+    config = {
+        'user' : 'mct',
+        'pass' : 'password',
+        'base' : 'mct',
+        'host' : 'localhost'
+    };
+
+    db = MCT_Database_SQLAlchemy(config);
+
+
+    filterRules = {
+        0 : Map.uuid_dst == '2628788d-7e48-432f-b642-24e88a99d4ed',
+        1 : Map.uuid_src == 'playerVirtual0_3338579772'
+    };
+
+    valRet = db.delete_reg(Map, filterRules);
 ## END.

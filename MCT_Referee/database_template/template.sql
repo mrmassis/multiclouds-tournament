@@ -2,6 +2,7 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ALLOW_INVALID_DATES';
 
+DROP DATABASE IF EXISTS `mct`;
 CREATE SCHEMA IF NOT EXISTS `mct` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
 USE `mct` ;
 
@@ -24,52 +25,42 @@ PACK_KEYS = DEFAULT;
 
 
 -- -----------------------------------------------------
--- Table `mct`.`LAST_IDX`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `mct`.`LAST_IDX` ;
-
-CREATE TABLE IF NOT EXISTS `mct`.`LAST_IDX` (
-  `division` INT NOT NULL,
-  `idx`      INT NOT NULL,
-  PRIMARY KEY (`division`))
-ENGINE = InnoDB
-PACK_KEYS = DEFAULT;
-
-
--- -----------------------------------------------------
 -- Table `mct`.`PLAYER`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `mct`.`PLAYER` ;
 
 CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
   `id`                 INT         NOT NULL AUTO_INCREMENT,
-  `name`               VARCHAR(45)     NULL,
-  `address`            VARCHAR(45)     NULL,
+  `name`               VARCHAR(45) NOT NULL,
+  `address`            VARCHAR(45) NOT NULL,
   `division`           INT             NULL,
-  `score`              FLOAT           NULL,
-  `historic`           INT             DEFAULT 0,
+  `score`              FLOAT           DEFAULT 0.0,
+  `history`            INT             DEFAULT 0,
   `accepts`            INT             DEFAULT 0,
   `rejects`            INT             DEFAULT 0,
   `running`            INT             DEFAULT 0,
   `finished`           INT             DEFAULT 0,
   `problem_del`        INT             DEFAULT 0,
-  `vcpu`               INT         NOT NULL ,
-  `memory`             BIGINT      NOT NULL ,
-  `disk`               BIGINT      NOT NULL ,
-  `vcpu_used`          BIGINT      NOT NULL ,
-  `memory_used`        BIGINT      NOT NULL ,
-  `disk_used`          BIGINT      NOT NULL ,
+  `vcpus`              INT             DEFAULT 0,
+  `memory`             BIGINT(20)      DEFAULT 0,
+  `local_gb`           BIGINT(20)      DEFAULT 0,
+  `vcpus_used`         BIGINT(20)      DEFAULT 0,
+  `memory_used`        BIGINT(20)      DEFAULT 0,
+  `local_gb_used`      BIGINT(20)      DEFAULT 0,
+  `max_instance`       INT             DEFAULT 0,
   `token`              VARCHAR(45)     NULL,
+  `suspend`            TIMESTAMP       NULL,
+  `enabled`            INT             DEFAULT 0,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `mct`.`INSTANCE`
+-- Table `mct`.`VM`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mct`.`INSTANCE` ;
+DROP TABLE IF EXISTS `mct`.`VM` ;
 
-CREATE  TABLE IF NOT EXISTS `mct`.`INSTANCE` (
+CREATE  TABLE IF NOT EXISTS `mct`.`VM` (
   `id`                 INT         NOT NULL AUTO_INCREMENT,
   `origin_add`         VARCHAR(45) NOT NULL,
   `origin_id`          VARCHAR(45) NOT NULL,
@@ -96,17 +87,14 @@ CREATE  TABLE IF NOT EXISTS `mct`.`FIELDS` (
   PRIMARY KEY (`operation`))
 ENGINE = InnoDB;
 
-
 INSERT INTO FIELDS (operation, fields) VALUES (0, 'name mem image vcpus disk uuid');
 
--- PLAYER;
--- INSERT INTO PLAYER (name, address, division, score, historic, vcpu, memory, disk, vcpu_used, memory_used, disk_used) VALUES ('Player1', '10.3.77.157',  3,  0.0, 0,  0, 0, 0, 0, 0, 0);
--- INSERT INTO PLAYER (name, address, division, score, historic, vcpu, memory, disk, vcpu_used, memory_used, disk_used) VALUES ('Player2', '10.3.77.160',  3,  0.0, 0,  0, 0, 0, 0, 0, 0);
-
--- PLAYER;
-INSERT INTO LAST_IDX (division, idx) VALUES (1, 1);
-INSERT INTO LAST_IDX (division, idx) VALUES (2, 1);
-INSERT INTO LAST_IDX (division, idx) VALUES (3, 1);
+-- ---------------------------------------------------------------------------
+-- CREATE USER
+-- ---------------------------------------------------------------------------
+GRANT ALL PRIVILEGES ON mct.* TO 'mct'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON mct.* TO 'mct'@'%'         IDENTIFIED BY 'password' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
