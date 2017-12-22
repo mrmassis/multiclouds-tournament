@@ -7,7 +7,7 @@
 
 
 
-__all__ = ['MCT_Database_SQLAlchemy', 'Simulation', 'State', 'Request', 'Player', 'Fairness', 'Player_MCT']
+__all__ = ['MCT_Database_SQLAlchemy', 'Simulation', 'State', 'Request', 'Player', 'Fairness']
 
 
 

@@ -24,6 +24,9 @@ MESSAGE_PARSE_ERROR = -10;
 ## Invalid division:
 DIVISION_INVALID = -1;
 
+SUCCESS = 1;
+FAILED  = 0;
+
 ## Operation code:
 CREATE_INSTANCE = 0
 DELETE_INSTANCE = 1
@@ -36,7 +39,8 @@ RESETT_INSTANCE = 7
 
 ## Administration operation code:
 ADD_REG_PLAYER  = 1002
-DEL_REG_PLAYER  = 1003
+SUS_REG_PLAYER  = 1003
+DEL_REG_PLAYER  = 1004
 
 ## Reset Enviroment
 RESET_ENVIROMENT= 666

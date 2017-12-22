@@ -125,7 +125,7 @@ class MCT_DB_Proxy:
     def run(self):
 
         ## LOG:
-        self.__print.show("\n########## START MCT_DB_PROXY ##########\n",'I');
+        self.__print.show("########## START MCT_DB_PROXY ##########\n",'I');
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1);
@@ -183,8 +183,7 @@ class MCT_DB_Proxy:
     def stop(self):
 
         ## LOG:
-        self.__print.show("\n########## FINISH MCT_DB_PROXY ##########\n",'I');
-
+        self.__print.show("########## FINISH MCT_DB_PROXY ##########\n",'I');
         return 0
 
 
@@ -254,7 +253,7 @@ class MCT_DB_Proxy:
     def __invalid_action(self, idx):
 
         fieldsToUpdate = {
-            'valid':1
+            'valid' : 1
         };
 
         ## Update the entry:

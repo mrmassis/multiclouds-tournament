@@ -23,7 +23,7 @@ from mct.lib.utils import *;
 
 
 ###############################################################################
-## DESCRIPTION                                                              ##
+## DESCRIPTION                                                               ##
 ###############################################################################
 
 
@@ -173,7 +173,7 @@ class MCT_Instances:
     ## ------------------------------------------------------------------------
     ## @PARAM msg == message with instance data.
     ##
-    def update(self, msg):
+    def upd_inst(self, msg):
 
         playerOrign = msg['playerId'];
         playerGuest = msg['destName'];

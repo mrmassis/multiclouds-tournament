@@ -183,6 +183,9 @@ class MCT_Agent(RabbitMQ_Consume):
         self.chn.basic_cancel(self.consumeTag);
         self.chn.close();
         self.connection.close();
+
+        ## LOG:
+        self.__print.show("\n###### STOP MCT_AGENT_SIMULATION ######\n",'I');
         return 0;
 
 
@@ -198,6 +201,10 @@ class MCT_Agent(RabbitMQ_Consume):
     def __send_message_dispatch(self, message, appId):
         ## LOG:
         self.__print.show('MESSAGE RECEIVED FROM AGENT...: '+str(message),'I');
+
+        ## Insert the requet in object that mantain the VM running controller.
+        if message['code'] == CREATE_INSTANCE:
+            self.__instances.add_inst(message);
 
         ## Publish the message to dispatch (locate in remote server) via AMQP.
         valRet = self.__publishExt.publish(message, self.__routeExt);
@@ -247,7 +254,7 @@ class MCT_Agent(RabbitMQ_Consume):
             ## Check the return, if the action is to insert and return was suc-
             ## cefull: store the new vm instance in a special dictionary.
             if   message['code'] == CREATE_INSTANCE:
-                self.__instances.add_inst(message);
+                self.__instances.upd_inst(message);
 
                 ## LOG:
                 self.__print.show("VMs Running: " +self.__instances.show(),'I');

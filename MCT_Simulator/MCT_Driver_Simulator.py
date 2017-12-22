@@ -187,6 +187,7 @@ class MCT_Action(object):
     __route                 = None;
     __requestPendingWaiting = None;
     __requestPendingIteract = None;
+    __runningVM             = {};
 
 
     ###########################################################################
@@ -260,7 +261,7 @@ class MCT_Action(object):
 
        ## Unregister the existent player from tournament. Put the player in sus
        ## pense mode.
-       elif action == DEL_REG_PLAYER:
+       elif action == SUS_REG_PLAYER:
            dRecv = self.delreg_vplayer(data);
 
        ## Get resouces information from MCT_Referee. 
@@ -393,6 +394,12 @@ class MCT_Action(object):
         else:
             dRecv = {};
 
+        ## VM CONTROL ------------------------------------------------------ ##
+        ## If status is sucessfull put vm running in vm structure:           ##
+        ## ----------------------------------------------------------------- ##
+        if dRecv['status'] == SUCCESS:
+            self.__runningVM[dRecv['data']['uuid']] = 1;
+
         ## LOG:
         self.__print.show('|CREATE| - data received: ' + str(dRecv), 'I');
 
@@ -413,27 +420,37 @@ class MCT_Action(object):
         ## Obtain the request identifier (use the "UUID" created by OpenStack).
         idx = self.__name + '_' + str(data['machineID']);
 
-        ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
-        ## to exec de action.
-        msgToSend = self.__create_basic_message(DELETE_INSTANCE, idx);
+        ## VM CONTROL ------------------------------------------------------ ##
+        ## If VM exist is possible delete it.                                ##
+        ## ----------------------------------------------------------------- ##
+        if idx in self.__runningVM:
+            del self.__runningVM;
 
-        msgToSend['data'] = {
-           'name'  : idx,
-           'uuid'  : idx
-        }
+            ## Create basic message to send to MCT_Agent. MCT_Agent is respon-
+            ## sible to exec de action.
+            msgToSend = self.__create_basic_message(DELETE_INSTANCE, idx);
 
-        ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        valret = self.__publish.publish(msgToSend, 'Agent_Drive');
+            msgToSend['data'] = {
+                'name'  : idx,
+                'uuid'  : idx
+            };
 
-        ## Waiting for the answer is ready in database.The answer is ready when
-        ## MCT_Agent send the return.
-        if valret != -1:
-            dRecv = self.__waiting_return(self.__name, idx);
+            ## Send the request to the MCT_Action by asynchronous protocol AMPQ.
+            valret = self.__publish.publish(msgToSend, 'Agent_Drive');
+
+            ## Waiting for the answer is ready in database. The answer is ready
+            ## when MCT_Agent send the return.
+            if valret != -1:
+                dRecv = self.__waiting_return(self.__name, idx);
+            else:
+                dRecv = {};
+
+            ## LOG:
+            self.__print.show('|DELETE| - data received: ' + str(dRecv), 'I');
         else:
+            ## LOG:
+            self.__print.show('|DELETE| - VM isnt running impossible DEL','I');
             dRecv = {};
-
-        ## LOG:
-        self.__print.show('|DELETE| - data received: ' + str(dRecv), 'I');
 
         ## Returns the data:
         return dRecv;
@@ -550,7 +567,7 @@ class MCT_Action(object):
         totalRequest = accepts + rejects;
 
         ## Status "1" meaning that request for VM was accept by remote player!
-        if status == 1:
+        if status == SUCESS:
             accepts += 1;
         else:
             rejects += 1;
@@ -570,7 +587,7 @@ class MCT_Action(object):
 
         ## Update player status:
         with self.__db['lock']:
-            self.__db['db'].update_reg(Player,Player.name == self.__name,data);
+           self.__db['db'].update_reg(Player,Player.name == self.__name,data);
             
         ## LOG:
         self.__print.show(self.__name + ' REJECTS : | ' + str(rejects ), 'I');
@@ -740,7 +757,6 @@ class MCT_VPlayer(Process):
     __print                   = None;
     __token                   = None;
     __ratio                   = None;
-    __runningVM               = ????;
 
 
     ###########################################################################
@@ -821,17 +837,6 @@ class MCT_VPlayer(Process):
  
             if data['valid'] != 2:
 
-                ## TODO:
-                if data['action'] == DELETE_INSTANCE:
-                    ## Delete the VM instance is only possible if the VM is ru-
-                    ## nning, otherwise abor.
-                    if data[?????] in self.__runningVm:
-                        del self.__runningVm ?????; 
-                    else:
-                        ## Go to the next loop iteration. Dont send the request
-                        ## to the dispatch. This because there inst VM running.
-                        continue;      
-
                 ## Calculate the new time to waiting until perform "new action".
                 newTime = float(data['time'] / (self.__ratio)) - oldTime;
                 oldTime = newTime;
@@ -845,12 +850,6 @@ class MCT_VPlayer(Process):
                 ## Dispatch the action to MCT_Dispatch:
                 dRecv = self.__mctAction.dispatch(data['action'], data);
            
-                ## TODO:
-                ## Verified the return status. if VM creation is ok put it in
-                ## running instance:
-                if dRecv['action'] == CREATE_INSTANCE and dRecv['status'] == 1:
-                    self.__runningVm.append(?????);                 
-
             else:
                 getSetInfRepeat.stop();
                 break;
@@ -1045,6 +1044,7 @@ class Main:
         while True:
 
             for vPlayer in os.listdir(self.__virtualPlayersPath):
+
                 try:
                     ## Open virtual player config:
                     vCfg = yaml.load(file('/etc/mct/vplayers/' + vPlayer, 'r'));
@@ -1116,10 +1116,8 @@ class Main:
     ##
     def __vplayer_in_running_list(self, vCfg):
  
-        if self.__vRunning.has_key(vCfg['name']) == True:
-            ## Verify if the thread is running:
-            if self.__vRunning[vCfg['name']].is_alive() == True:
-                return True;
+        if vCfg['name'] in self.__vRunning:
+            return True;
 
         return False;
 
