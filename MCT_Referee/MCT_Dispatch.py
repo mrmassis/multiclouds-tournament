@@ -295,7 +295,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
         if dRecv != []:
 
             ## Verify if the player is enabled and the token received is valid. 
-            if dRecv[-1]['enabled'] == 1: 
+            if dRecv[-1]['enabled'] == '1': 
                 ## LOG:
                 self.__print.show('PLAYER VALID: ' + str(msg), 'I');
                 return True;
