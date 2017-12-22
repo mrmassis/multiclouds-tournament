@@ -203,8 +203,12 @@ class MCT_Agent(RabbitMQ_Consume):
         self.__print.show('MESSAGE RECEIVED FROM AGENT...: '+str(message),'I');
 
         ## Insert the requet in object that mantain the VM running controller.
-        if message['code'] == CREATE_INSTANCE:
+        if   message['code'] == CREATE_INSTANCE:
             self.__instances.add_inst(message);
+
+        elif message['code'] == STOPVM_INSTANCE:
+            self.__instances.stp_inst(message);
+            return 0;
 
         ## Publish the message to dispatch (locate in remote server) via AMQP.
         valRet = self.__publishExt.publish(message, self.__routeExt);
@@ -241,6 +245,9 @@ class MCT_Agent(RabbitMQ_Consume):
             elif message['code'] == DELETE_INSTANCE:
                 message = self.__delete_server(message);
 
+            elif message['code'] == GETINF_INSTANCE:
+                message = self.__getinf_server(message);
+
             ## LOG:
             self.__print.show('RETURN EXECUTION VALUE TO MCT DISPATCH!', 'I');
 
@@ -256,14 +263,14 @@ class MCT_Agent(RabbitMQ_Consume):
             if   message['code'] == CREATE_INSTANCE:
                 self.__instances.upd_inst(message);
 
-                ## LOG:
-                self.__print.show("VMs Running: " +self.__instances.show(),'I');
-
             elif message['code'] == DELETE_INSTANCE:
                 self.__instances.del_inst(message);
 
-                ## LOG:
-                self.__print.show("VMs Running: " +self.__instances.show(),'I');
+            elif message['code'] == GETINF_INSTANCE:
+                 self.__instances.del_inst(message);
+
+            ## LOG:
+            self.__print.show("VMS RUNNING: " +self.__instances.show(),'I');
 
             ## Update the database:
             self.__update_database(message);
@@ -288,6 +295,16 @@ class MCT_Agent(RabbitMQ_Consume):
         request.message    = str(message['data'    ]);
 
         valRet = self.__db.insert_reg(request);
+
+
+    ##
+    ## BRIEF: check if the instance is running. 
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict msg == received message.
+    ##
+    def __getinf_server(self, msg):
+        ## TODO:
+        return msg;
 
 
     ##
