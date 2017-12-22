@@ -19,7 +19,7 @@ import os;
 
 from sqlalchemy                  import and_, or_;
 from mct.lib.utils               import *;
-from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Request;
+from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy,Request,Player;
 from mct.lib.amqp                import RabbitMQ_Publish, RabbitMQ_Consume;
 
 
@@ -258,20 +258,18 @@ class MCT_Dispatch(RabbitMQ_Consume):
        ## LOG:
        self.__print.show('RECV FROM PLAYER ' + str(msg)+ ' APPID ' +appId,'I');
 
-       ## Check if the player has access to tournament:
-       valid = self.__valid_action_player(msg);
-
-       if valid == True:
-           ## These actions described above is executed by MCT_Register module.
-           if   msg['code'] == ADD_REG_PLAYER or msg['code'] == DEL_REG_PLAYER:
+       ## These two actions described above is executed by MCT_Register module.
+       if   msg['code'] == ADD_REG_PLAYER or msg['code'] == DEL_REG_PLAYER:
                self.__publish_register.publish(msg, self.__routeRegister);
-           else:
-               ## Get player name:
-               playerId = msg['playerId'];
+       else:
+           ## Check if the player has access to tournament:
+           valid = self.__valid_action_player(msg);
 
-               ## Adds the message in the pending requests dictionary. If its al
+           if valid == True:
+
+               ## Adds the message in the pending requests dictionary.If its al
                ## ready inserted does not perform the action.
-               valRet = self.__append_query(playerId,msg['reqId'],msg['code']);
+               self.__append_query(msg['playerId'], msg['reqId'], msg['code']);
 
                ## LOG:
                self.__print.show('MSG SEND TO REFEREE: '+str(msg), 'I');
@@ -284,7 +282,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
 
     ##
     ## BRIEF: valid the action (security).
-    ## ------------------------------------------------------------------------
+    ## -------------------------------------------------------------------------
     ## @PARAM msg == received message.
     ##
     def __valid_action_player(self, msg):
@@ -292,11 +290,12 @@ class MCT_Dispatch(RabbitMQ_Consume):
         self.__print.show('VALID THE ACTION: ' + str(msg), 'I');
 
         ## Get information about the player.
-        dRecv = self.__db.all_regs_filter(Player, (Playe.name == msg['']));
+        dRecv=self.__db.all_regs_filter(Player,(Player.name == msg['playerId']));
 
         if dRecv != []:
+
             ## Verify if the player is enabled and the token received is valid. 
-            if dRecv[-1]['enabled'] == 1 and dRecv[-1]['token'] == msg['token']: 
+            if dRecv[-1]['enabled'] == '1': 
                 ## LOG:
                 self.__print.show('PLAYER VALID: ' + str(msg), 'I');
                 return True;
