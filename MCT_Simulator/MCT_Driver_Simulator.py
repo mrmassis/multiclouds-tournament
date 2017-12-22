@@ -424,7 +424,7 @@ class MCT_Action(object):
         ## If VM exist is possible delete it.                                ##
         ## ----------------------------------------------------------------- ##
         if idx in self.__runningVM:
-            del self.__runningVM;
+            del self.__runningVM[idx];
 
             ## Create basic message to send to MCT_Agent. MCT_Agent is respon-
             ## sible to exec de action.
