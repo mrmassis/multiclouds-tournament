@@ -229,18 +229,96 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM dict msg     == message data.
     ##
     def __inf_instance(self, division, msg):
+
         ## LOG:
-        self.__print.show('TODO!', 'I');
+        self.__print.show('GET INFORMATION ABOUT INSTANCE: ' + str(msg), 'I');
+
+        ## SENDTO: If 'retId == empty' the request is go to the player destiny.
+        if msg['retId'] == '':
+            msg = self.__inf_instance_send_destiny(msg);
+
+        ## RETURN: If retId !='' the request is return from the player destiny. 
+        else:
+            msg = self.__inf_instance_recv_destiny(msg);
+
         return msg;
 
 
     ##
-    ## BRIEF: create a new instance.
+    ## BRIEF: send get inf instance to destiny.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict msg == message data.
+    ## 
+    def __inf_instance_send_destiny(self, msg):
+
+        ## LOG:
+        self.__print.show('INI GET INSTANCE INF SEND','I');
+
+        ## Obtain the information about who is executing the virtual machine.
+        dRecv = self.__db.all_regs_filter(Vm, (Vm.origin_id == msg['reqId']));
+
+        if dRecv != []:
+            destinyAdd = str(dRecv[-1]['destiny_add']);
+
+            ## LOG:
+            self.__print.show('GET INF FROM TO ADDR ' + destinyAdd, 'I');
+
+            ## Set the message to be a forward message (perform a map). Send it
+            ## to the destine and waiting the return.
+            msg['retId'] = msg['reqId'];
+
+            ## Set the target address. The target addr is the player addrs that
+            ## will accept the request.
+            msg['destAddr'] = dRecv[-1]['destiny_add' ];
+            msg['destName'] = dRecv[-1]['destiny_name'];
+
+            ## LOG:
+            self.__print.show('GET INF SEND: PLAYER VALUES '+str(msg),'I');
+        else:
+            ## LOG:
+            self.__print.show('THERE ISNT PLAYER EXECUTING THIS INST.!', 'I');
+            msg['status'] = FAILED;
+
+        ## LOG:
+        self.__print.show('END GET INF SEND', 'I');
+        return msg;
+
+
+    ##
+    ## BRIEF: recv get inf instance from destiny.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict msg == message data.
+    ## 
+    def __inf_instance_recv_destiny(self, msg):
+
+        if msg['status'] == FAILED:
+
+            ## If the instance is not running suspend. Set the appropriate time
+            ## stamp.
+            data = {'timestamp_finished' : str(datetime.datetime.now())};
+
+            ## Update VM table.
+            self.__db.update_reg(Vm, Vm.origin_id == msg['reqId'], data);
+      
+            ## the table has all resources offer and used by the player:
+            self.__update_used_values(DELETE_INSTANCE, msg);
+
+        ##
+        msg['destAddr'] = '';
+        msg['retId'   ] = '';
+
+        ## LOG:
+        self.__print.show('END GET INF RECV','I');
+        return msg;
+
+
+    ##
     ## ------------------------------------------------------------------------
     ## @PARAM int division == division from player who request.
     ## @PARAM dict msg     == message data.
     ##
     def __add_instance(self, division, msg):
+
         ## LOG:
         self.__print.show('CREATE INSTANCE: ' + str(msg['reqId']), 'I');
 
