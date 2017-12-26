@@ -13,7 +13,7 @@
 PATH_LOG_SRC="/var/log/mct/"
 PATH_LOG_DST="/var/log/mct/$(date +%D_%T |tr '/' '-')"
 
-LOGS="mct_dispatch.log mct_divisions.log mct_referee.log mct_registy.log mct_securtiy.log"
+LOGS="mct_dispatch.log mct_divisions.log mct_referee.log mct_register.log mct_sanity.log"
 
 
 

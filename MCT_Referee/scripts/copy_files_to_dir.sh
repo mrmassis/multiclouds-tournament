@@ -20,7 +20,7 @@ PATH_CODE_DST="/usr/lib/python2.7/site-packages/mct"
 PATH_CONF_DST="/etc/mct/"
 PATH_LOGS_DST="/var/log/mct"
 
-SERVICES="MCT_Dispatch.py  MCT_Divisions.py  MCT_Referee.py  MCT_Register.py"
+SERVICES="MCT_Dispatch.py  MCT_Divisions.py  MCT_Referee.py  MCT_Register.py MCT_Sanity.py"
 
 
 

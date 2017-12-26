@@ -64,8 +64,12 @@ class MCT_Dispatch(RabbitMQ_Consume):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __publish_referee = None;
-    __publish_register= None;
+    __publishReferee  = None;
+    __publishRegister = None;
+    __publishSanity   = None;
+    __routeReferee    = None;
+    __routeRegister   = None;
+    __routeSanity     = None;
     __divisions       = [];
     __configs         = None;
     __dbConnection    = None;
@@ -90,20 +94,22 @@ class MCT_Dispatch(RabbitMQ_Consume):
 
         ## Get which 'route' is used to deliver the message to the MCT_Referee
         ## and MCT_Register:
-        self.__routeReferee = cfg['amqp_publish_referee' ]['route'];
-        self.__routeRegister= cfg['amqp_publish_register']['route'];
+        self.__routeReferee  = cfg['amqp_publish_referee' ]['route'];
+        self.__routeRegister = cfg['amqp_publish_register']['route'];
+        self.__routeSanity   = cfg['amqp_publish_sanity'  ]['route'];
 
         ## Get password used to publish message to player (regular or virtual)
-        self.__rabbitUser   = cfg['amqp_publish_players']['user' ];
-        self.__rabbitPass   = cfg['amqp_publish_players']['pass' ];
+        self.__rabbitUser    = cfg['amqp_publish_players']['user' ];
+        self.__rabbitPass    = cfg['amqp_publish_players']['pass' ];
 
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
         ## defined in the configuration file.
         RabbitMQ_Consume.__init__(self, cfg['amqp_consume']);
 
         ## Instance a new object to perform the publication of 'AMQP' messages.
-        self.__publish_referee =RabbitMQ_Publish(cfg['amqp_publish_referee' ]);
-        self.__publish_register=RabbitMQ_Publish(cfg['amqp_publish_register']);
+        self.__publishReferee = RabbitMQ_Publish(cfg['amqp_publish_referee' ]);
+        self.__publishRegister= RabbitMQ_Publish(cfg['amqp_publish_register']);
+        self.__publishSanity  = RabbitMQ_Publish(cfg['amqp_publish_sanity'  ]);
 
         ## Intance a new object to handler all operation in the local database.
         self.__db = MCT_Database_SQLAlchemy(cfg['database']);
@@ -141,12 +147,15 @@ class MCT_Dispatch(RabbitMQ_Consume):
         elif properties.app_id == 'MCT_Register':
             self.__recv_message_from_register(msg,properties.app_id);
 
+        elif properties.app_id == 'MCT_Sanity'  :
+            self.__recv_message_from_sanity(msg, properties.app_id );
+
         else:
             self.__recv_message_from_players(msg, properties.app_id);
 
         ## LOG:
         self.__print.show('------------------------------------------\n', 'I');
-        return 0;
+        return SUCCESS;
 
 
     ##
@@ -160,7 +169,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
 
         ## LOG:
         self.__print.show("###### STOP MCT_DISPATCH ######\n",'I');
-        return 0;
+        return SUCCESS;
 
 
     ###########################################################################
@@ -210,7 +219,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
 
             del targetPublish;
 
-        return 0;
+        return SUCCESS;
 
 
     ##
@@ -244,7 +253,41 @@ class MCT_Dispatch(RabbitMQ_Consume):
 
         del targetPublish;
 
-        return 0;
+        return SUCCESS;
+
+
+    ##
+    ## BRIEF: receive message from sanity.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict msg   == received message.
+    ## @PARAM str  appId == source app id.
+    ##
+    def __recv_message_from_sanity(self, msg, appId):
+
+        ## LOG:
+        self.__print.show('MESSAGE RECEIVED FROM SANITY: ' + str(msg), 'I');
+
+        ## Set the agent address. 
+        playerAddress = msg['origAddr'];
+
+        ## Create the configuration about the return message.This configuration
+        ## will be used to send the messagem to apropriate player.
+        config = {
+            'identifier': AGENT_IDENTIFIER,
+            'route'     : AGENT_ROUTE,
+            'exchange'  : AGENT_EXCHANGE,
+            'queue_name': AGENT_QUEUE,
+            'address'   : playerAddress,
+            'user'      : self.__rabbitUser,
+            'pass'      : self.__rabbitPass
+        };
+
+        targetPublish = RabbitMQ_Publish(config);
+        targetPublish.publish(msg, AGENT_ROUTE);
+
+        del targetPublish;
+
+        return SUCCESS;
 
 
     ##
@@ -260,12 +303,16 @@ class MCT_Dispatch(RabbitMQ_Consume):
 
        ## These two actions described above is executed by MCT_Register module.
        if   msg['code'] == ADD_REG_PLAYER or msg['code'] == DEL_REG_PLAYER:
-               self.__publish_register.publish(msg, self.__routeRegister);
+               self.__publishRegister.publish(msg, self.__routeRegister);
+
+       elif msg['code'] == SANITY_INSTANCE:
+               self.__publishSanity.publish(msg, self.__routeSanity);
+
        else:
            ## Check if the player has access to tournament:
            valid = self.__valid_action_player(msg);
 
-           if valid == True:
+           if valid == SUCCESS:
 
                ## Adds the message in the pending requests dictionary.If its al
                ## ready inserted does not perform the action.
@@ -275,9 +322,9 @@ class MCT_Dispatch(RabbitMQ_Consume):
                self.__print.show('MSG SEND TO REFEREE: '+str(msg), 'I');
 
                ## Send msg to referee.
-               self.__publish_referee.publish(msg, self.__routeReferee);
+               self.__publishReferee.publish(msg, self.__routeReferee);
 
-       return 0;
+       return SUCCESS;
 
 
     ##
@@ -298,11 +345,11 @@ class MCT_Dispatch(RabbitMQ_Consume):
             if dRecv[-1]['enabled'] == '1': 
                 ## LOG:
                 self.__print.show('PLAYER VALID: ' + str(msg), 'I');
-                return True;
+                return SUCCESS;
 
         ## LOG:
         self.__print.show('PLAYER NOT VALID TO EXECUTE ACTION: '+str(msg), 'I');
-        return False;
+        return FAILED;
 
 
     ##
@@ -342,11 +389,11 @@ class MCT_Dispatch(RabbitMQ_Consume):
             request.timestamp_received = timeStamp;
 
             valRet = self.__db.insert_reg(request);
-            return 0;
+            return SUCCESS;
 
         ## LOG:
         self.__print.show('MESSAGE ALREADY PENDING ' + requestId, 'I');
-        return 1;
+        return FAILED;
 
 
     ##
@@ -373,7 +420,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
  
         ## LOG:
         self.__print.show('MESSAGE '+requestId+' REMOVED FROM PENDING!', 'I');
-        return 0;
+        return SUCCESS;
 ## END CLASS.
 
 
@@ -428,7 +475,7 @@ class Main:
     def start(self):
         self.__running = MCT_Dispatch(self.__cfg, self.__logger);
         self.__running.consume();
-        return 0;
+        return SUCCESS;
 
 
     ##
@@ -437,7 +484,7 @@ class Main:
     ##
     def stop(self):
         self.__running.stop();
-        return 0;
+        return SUCCESS;
 
 
     ###########################################################################

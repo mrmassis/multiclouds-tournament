@@ -291,19 +291,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ## 
     def __inf_instance_recv_destiny(self, msg):
 
-        if msg['status'] == FAILED:
-
-            ## If the instance is not running suspend. Set the appropriate time
-            ## stamp.
-            data = {'timestamp_finished' : str(datetime.datetime.now())};
-
-            ## Update VM table.
-            self.__db.update_reg(Vm, Vm.origin_id == msg['reqId'], data);
-      
-            ## the table has all resources offer and used by the player:
-            self.__update_used_values(DELETE_INSTANCE, msg);
-
-        ##
+        ## Set the destAddr and retId fields to give back response to player.
         msg['destAddr'] = '';
         msg['retId'   ] = '';
 
