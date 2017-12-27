@@ -96,6 +96,7 @@ class MCT_Agent(RabbitMQ_Consume):
     __sanity       = None;
     __instances    = None;
     __dispatchId   = None;
+    __debug        = None;
 
 
     ###########################################################################
@@ -115,6 +116,9 @@ class MCT_Agent(RabbitMQ_Consume):
         ## Obtain some infomation that will necessary to correct running. The-
         ## re are: local address, external route to dispach, and dispatch id.
         self.__my_ip      = cfg['main']['my_ip'];
+        self.__debug      = cfg['main']['debug'];  
+
+        ## Publish configuration.
         self.__dispatchId = cfg['main']['dispatch_id'];
         self.__routeExt   = cfg['amqp_external_publish']['route'];
 
@@ -138,7 +142,7 @@ class MCT_Agent(RabbitMQ_Consume):
         self.__instances = MCT_Instances();
 
         ## LOG:
-        self.__print.show("\n###### START MCT_AGENT_SIMULATION ######\n",'I');
+        self.__print.show("\n###### START MCT_AGENT_SIMULATION ######", 'I');
 
 
     ###########################################################################
@@ -150,29 +154,32 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM pika.Channel              channel    = the communication channel.
     ## @PARAM pika.spec.Basic.Deliver   method     = 
     ## @PARAM pika.spec.BasicProperties properties = 
-    ## @PARAM str                       message    = message received.
+    ## @PARAM str                       msg        = message received.
     ##
-    def callback(self, channel, method, properties, message):
+    def callback(self, channel, method, properties, msg):
+        idv = properties.app_id; 
 
         ## LOG:
-        self.__print.show("MESSAGE RECEIVED: " + str(message),'I');
+        self.__print.show("MESSAGE RECEIVED FROM "+str(idv)+" -"+str(msg),'I');
 
         ## Send to source an ack msg to ensuring that the message was received.
         self.chn.basic_ack(method.delivery_tag);
 
         ## Convert the json format to a structure than can handle by the python
-        message = json.loads(message);
+        msg = json.loads(msg);
 
         ## Check if is a request received from players or a return from MCT.The
         ## identifier is the properties.app_id.
-        if properties.app_id == self.__dispatchId:
-             if self.__sanity.inspect_request(message) == True:
-                 self.__recv_message_dispatch(message, properties.app_id);
+        if idv == self.__dispatchId:
+             if self.__sanity.inspect_request(msg) == True:
+                 self.__recv_message_dispatch(msg, idv);
         else:
-             if self.__sanity.inspect_request(message) == True:
-                 self.__send_message_dispatch(message, properties.app_id);
+             if self.__sanity.inspect_request(msg) == True:
+                 self.__send_message_dispatch(msg, idv);
 
-        return 0;
+        ## LOG:
+        self.__print.show('------------------------------------------\n', 'I');
+        return SUCCESS;
 
 
     ##
@@ -180,13 +187,14 @@ class MCT_Agent(RabbitMQ_Consume):
     ## ------------------------------------------------------------------------
     ##
     def stop(self):
+
         self.chn.basic_cancel(self.consumeTag);
         self.chn.close();
         self.connection.close();
 
         ## LOG:
-        self.__print.show("\n###### STOP MCT_AGENT_SIMULATION ######\n",'I');
-        return 0;
+        self.__print.show("###### STOP MCT_AGENT_SIMULATION ######\n",'I');
+        return SUCCESS;
 
 
     ###########################################################################
@@ -199,24 +207,18 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM str  appId   == id from sender.
     ##
     def __send_message_dispatch(self, message, appId):
-        ## LOG:
-        self.__print.show('MESSAGE RECEIVED FROM AGENT...: '+str(message),'I');
 
         ## Insert the requet in object that mantain the VM running controller.
         if   message['code'] == CREATE_INSTANCE:
-            self.__instances.add_inst(message);
+            self.__instances.add_instance(message);
 
         elif message['code'] == STOPVM_INSTANCE:
-            self.__instances.stp_inst(message);
+            self.__instances.del_instance(message);
             return 0;
 
         ## Publish the message to dispatch (locate in remote server) via AMQP.
         valRet = self.__publishExt.publish(message, self.__routeExt);
-
-        ## LOG:
-        self.__print.show('MSG SENT '+str(message)+' ACKRET '+str(valRet),'I');
-
-        return 0;
+        return SUCCESS;
 
 
     ##
@@ -227,15 +229,9 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     def __recv_message_dispatch(self, message, appId):
 
-        ## LOG:
-        self.__print.show('MESSAGE RECEIVED FROM DISPATCH: '+str(message),'I');
-
         ## In this case,the MCT_Agent received actions from MCT to be performed
         ## locally. Execute and return to MCT dispatch.
         if message['destAddr'] != '':
-
-            ## LOG:
-            self.__print.show('PROCESSING REQUEST!', 'I');
 
             ## Select the appropriate action (create instance, delete instance,
             ## suspend instance e resume instance): 
@@ -245,8 +241,8 @@ class MCT_Agent(RabbitMQ_Consume):
             elif message['code'] == DELETE_INSTANCE:
                 message = self.__delete_server(message);
 
-            elif message['code'] == GETINF_INSTANCE:
-                message = self.__getinf_server(message);
+            elif message['code'] == SANITY_INSTANCE:
+                message = self.__sanity_server(message);
 
             ## LOG:
             self.__print.show('RETURN EXECUTION VALUE TO MCT DISPATCH!', 'I');
@@ -258,24 +254,28 @@ class MCT_Agent(RabbitMQ_Consume):
         ## lt of action performed in other player.
         else:
 
+            ## LOG:
+            self.__print.show('EXECUTE ACTION LOCALLY!', 'I');
+
             ## Check the return, if the action is to insert and return was suc-
             ## cefull: store the new vm instance in a special dictionary.
             if   message['code'] == CREATE_INSTANCE:
-                self.__instances.upd_inst(message);
+                if message['status'] == SUCCESS:
+                    self.__instances.upd_instance(message);
+                else:
+                    self.__instances.del_instance(message);
 
             elif message['code'] == DELETE_INSTANCE:
-                self.__instances.del_inst(message);
-
-            elif message['code'] == GETINF_INSTANCE:
-                 self.__instances.del_inst(message);
-
-            ## LOG:
-            self.__print.show("VMS RUNNING: " +self.__instances.show(),'I');
+                if message['status'] == SUCCESS:
+                    self.__instances.del_instance(message);
 
             ## Update the database:
             self.__update_database(message);
 
-        return 0;
+            ## Get and show from 'MCT_Instance' object status of all instances.
+            self.__show_all_instances_status();
+
+        return SUCCESS;
 
 
     ##
@@ -295,16 +295,7 @@ class MCT_Agent(RabbitMQ_Consume):
         request.message    = str(message['data'    ]);
 
         valRet = self.__db.insert_reg(request);
-
-
-    ##
-    ## BRIEF: check if the instance is running. 
-    ## ------------------------------------------------------------------------
-    ## @PARAM dict msg == received message.
-    ##
-    def __getinf_server(self, msg):
-        ## TODO:
-        return msg;
+        return SUCCESS;
 
 
     ##
@@ -315,6 +306,7 @@ class MCT_Agent(RabbitMQ_Consume):
     def __create_server(self, msg):
 
         status = 'ERROR';
+        index  = '';
 
         ## Check if is possible create the new server (vcpu, memory, and disk).
         dRecv=self.__db.all_regs_filter(Player,Player.name == msg['destName']);
@@ -326,9 +318,13 @@ class MCT_Agent(RabbitMQ_Consume):
             maxInst = int(dRecv[-1]['max_instance' ]);
  
             if newInst <= maxInst:
+
                 ## Check if exist the enough resources to alocate neu instance.
-                if self.__check_resources(dRecv[-1], msg) == True:
-                    status = 'ACTIVE';
+                if self.__check_resources(dRecv[-1], msg) == SUCCESS:
+                  
+                   ## Create a real index:
+                   index  = msg['destName'] + '_' + str(self.__create_index()); 
+                   status ='ACTIVE';
             
         ## LOG:
         self.__print.show('>> STATUS ['+ status + '] FROM REQ '+str(msg), 'I');
@@ -337,7 +333,7 @@ class MCT_Agent(RabbitMQ_Consume):
         ## prepare the return status to a generic format. Send back to dispatch
         ## the return for the request.
         msg['status'] = GENERIC_STATUS[msg['code']][status]; 
-
+        msg['retId' ] = index;
         return msg;
 
 
@@ -358,9 +354,11 @@ class MCT_Agent(RabbitMQ_Consume):
         nInstUsed = int(playerInf['running'      ]) + 1;
 
         ## Check if there are 'avaliable' resources to accept the instance.
-        if  nVcpuUsed <= int(playerInf['vcpus'   ]) and \
-            nMemoUsed <= int(playerInf['memory'  ]) and \
-            nDiskUsed <= int(playerInf['local_gb']):
+        f0 = int(playerInf['vcpus'   ]);
+        f1 = int(playerInf['memory'  ]);
+        f2 = int(playerInf['local_gb']);
+
+        if  nVcpuUsed <= f0 and nMemoUsed <= f1 and nDiskUsed <= f2:
 
             ## Update the specific entry in dbase with new resource values.
             fieldsToUpdate = {
@@ -373,9 +371,9 @@ class MCT_Agent(RabbitMQ_Consume):
             valRet=self.__db.update_reg(Player,
                                         Player.name ==  msg['destName'],
                                         fieldsToUpdate);
-            return True;
+            return SUCCESS;
         
-        return False;
+        return FAILED;
 
 
     ##
@@ -388,9 +386,8 @@ class MCT_Agent(RabbitMQ_Consume):
         dRecv=self.__db.all_regs_filter(Player,Player.name == msg['destName']);
 
         if dRecv != []:
-
             ## Get the index that meaning the flavors.(vcpus, memory, and disk).
-            flavor = self.__instances.flavor(msg);
+            flavor = self.__instances.get_flavor(msg);
 
             nVcpuUsed = int(dRecv[0]['vcpus_used'   ]) - int(CPU_INFO[flavor]);
             nMemoUsed = int(dRecv[0]['memory_used'  ]) - int(MEM_INFO[flavor]);
@@ -425,6 +422,64 @@ class MCT_Agent(RabbitMQ_Consume):
         msg['status'] = GENERIC_STATUS[msg['code']]['HARD_DELETED']; 
 
         return msg;
+
+
+    ##
+    ## BRIEF: check if an instance is running.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict msg == received message.
+    ##
+    def __sanity_server(self, msg):
+
+        ## LOG:
+        self.__print.show('>> [FROM MCT_SANITY] CHECK INSTANCE: '+str(msg),'I');
+
+        ## Check if instance is running:
+        ## ------------------------------
+        ## destName == the name of running instance player.
+        ## origId   == instance id (generate in the player origin).
+        ##
+        msg['status'] = self.__instances.check_instance(msg);
+
+        return msg;
+
+
+    ##
+    ## BRIEF: create a new index based in a hash.
+    ## ------------------------------------------------------------------------
+    ##
+    def __create_index(self):
+
+        ## Use FIPS SHA security algotirh sha512() to create a SHA hash object.
+        newHash = hashlib.sha512();
+
+        ## Update the hash object with the string arg. Repeated calls are equi-
+        ## valent to a single call with the concatenation of all the arguments:
+        newHash.update(str(time.time()));
+
+        ## Return a hash with ten position:
+        return newHash.hexdigest()[:10];
+
+
+    ##
+    ## BRIEF: Get and show from 'MCT_Instance' object status of all instances.
+    ## ------------------------------------------------------------------------
+    ##
+    def __show_all_instances_status(self):
+
+        ## Get and show all instances in enviromment:
+        allInsts = self.__instances.show();
+      
+        for player in allInsts:
+
+            ## LOG:
+            self.__print.show(player, 'I');
+
+            for iid in allInsts[player]:
+                ## LOG:
+                self.__print.show('>> '+str(iid)+' '+str(allInsts[player][iid]),'I');
+
+        return SUCCESS;
 
 ## END CLASS.
 

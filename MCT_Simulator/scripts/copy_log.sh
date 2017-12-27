@@ -10,10 +10,10 @@
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-PATH_LOG_SRC="/var/log/mct/"
+PATH_LOG_SRC="/var/log/mct"
 PATH_LOG_DST="/var/log/mct/$(date +%D_%T |tr '/' '-')"
 
-LOGS="mct_agent_simulation.log mct_db_proxy.log mct_driver_simulation.log"
+LOGS="mct_agent_simulation.log mct_db_proxy.log mct_drive_simulation.log"
 
 
 

@@ -78,24 +78,25 @@ class MCT_Instances:
     ## PUBLIC METHODS                                                       ##
     ###########################################################################
     ##
-    ## BRIEF: check if the instance exist.
+    ## BRIEF: check instance status.
     ## ------------------------------------------------------------------------
     ## @PARAM msg == message with instance data.
     ##
-    def check(self, msg):
+    def check_instance(self, msg):
+
+        playerSrc = msg['data']['origName'];
+        requestId = msg['data']['origId'  ];
 
         ## If the reqId in dictionary means that the instance was created and
         ## is running. 
-        for vplayer in self.__instances.keys():
-            if msg['reqId'] in self.__instances[vplayer]:
+        for player in self.__instances.keys():
+            if requestId in self.__instances[player]:
+                if self.__instances[player][requestId]['status'] == 'running':
+                    return SUCCESS;
+                else:
+                    return FAILED;
 
-                ## Check if the instance is running:
-                status = self.__instances[vplayer][msg['reqId']]['status'];
-
-                if status == 'running':
-                    return True;
-
-        return False;
+        return FAILED;
 
 
     ##
@@ -103,7 +104,7 @@ class MCT_Instances:
     ## ------------------------------------------------------------------------
     ## @PARAM msg == message with instance data.
     ##
-    def add_inst(self, msg):
+    def add_instance(self, msg):
  
         playerSrc = msg['playerId'];
         requestId = msg['reqId'   ];
@@ -112,7 +113,7 @@ class MCT_Instances:
         for player in self.__instances.keys():
             if requestId in self.__instances[player]:
                 if self.__instances[player][requestId]['status'] != 'failed':
-                    return False;
+                    return FAILED;
 
         ## Check if the player that will be receive the request already in the
         ## dictionary.
@@ -127,27 +128,40 @@ class MCT_Instances:
             'status' : 'pendding'
         }
 
-        return True;
+        return SUCCESS;
 
 
     ##
-    ## BRIEF: remove an instance from structure.
+    ## BRIEF: change status to finished.
     ## ------------------------------------------------------------------------
     ## @PARAM msg == message with instance data.
     ##
-    def del_inst(self, msg):
-
+    def del_instance(self, msg):
         playerOrign = msg['playerId'];
 
-        try:
-            ## Remove from structure the instance:
-            if self.__instances[playerOrign][msg['reqId']]['status'] == 'running':
-                self.__instances[playerOrign].pop(msg['reqId'], None);
+        ## Change status to finished:
+        self.__instances[playerOrign].pop(msg['reqId']);
+        return SUCCESS;
 
-        except:
-            pass;
 
-        return 0;
+    ##
+    ## BRIEF: update an instance in dicitionary.
+    ## ------------------------------------------------------------------------
+    ## @PARAM msg == message with instance data.
+    ##
+    def upd_instance(self, msg):
+
+        playerOrign = msg['playerId'];
+        playerGuest = msg['destName'];
+
+        status = 'failed';
+
+        if msg['status'] == SUCCESS:
+            self.__instances[playerOrign][msg['reqId']]['guest'] = playerGuest;
+            status = 'running';
+        
+        self.__instances[playerOrign][msg['reqId']]['status' ] = status;
+        return SUCCESS;
 
 
     ##
@@ -155,8 +169,7 @@ class MCT_Instances:
     ## ------------------------------------------------------------------------
     ## @PARAM msg == message with instance data.
     ##
-    def flavor(self, msg):
-
+    def get_flavor(self, msg):
         playerOrign = msg['playerId'];
 
         ## Get flavor ID:
@@ -169,45 +182,16 @@ class MCT_Instances:
 
 
     ##
-    ## BRIEF: update an instance in dicitionary.
-    ## ------------------------------------------------------------------------
-    ## @PARAM msg == message with instance data.
-    ##
-    def upd_inst(self, msg):
-
-        playerOrign = msg['playerId'];
-        playerGuest = msg['destName'];
-
-        if msg['status'] == 1:
-            self.__instances[playerOrign][msg['reqId']]['guest' ] = playerGuest;
-            self.__instances[playerOrign][msg['reqId']]['status'] = 'running';
-
-            ## If the request to new instance was succefull accpet so increment
-            ## the totals.
-            self.__increment_instances(playerGuest);
-        else:
-            self.__instances[playerOrign][msg['reqId']]['status'] = 'failed';
-
-        return 0;
-
-
-    ##
     ## BRIEF: show all instances in structure.
     ## ------------------------------------------------------------------------
     ##
     def show(self):
-        return str(self.__instances);
+        return self.__instances;
 
 
     ###########################################################################
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
-    ##
-    ## ------------------------------------------------------------------------
-    ##
-    def __increment_instances(self, playerDestiny):
-        return 0;
-
 ## END OF CLASS.
 
 
