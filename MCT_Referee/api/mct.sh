@@ -90,18 +90,68 @@ function instances() {
 
 
 
+##
+## BRIEF: list the instance' actions.
+## ----------------------------------------------------------------------------
+##
+function vm() {
+
+    case ${1} in
+
+        'all')
+            ## Execute the command: 
+            SQL="select * from VM"
+            ${CMYSQL} -e "${SQL}"
+            ;;
+
+
+        'running')
+            ## Execute the command: 
+            SQL="select * from VM where status=1"
+            ${CMYSQL} -e "${SQL}"
+            ;;
+
+        'finished')
+            ## Execute the command: 
+            SQL="select * from VM where status=3"
+            ${CMYSQL} -e "${SQL}"
+            ;;
+
+        'cheating')
+            ## Execute the command: 
+            SQL="select * from VM where status=2"
+            ${CMYSQL} -e "${SQL}"
+            ;;
+
+        ## Unknow actions:
+        *)
+            echo 'Command not suported!'
+            ;;
+    esac
+
+    return 0
+}
+
+
+
+
+
+
 ###############################################################################
 ## MAIN                                                                      ##
 ###############################################################################
-
-
-
 case ${1} in
 
     'instance')
         ## Remove the instance argument from the list of arguments.
         shift
         instances ${@}
+        ;;
+
+    'vm')
+        ## Remove the instance argument from the list of arguments.
+        shift
+        vm ${@}
         ;;
 
     *)

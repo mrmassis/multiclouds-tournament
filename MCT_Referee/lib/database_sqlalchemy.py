@@ -89,8 +89,10 @@ class Vm(Base):
     id                 = Column(INT        , nullable=False, primary_key=True);
     origin_add         = Column(VARCHAR(45), nullable=False);
     origin_id          = Column(VARCHAR(45), nullable=False);
+    origin_name        = Column(VARCHAR(45), nullable=False);
     destiny_add        = Column(VARCHAR(45), nullable=False);
     destiny_name       = Column(VARCHAR(45), nullable=False);
+    destiny_id         = Column(VARCHAR(45), nullable=False);
     status             = Column(TINYINT(1) , nullable=False);
     vcpus              = Column(INT        , nullable=False, default=0);
     mem                = Column(BIGINT     , nullable=False, default=0);

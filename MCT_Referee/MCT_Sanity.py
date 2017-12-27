@@ -8,6 +8,7 @@ import datetime;
 import json;
 import logging;
 import logging.handlers;
+import hashlib;
 
 from sqlalchemy                  import and_, or_;
 from multiprocessing             import Process, Queue, Lock;
@@ -70,13 +71,14 @@ class MCT_Sanity_Recv(Process, RabbitMQ_Consume):
     ## @PARAM db     == database descriptor.
     ##
     def __init__(self, cfg, logger, db):
+        super(MCT_Sanity_Recv, self).__init__();
 
         ## Get the option that define to where the logs will are sent to show.
         self.__print = Show_Actions(cfg['main']['print'], logger);
 
         ## Initialize the inherited class RabbitMQ_Consume with the parameters
         ## defined in the configuration file.
-        RabbitMQ_Consume.__init__(self, cfg['amqp_consume']);
+        RabbitMQ_Consume.__init__(self, cfg['recv']);
 
         ## Set database reference.
         self.__db = db;
@@ -122,9 +124,8 @@ class MCT_Sanity_Recv(Process, RabbitMQ_Consume):
     ## ------------------------------------------------------------------------
     ##
     def run(self):
-         print 1
          ## Start the message consume:
-         #self.consumue();
+         self.consume();
 
          return SUCCESS;
 
@@ -164,8 +165,13 @@ class MCT_Sanity_Recv(Process, RabbitMQ_Consume):
                 'status'             : CHEATING 
             };
 
+            whereFilter = and_(Vm.origin_id    == msg['data']['origId'  ],
+                               Vm.origin_add   == msg['data']['origAddr'],
+                               Vm.origin_name  == msg['data']['origName'],
+                               Vm.destiny_name == msg['destName']);
+
             self.__db['lock'].acquire();
-            self.__db['db'  ].update_reg(Vm, Vm.origin_id == msg['reqId'],data);
+            self.__db['db'  ].update_reg(Vm, whereFilter, data);
             self.__db['lock'].release();
 
             ## Update player perfil table:
@@ -220,16 +226,11 @@ class MCT_Sanity_Recv(Process, RabbitMQ_Consume):
         record['running'      ] = int(recv['running'      ]);
         record['finished'     ] = int(recv['finished'     ]);
         record['problem_del'  ] = int(recv['problem_del'  ]);
-
-        if msg['status'] == SUCCESS:
-
-           record['vcpus_used'   ] -= int(msg['data']['vcpus']);
-           record['memory_used'  ] -= int(msg['data']['mem'  ]);
-           record['local_gb_used'] -= int(msg['data']['disk' ]);
-           record['running'      ] -= 1;
-           record['finished'     ] += 1;
-        else:
-            record['problem_del'] += 1;
+        record['vcpus_used'   ] -= int(msg['data']['vcpus']);
+        record['memory_used'  ] -= int(msg['data']['mem'  ]);
+        record['local_gb_used'] -= int(msg['data']['disk' ]);
+        record['running'      ] -= 1;
+        record['finished'     ] += 1;
 
         ## LOG:
         self.__print.show('VALUES UDPATE AFTER DEL' + str(record),'I');
@@ -274,15 +275,16 @@ class MCT_Sanity_Send(Process):
     ## @PARAM db     == database descriptor.
     ##
     def __init__(self, cfg, logger, db):
+        super(MCT_Sanity_Send, self).__init__();
 
         ## Get the option that define to where the logs will are sent to show.
         self.__print = Show_Actions(cfg['main']['print'], logger);
 
         ## Get which route is used to deliver the message to the MCT_Dispatch.
-        self.__routeDispatch = cfg['amqp_publish']['route'];
+        self.__routeDispatch = cfg['send']['route'];
 
         ## Instantiates an object to perform the publication of AMQP messages.
-        self.__publish = RabbitMQ_Publish(cfg['amqp_publish']);
+        self.__publish = RabbitMQ_Publish(cfg['send']);
 
         ## Get MCT_Sanity name and address.
         self.__myIp = cfg['main']['myip'];
@@ -294,8 +296,6 @@ class MCT_Sanity_Send(Process):
         ## LOG:
         self.__print.show("###### START MCT_SANITY SEND ######\n",'I');
 
-        return msg;
-
 
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
@@ -306,14 +306,11 @@ class MCT_Sanity_Send(Process):
     ##
     def run(self):
 
-        print 2
-        return SUCCESS
-
         while True:
 
             ## Get all entry in VM database that the status is 1 (running);
             self.__db['lock'].acquire();
-            dRecv = self.__db['db'].all_regs_filter(VM, (VM.status == '1'));
+            dRecv = self.__db['db'].all_regs_filter(Vm, (Vm.status == 1));
             self.__db['lock'].release();
 
             if dRecv != []:
@@ -323,17 +320,21 @@ class MCT_Sanity_Send(Process):
                    self.__print.show("VM TO CHECK SANITY: " + str(vm) ,'I');
 
                    ## Create basic message to MCT_Dispatch. 
-                   msg = self.__create_basic_message(idx);
+                   msg = self.__create_message();
 
                    ## Set information: 
-                   msg['destAddr'] = vm['destiny_add '];
+                   msg['destAddr'] = vm['destiny_add' ];
                    msg['destName'] = vm['destiny_name'];
 
                    msg['data']['origAddr'] = vm['origin_add' ];
                    msg['data']['origName'] = vm['origin_name'];
+                   msg['data']['origId'  ] = vm['origin_id'  ];
+                   msg['data']['vcpus'   ] = vm['vcpus'      ];
+                   msg['data']['mem'     ] = vm['mem'        ];
+                   msg['data']['disk'    ] = vm['disk'       ];
 
                    ## Publish the message.
-                   self.__publishExt.publish(msg, self.__route);
+                   self.__publish.publish(msg, self.__routeDispatch);
 
                    ## LOG:
                    self.__print.show("PUBLISH THE MESSAGE: " + str(msg),'I');
@@ -341,9 +342,19 @@ class MCT_Sanity_Send(Process):
                    ## LOG:
                    self.__print.show("------------------------------\n",'I');
 
-            time.sleep(self.__time);
+            time.sleep(float(self.__time));
 
-        return SUCCESS:
+        return SUCCESS;
+
+
+    ##
+    ## BRIEF: process stop.
+    ## ------------------------------------------------------------------------
+    ##
+    def stop(self):
+        ## LOG:
+        self.__print.show("###### STOP MCT_SANITY SEND ######\n",'I');
+        return SUCCESS;
 
 
     ###########################################################################
@@ -448,19 +459,14 @@ class Main:
     ## ------------------------------------------------------------------------
     ##
     def start(self):
-        i = 0;
+        ## Running vplayer in the thread:
+        self.__running[0]=MCT_Sanity_Send(self.__cfg,self.__logger,self.__db);
+        self.__running[0].daemon = True;
+        self.__running[0].start();
 
-        ##
-        for theadObject in [MCT_Sanity_Send, MCT_Sanity_Recv]:
-
-            ## LOG:
-            self.__print.show("Run: " + str(threadObject), 'I');
-
-            ## Running vplayer in the thread:
-            self.__running[i]= threadObject(self.__cfg,self._logger,self.__db);
-            self.__running[i].daemon = True;
-            self.__running[i].start();
-            i += 1;
+        self.__running[1]=MCT_Sanity_Recv(self.__cfg,self.__logger,self.__db);
+        self.__running[1].daemon = True;
+        self.__running[1].start();
 
         for threadObject in self.__running:
             threadObject.join();
@@ -473,15 +479,22 @@ class Main:
     ## ------------------------------------------------------------------------
     ##
     def stop(self):
-        ## LOG:
-        self.__print.show("\n###### FINISH MCT_SANITY ######\n",'I');
 
         ## Stop all virtual player executing in thread:
-        for sanity in  self.__running:
-            self.__running[sanity].terminate();
-            self.__running[sanity].join();
+        try:
+            ## SEND:
+            self.__running[0].stop();
+            self.__running[0].terminate();
+            self.__running[0].join();
 
-        return True;
+            ## RECV:
+            self.__running[1].stop();
+            self.__running[1].terminate();
+            self.__running[1].join();
+        except:
+            pass;
+
+        return SUCCESS;
 
 
     ###########################################################################

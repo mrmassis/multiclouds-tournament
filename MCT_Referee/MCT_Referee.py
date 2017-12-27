@@ -397,8 +397,10 @@ class MCT_Referee(RabbitMQ_Consume):
 
         vm.origin_id          = msg['reqId'   ];
         vm.origin_add         = msg['origAddr'];
+        vm.origin_name        = msg['playerId'];
         vm.destiny_name       = msg['destName'];
         vm.destiny_add        = msg['destAddr'];
+        vm.destiny_id         = msg['retId'   ];
         vm.status             = msg['status'  ];
         vm.vcpus              = int(msg['data']['vcpus']);
         vm.mem                = int(msg['data']['mem'  ]);
@@ -440,12 +442,8 @@ class MCT_Referee(RabbitMQ_Consume):
             ## LOG:
             self.__print.show('DEL TO ADDR '+str(dRecv[-1]['destiny_add']),'I');
 
-            ## Set the message to be a forward message (perform a map). Send it
-            ## to the destine and waiting the return.
-            msg['retId'] = msg['reqId'];
-
-            ## Set the target address. The target addr is the player addrs that
-            ## will accept the request.
+            ## Set data:
+            msg['retId'   ] = dRecv[-1]['destiny_id'  ];
             msg['destAddr'] = dRecv[-1]['destiny_add' ];
             msg['destName'] = dRecv[-1]['destiny_name'];
 
@@ -473,10 +471,18 @@ class MCT_Referee(RabbitMQ_Consume):
         self.__print.show('INI DEL RECV','I');
 
         ## LOG:
-        self.__print.show('RETURN FROM DEL_INSTANCE IS '+str(msg['status']),'I');
+        self.__print.show('RETURN FROM DEL_INST IS ' + str(msg['status']), 'I');
 
-        ## Set all data to update.
-        data = {'timestamp_finished' : str(datetime.datetime.now())};
+        if msg['status'] == SUCCESS:
+            data = {
+                'timestamp_finished' : str(datetime.datetime.now()),
+                'status'             : FINISHED
+            };
+        else:
+            data = {
+                'timestamp_finished' : str(datetime.datetime.now()),
+                'status'             : FAILED
+            };
 
         self.__db.update_reg(Vm, Vm.origin_id == msg['reqId'], data);
 
@@ -569,8 +575,8 @@ class MCT_Referee(RabbitMQ_Consume):
 
        dRecv = self.__db.all_regs_filter(Player, fColumns);
 
-       ## LOG:
-       self.__print.show('PLAYER CANDIDATES: ' + str(dRecv), 'I');
+       ## Print all player able to execute the request.
+       self.__show_all_player_candidates(dRecv);
 
        if dRecv != []:
            ## Perform the player selection. Utilize the scheduller algorithm se
@@ -584,13 +590,27 @@ class MCT_Referee(RabbitMQ_Consume):
 
 
     ##
+    ## BRIEF: print all player able to execute the request.
+    ## ------------------------------------------------------------------------
+    ## @PARAM players == list of players.
+    ## 
+    def __show_all_player_candidates(self, players):
+
+        for player in players:
+            ## LOG:
+            self.__print.show(str(player), 'I');
+
+        return SUCCESS;
+
+
+    ##
     ## BRIEF: get information about an instance.
     ## ------------------------------------------------------------------------
     ## @PARAM dict message == message with some datas about instance.
     ##
     def __get_instance_info(self, message):
         ## TODO: if the instance is not running decrement table values!
-        return 0;
+        return SUCCESS;
 
 
     ##
@@ -624,7 +644,7 @@ class MCT_Referee(RabbitMQ_Consume):
 
             self.__db.update_reg(Player, Player.name == msg['destName'], data);
 
-        return 0;
+        return SUCCESS;
 
 
     ##
@@ -746,7 +766,7 @@ class Main:
     def start(self):
         self.__running = MCT_Referee(self.__cfg, self.__logger);
         self.__running.consume();
-        return 0;
+        return SUCCESS;
 
 
     ##
@@ -755,7 +775,7 @@ class Main:
     ##
     def stop(self):
         self.__running.stop();
-        return 0;
+        return SUCCESS;
 
 
     ###########################################################################

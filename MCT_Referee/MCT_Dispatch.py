@@ -268,7 +268,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
         self.__print.show('MESSAGE RECEIVED FROM SANITY: ' + str(msg), 'I');
 
         ## Set the agent address. 
-        playerAddress = msg['origAddr'];
+        playerAddress = msg['destAddr'];
 
         ## Create the configuration about the return message.This configuration
         ## will be used to send the messagem to apropriate player.
