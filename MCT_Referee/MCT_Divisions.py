@@ -10,7 +10,7 @@ import logging;
 import logging.handlers;
 
 from mct.lib.utils               import *;
-from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Player;
+from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Player, Vm, Status;
 from multiprocessing             import Process, Queue, Lock;
 
 
@@ -24,6 +24,10 @@ CONFIG_FILE           = 'mct-divisions.ini';
 HOME_FOLDER           = os.path.join(os.environ['HOME'], CONFIG_FILE);
 RUNNING_FOLDER        = os.path.join('./'              , CONFIG_FILE);
 DEFAULT_CONFIG_FOLDER = os.path.join('/etc/mct/'       , CONFIG_FILE);
+
+
+
+
 
 
 
@@ -66,7 +70,7 @@ class Division(Process):
 
         ## Get loop waiting interval. This value determine the time to waiting
         ## between the loops.
-        self.__interval = float(['interval']);
+        self.__interval = float(cfg['interval']);
 
         ## Get the round value. At end of this value the system compute the pla
         ## eyrs attributes.
@@ -78,6 +82,9 @@ class Division(Process):
         ## Setting the database attribute. In this attribute are the db connec-
         ## tion and the lock to avoid data corruption.
         self.__db = db;
+
+        ## Get time running threshold:
+        self.__timeThreshold = int(cfg['threshold']);
 
 
     ###########################################################################
@@ -135,36 +142,32 @@ class Division(Process):
         self.__db['lock'].release();
 
         if dRecv != []:
+
             ## To each player belong to division self.__id calculate the attri-
             ## butes (scores, history etc).
             for player in dRecv:
 
-                ## Select all request peformed to player "player[??????]";
-                fColumns = (Request.???? == player['name']);
+                invidualFairness = 0.0;
 
-                self.__db['lock'].acquire();
-                self.__db['db'  ].all_regs_filter(Request, fColumns);
+                nScore = self.__calculate_score(player);
+                nHistc = self.__calculate_histc(player);
+                nFairn = self.__calculate_fairn(player);
+
+                ## TODO: CHECK DIVISION:
+
+                data = {
+                    'name'    : player['name'],
+                    'score'   : nScore,
+                    'history' : nHistc,
+                    'fairness': nFairn
+                }
+
+                ##
+                fColumns = (Player.name == player['name']);
+
+                self.__db['lock'].accquire();
+                self.__db['db'  ].update_reg(Player, fColumns, data)
                 self.__db['lock'].release();
-
-                if dRecv ! = []:
-                    ## Obtain all accepts and rejects requests:
-                    for request in dRecv:
-                        
-                    #nScore = self.__calculate_score(player[1]);
-                    #nHistc = self.__calculate_histc(player[2]);
-
-                    data = {
-                        'name'   : player['name'],
-                        'score'  : nScore,
-                        'history': nHistory
-                    }
-
-                    ##
-                    fColumns = (Player.name == player['name']);
-
-                    self.__db['lock'].accquire();
-                    self.__db['db'  ].update_????(Player, fColumns, data)
-                    self.__db['lock'].release();
 
         return 0;
 
@@ -172,30 +175,68 @@ class Division(Process):
     ##
     ## BRIEF: calculate a new player's score. 
     ## ------------------------------------------------------------------------
-    ## @PARAM float oldScore == the score before update.
+    ## @PARAM player == player data dictionary.
     ## 
-    def __calculate_score(self, oldScore):
-        ## TODO:
-        ## para cada player deve-se obter as acoes de interesse (aceitar) a
-        ## requisicao de instancias. 
-        ## deve ser considerada a divisao atual, e o ultimo  checkpoint de
-        ## round.
-        ## LOG:
-        logger.info("CALCULATE SCORE");
-        return oldScore;
+    def __calculate_score(self, player):
+        nScore = 0.0;
+
+        return nScore;
 
 
     ##
     ## BRIEF: calculate a new player's historic.
     ## ------------------------------------------------------------------------
-    ## @PARAM float oldHistoric == the historic before update.
+    ## @PARAM player == player data dictionary.
     ## 
-    def __calculate_histc(self, oldHistc):
-        ## TODO:
-        ## obter a media do score da divisao.
-        ## LOG:
-        logger.info("CALCULATE HISTC");
-        return oldHistc;
+    def __calculate_histc(self, player):
+        nHistory = 0;
+
+        return nHistory;
+
+
+    ##
+    ## BRIEF: calculate player fairness.
+    ## ------------------------------------------------------------------------
+    ## @PARAM player == player data dictionary.
+    ## 
+    def __calculate_fairn(self, player):
+
+        fairness = 0.0;
+        accepts  = 0;
+        rejects  = 0;
+        requests = 0;
+
+        ## Obtain all entries from VM table:
+        fColumn = (Vm.origin_name == player['name']);
+
+        self.__db['lock'].accquire();
+        dRecv = self.__db['db'].all_regs_filter(Vm, fColumn);
+        self.__db['lock'].release();
+
+        if dRecv != []:
+            requests = len(dRecv);
+
+            for request in dRecv:
+
+                if  request['status'] == FINISHED:
+                    tsIni = dRecv['timestamp_received'];
+                    tsEnd = dRecv['timestamp_finished'];
+
+                    ## Calculate the time of the instance is running. Accept the
+                    ## instance only the time is under the threadshold.
+                    tRunSecs = calculate_time(tsIni, tsEnd);
+                    
+                    if tRunSecs > self.__timeThreshold or tRunSecs < 0.0:
+                        accpets += 1;
+                    else:
+                        rejects += 1;
+
+                elif request['status'] == SUCCESS :
+                    accepts += 1;
+                else:
+                    rejects += 1;
+
+        return fairness;
 ## END CLASS.
 
 
@@ -260,6 +301,9 @@ class MCT_Divisions:
             'lock': Lock()
         };
 
+        ## Get time running threshold:
+        self.__timeThreshold = int(cfgi['main']['threshold']);
+
 
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
@@ -275,7 +319,7 @@ class MCT_Divisions:
             self.start(divCfg);
 
         self.__waiting_finish();
-        return 0;
+        return SUCCESS;
 
 
     ##
@@ -294,7 +338,7 @@ class MCT_Divisions:
 
         ## Store the thread:
         self.__threadsId.append(newDivision);
-        return 0;
+        return SUCCESS;
 
 
     ##
@@ -308,7 +352,7 @@ class MCT_Divisions:
 
         ## LOG:
         self.__print.show('GRACEFULL STOP', 'I');
-        return 0;
+        return SUCCESS;
 
 
     ###########################################################################
@@ -320,12 +364,92 @@ class MCT_Divisions:
     ##
     def __waiting_finish(self):
 
+        while True:
+            ## LOG:
+            self.__print.show('CALCULATE THE GLOBAL FAIRNESS', 'I');
+
+            ## Calculate global fairness:
+            self.__calculate_global_fairness();
+
+            ## Wait 5 minutes:
+            time.sleep(300);
+
         for thread in self.__threadsId:
             thread.join();
  
         ## LOG:
         self.__print.show('FINISHED', 'I');
-        return 0;
+        return SUCCESS;
+
+
+     ##
+     ## BRIEF: calculate the global fairness.
+     ## -----------------------------------------------------------------------
+     ## 
+     def __calculate_global_fairness(self):
+          globalFairness = 0.0;
+
+          accepts = 0;
+          rejects = 0;
+          allReqs = 0;
+
+          ## Obtain all entries from VM table:
+          self.__db['lock'].accquire();
+          dRecv = self.__db['db'].all_regs(Vm);
+          self.__db['lock'].release();
+
+          if dRecv != []:
+
+              ## Obtain the number of the all request by create new instances.
+              allReqs = len(dRecv);
+
+              ## Iteract throw the records.
+              for vm in dRecv:
+
+                  ## LOG:
+                  self.__print.show('REQUEST: ' + str(vm), "I");
+
+                  ## If the vm is finished or running they were accepts.
+                  if  vm['status'] == FINISHED:
+                    tsIni = vm['timestamp_received'];
+                    tsEnd = vm['timestamp_finished'];
+
+                    ## Calculate the time of the instance is running. Accept the
+                    ## instance only the time is under the threadshold.
+                    tRunSecs = calculate_time(tsIni, tsEnd);
+
+                    if tRunSecs > self.__timeThreshold or tRunSecs < 0.0;
+                        accpets += 1;
+                    else:
+                        rejects += 1;
+
+                elif request['status'] == SUCCESS :
+                    accepts += 1;
+                else:
+                    rejects += 1;
+
+              ## Calculate:
+              try:
+                  globalFairness = float(accepts) / float(allReqs);
+              except:
+                  globalFairness = 0.0;
+ 
+          ## Update in table STATUS:
+          data = {
+              'all_requests': allReqs,
+              'accepts'     : accepts,
+              'rejects'     : rejects,
+              'fairness'    : globalFairness,
+              'timestamp'   : str(datetime.datetime.now()) 
+          }
+
+          self.__db['lock'].accquire();
+          self.__db['db'  ].update_reg_without_filter(Status, data);
+          self.__db['lock'].release();
+              
+          ## LOG:
+          self.__print.show('GLOBAL FAIRNESS: ' + str(globalFairness), "I");
+          return SUCCESS;
 ## END CLASS.
 
 

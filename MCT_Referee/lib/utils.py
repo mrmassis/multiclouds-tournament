@@ -10,6 +10,10 @@ import ConfigParser;
 import inspect;
 import random;
 import time;
+import datetime;
+
+
+
 
 
 
@@ -137,6 +141,31 @@ def mutable_time_to_waiting(ini, end):
 
     value = random.uniform(ini, end)
     time.sleep(value);
+
+
+##
+## BRIEF: calculate time differences.
+## ------------------------------------------------------------------------
+## @PARAM tIniStr == initiate time in form of string.
+## @PARAM tEndStr == finish   time in form of string.
+##
+def calculate_time(tIniStr, tEndStr):
+
+    try:
+        tIni = datetime.datetime.strptime(tIniStr, '%Y-%m-%d %H:%M:%S.%f');
+        tEnd = datetime.datetime.strptime(tEndStr, '%Y-%m-%d %H:%M:%S.%f');
+
+        tDiffSeconds = (tEnd - tDiff).total_seconds();
+
+    except:
+        tDiffSeconds = -1.0;
+
+    return tDiffSeconds;
+## END.
+
+
+
+
 
 
 

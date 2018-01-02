@@ -579,9 +579,19 @@ class MCT_Referee(RabbitMQ_Consume):
        self.__show_all_player_candidates(dRecv);
 
        if dRecv != []:
+
+           ## TODO: ordenar por division e por timestamp!!!!!!!!!!!!!!!!!!!!!!!
+           ## tem que considerar tambem o numero de vms aceitas, se passou o ma
+           ## ximo vai para o proximo.
+
+
            ## Perform the player selection. Utilize the scheduller algorithm se
            ## lected before.
            selectedPlayer = self.__scheduller.run(dRecv);
+
+           ## Set in Player table the timestamp that meaning the selected player
+           ## TODO!!!
+           
 
        ## LOG:
        self.__print.show('PLAYER SELECTED: ' + str(selectedPlayer), 'I');

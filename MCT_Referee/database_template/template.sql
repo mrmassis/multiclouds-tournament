@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
   `division`           INT             NULL,
   `score`              FLOAT           DEFAULT 0.0,
   `history`            INT             DEFAULT 0,
+  `fairness`           FLOAT           DEFAULT 0.0,
   `accepts`            INT             DEFAULT 0,
   `rejects`            INT             DEFAULT 0,
   `running`            INT             DEFAULT 0,
@@ -51,6 +52,7 @@ CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
   `token`              VARCHAR(45)     NULL,
   `suspend`            TIMESTAMP       NULL,
   `enabled`            INT             DEFAULT 0,
+  `last_choice`        TIMESTAMP       NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -74,6 +76,22 @@ CREATE  TABLE IF NOT EXISTS `mct`.`VM` (
   `disk`               BIGINT      NOT NULL,
   `timestamp_received` TIMESTAMP       NULL,
   `timestamp_finished` TIMESTAMP       NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mct`.`STATUS`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mct`.`STATUS` ;
+
+CREATE  TABLE IF NOT EXISTS `mct`.`STATUS` (
+  `id`                 INT         NOT NULL AUTO_INCREMENT,
+  `all_requests`       INT         DEFAULT 0,
+  `accepts`            INT         DEFAULT 0,
+  `rejects`            INT         DEFAULT 0,
+  `fairness`           FLOAT       DEFAULT 0.0,
+  `timestamp`          TIMESTAMP   NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
