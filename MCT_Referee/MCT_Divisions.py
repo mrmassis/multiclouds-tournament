@@ -60,13 +60,13 @@ class Division(Process):
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
     def __init__(self, cfg, db, logger):
-        super(Division, self).__init__(name=dName);
+        super(Division, self).__init__();
 
         ## Get the option that define to where the logs will are sent to show.
-        self.__print = Show_Actions(vCfg['print'], logger);
+        self.__print = Show_Actions(cfg['print'], logger);
 
         ## Get the identification number (id) of division.
-        self.__id = cfg['id'  ];
+        self.__number = cfg['number'];
 
         ## Get loop waiting interval. This value determine the time to waiting
         ## between the loops.
@@ -77,7 +77,7 @@ class Division(Process):
         self.__round = int(cfg['round']);
 
         ## LOG:
-        self.__print.show('INITIALIZE DIVISION: ' + self.__id, 'I');
+        self.__print.show('INITIALIZE DIVISION: ' + self.__number, 'I');
 
         ## Setting the database attribute. In this attribute are the db connec-
         ## tion and the lock to avoid data corruption.
@@ -106,11 +106,11 @@ class Division(Process):
 
             ## Elapsed time of the last "round". Used to verify the next round.
             eT = timeNow - timeOld;
-
-            if divmod(eT.total_seconds(),60)[0] >= self.__round:
-
+            
+            ## Minutes:
+            if float(divmod(eT.total_seconds(),60)[0]) >= float(self.__round):
                  ## LOG:
-                 self.__print.show('ROUND FINISHED AT DIV: '+str(self.__id),'I');
+                 self.__print.show('ROUND ENDED DIV: '+str(self.__number),'I');
 
                  ## Calculate attributes (score|hist) of each player in the div.
                  self.__calculate_attributes();
@@ -132,10 +132,10 @@ class Division(Process):
     def __calculate_attributes(self):
 
         ## LOG:
-        self.__print.show('CALC PLAYER ATTRIBS FROM DIV: '+str(self.__id),'I');
+        self.__print.show('CALC PLAYER ATTR FROM DIV: '+str(self.__number),'I');
 
         ## Select all player belongs at division self.__id (1, 2, 3, 4 ..., n);
-        fColumns = (Player.division == self.__id);
+        fColumns = (Player.division == self.__number);
 
         self.__db['lock'].acquire();
         dRecv = self.__db['db'  ].all_regs_filter(Player, fColumns);
@@ -143,12 +143,9 @@ class Division(Process):
 
         if dRecv != []:
 
-            ## To each player belong to division self.__id calculate the attri-
-            ## butes (scores, history etc).
+            ## To each player belong to division calculate the attributes (sco-
+            ## res, history etc).
             for player in dRecv:
-
-                invidualFairness = 0.0;
-
                 nScore = self.__calculate_score(player);
                 nHistc = self.__calculate_histc(player);
                 nFairn = self.__calculate_fairn(player);
@@ -165,10 +162,9 @@ class Division(Process):
                 ##
                 fColumns = (Player.name == player['name']);
 
-                self.__db['lock'].accquire();
+                self.__db['lock'].acquire();
                 self.__db['db'  ].update_reg(Player, fColumns, data)
                 self.__db['lock'].release();
-
         return 0;
 
 
@@ -178,7 +174,27 @@ class Division(Process):
     ## @PARAM player == player data dictionary.
     ## 
     def __calculate_score(self, player):
-        nScore = 0.0;
+        nScore   = 0.0;
+        accepts  = 0;
+        rejects  = 0;
+
+        ## Obtain all entry that meaning requests indicated to the player:
+        #fColumn = (Vm.destiny_name == player['name']);
+
+        #self.__db['lock'].acquire();
+        #dRecv = self.__db['db'].all_regs_filter(Vm, fColumn);
+        #self.__db['lock'].release();
+
+        #if dRecv != []:
+        #    for request in dRecv:
+
+        #        memory = request['mem'  ];
+        #        vcpus  = request['vcpus'];
+        #        disk   = request['disk' ];
+
+        #        flavor = self.__get_flavor(memo, vcpus, disk);
+
+
 
         return nScore;
 
@@ -200,7 +216,6 @@ class Division(Process):
     ## @PARAM player == player data dictionary.
     ## 
     def __calculate_fairn(self, player):
-
         fairness = 0.0;
         accepts  = 0;
         rejects  = 0;
@@ -209,7 +224,7 @@ class Division(Process):
         ## Obtain all entries from VM table:
         fColumn = (Vm.origin_name == player['name']);
 
-        self.__db['lock'].accquire();
+        self.__db['lock'].acquire();
         dRecv = self.__db['db'].all_regs_filter(Vm, fColumn);
         self.__db['lock'].release();
 
@@ -218,23 +233,29 @@ class Division(Process):
 
             for request in dRecv:
 
-                if  request['status'] == FINISHED:
-                    tsIni = dRecv['timestamp_received'];
-                    tsEnd = dRecv['timestamp_finished'];
+                if  int(request['status']) == FINISHED:
+                    tsIni = request['timestamp_received'];
+                    tsEnd = request['timestamp_finished'];
 
                     ## Calculate the time of the instance is running. Accept the
                     ## instance only the time is under the threadshold.
                     tRunSecs = calculate_time(tsIni, tsEnd);
                     
                     if tRunSecs > self.__timeThreshold or tRunSecs < 0.0:
-                        accpets += 1;
+                        accepts += 1;
                     else:
                         rejects += 1;
 
-                elif request['status'] == SUCCESS :
+                elif int(request['status']) == SUCCESS :
                     accepts += 1;
                 else:
                     rejects += 1;
+
+        ## Calculate:
+        try:
+            fairness = float(accepts) / float(requests);
+        except:
+            fairness = 0.0;
 
         return fairness;
 ## END CLASS.
@@ -281,28 +302,26 @@ class MCT_Divisions:
         self.__print = Show_Actions(cfg['main']['print'], logger);
 
         ## LOG:
-        self.__print.show('INITIALIZE DIVISIONS', 'I');
+        self.__print.show('INITIALIZE ALL DIVISIONS!', 'I');
 
         ## Get the configurations related to the execution of the divisions de
         ## fined by the User.
         self.__logger = logger;
 
         ## Get all division configurations:
-        div = 1;
-        try:
+        divisions = int(cfg['main']['divisions']);
+        
+        for div in range(1, divisions + 1):
             self.__divCfgs.append(cfg['division' + str(div)]);
-            div += 1;
-        except:
-            pass;
-
+        
         ## Intance a new object to handler all operation in the local database.
         self.__db = {
-            'db'  : MCT_Database(cfg['database']),
+            'db'  : MCT_Database_SQLAlchemy(cfg['database']),
             'lock': Lock()
         };
 
         ## Get time running threshold:
-        self.__timeThreshold = int(cfgi['main']['threshold']);
+        self.__timeThreshold = int(cfg['main']['threshold']);
 
 
     ###########################################################################
@@ -382,35 +401,32 @@ class MCT_Divisions:
         return SUCCESS;
 
 
-     ##
-     ## BRIEF: calculate the global fairness.
-     ## -----------------------------------------------------------------------
-     ## 
-     def __calculate_global_fairness(self):
-          globalFairness = 0.0;
+    ##
+    ## BRIEF: calculate the global fairness.
+    ## -----------------------------------------------------------------------
+    ## 
+    def __calculate_global_fairness(self):
+        globalFairness = 0.0;
 
-          accepts = 0;
-          rejects = 0;
-          allReqs = 0;
+        accepts = 0;
+        rejects = 0;
+        allReqs = 0;
 
-          ## Obtain all entries from VM table:
-          self.__db['lock'].accquire();
-          dRecv = self.__db['db'].all_regs(Vm);
-          self.__db['lock'].release();
+        ## Obtain all entries from VM table:
+        self.__db['lock'].acquire();
+        dRecv = self.__db['db'].all_regs(Vm);
+        self.__db['lock'].release();
 
-          if dRecv != []:
+        if dRecv != []:
 
-              ## Obtain the number of the all request by create new instances.
-              allReqs = len(dRecv);
+            ## Obtain the number of the all request by create new instances.
+            allReqs = len(dRecv);
 
-              ## Iteract throw the records.
-              for vm in dRecv:
+            ## Iteract throw the records.
+            for vm in dRecv:
 
-                  ## LOG:
-                  self.__print.show('REQUEST: ' + str(vm), "I");
-
-                  ## If the vm is finished or running they were accepts.
-                  if  vm['status'] == FINISHED:
+                ## If the vm is finished or running they were accepts.
+                if  int(vm['status']) == FINISHED:
                     tsIni = vm['timestamp_received'];
                     tsEnd = vm['timestamp_finished'];
 
@@ -418,38 +434,50 @@ class MCT_Divisions:
                     ## instance only the time is under the threadshold.
                     tRunSecs = calculate_time(tsIni, tsEnd);
 
-                    if tRunSecs > self.__timeThreshold or tRunSecs < 0.0;
-                        accpets += 1;
+                    if tRunSecs > self.__timeThreshold or tRunSecs < 0.0:
+                        accepts += 1;
                     else:
                         rejects += 1;
 
-                elif request['status'] == SUCCESS :
+                elif int(vm['status']) == SUCCESS :
                     accepts += 1;
                 else:
                     rejects += 1;
 
-              ## Calculate:
-              try:
-                  globalFairness = float(accepts) / float(allReqs);
-              except:
-                  globalFairness = 0.0;
- 
-          ## Update in table STATUS:
-          data = {
-              'all_requests': allReqs,
-              'accepts'     : accepts,
-              'rejects'     : rejects,
-              'fairness'    : globalFairness,
-              'timestamp'   : str(datetime.datetime.now()) 
-          }
+                print vm
+            print '-------------------------------------------\n'
+            print allReqs
+            print accepts
+            print rejects
 
-          self.__db['lock'].accquire();
-          self.__db['db'  ].update_reg_without_filter(Status, data);
-          self.__db['lock'].release();
+            ## Calculate:
+            try:
+                globalFairness = float(accepts) / float(allReqs);
+            except:
+                globalFairness = 0.0;
+ 
+        ## Obtain all players in tournament in this momment:
+        self.__db['lock'].acquire();
+        players = self.__db['db'].all_regs(Player);
+        self.__db['lock'].release();
+
+        ## Status
+        status = Status();
+
+        status.players      = len(players);
+        status.all_requests = allReqs;
+        status.accepts      = accepts;
+        status.rejects      = rejects;
+        status.fairness     = globalFairness;
+        status.timestamp    = str(datetime.datetime.now());
+
+        self.__db['lock'].acquire();
+        self.__db['db'  ].insert_reg(status);
+        self.__db['lock'].release();
               
-          ## LOG:
-          self.__print.show('GLOBAL FAIRNESS: ' + str(globalFairness), "I");
-          return SUCCESS;
+        ## LOG:
+        self.__print.show('GLOBAL FAIRNESS: ' + str(globalFairness), "I");
+        return SUCCESS;
 ## END CLASS.
 
 

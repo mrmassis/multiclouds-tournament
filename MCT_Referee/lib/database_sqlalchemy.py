@@ -145,7 +145,7 @@ class Player(Base):
     token         = Column(VARCHAR(45), nullable=True);
     suspend       = Column(TIMESTAMP  , nullable=True);
     enabled       = Column(INT        , nullable=True , default=0  );
-    last_choice   = Column(TIMESTAMP  , nullable=True);
+    last_choice   = Column(TIMESTAMP  , nullable=True , default='2018-01-01 00:00:00');
 ## END CLASS.
 
 
@@ -166,9 +166,10 @@ class Status(Base):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __tablename__ = 'Status';
+    __tablename__ = 'STATUS';
 
     id            = Column(INT        , nullable=False, primary_key=True);
+    players       = Column(INT        , nullable=False);
     all_requests  = Column(INT        , nullable=False);
     accepts       = Column(INT        , nullable=False);
     rejects       = Column(INT        , nullable=False);
@@ -378,34 +379,6 @@ class MCT_Database_SQLAlchemy:
         session.close();
 
         return 0;
-
-
-    ##
-    ## BRIEF: update a registry without filter.
-    ## ------------------------------------------------------------------------
-    ## @PARAM obj table      == object that meaning one table in database.
-    ## @PARAM dic fieldsDict == dictionary with fields:value to update.
-    ##
-    def update_reg_without_filter(self, table, fieldsDict):
-
-        DBSession = sessionmaker(bind=self.__engine)
-
-        ## A DBSession() instance establishes all conversations with the databa
-        ## se and represents a staging zone for all the objects loaded into the
-        ## database session object. Any change made against the objects in the 
-        ## session won't be persisted into the database until you call session.
-        ## commit(). If you are not happy about the changes, you can revert all
-        ## of them back to the last commit by calling session.rollback();
-        session = DBSession();
-
-        ## Update the registry:
-        session.query(table).update(fieldsDict);
-        session.commit();
-
-        session.close();
-
-        return 0;
-
 
     ##
     ## BRIEF: insert a new register in table;

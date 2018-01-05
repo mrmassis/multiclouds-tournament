@@ -95,7 +95,11 @@ class MCT_Referee(RabbitMQ_Consume):
 
         ## Choice the scheduller:
         if schedullerOption == 'round_robin_imutable_list':
-            self.__scheduller=Round_Robin_Imutable_List();
+            self.__scheduller = Round_Robin_Imutable_List();
+
+        if schedullerOption == 'timestamp':
+            self.__scheduller = Timestamp();
+
         else:
             pass;
 
@@ -548,10 +552,11 @@ class MCT_Referee(RabbitMQ_Consume):
         ## Get all data from the message. Vcpus, memory and disk avaliable in
         ## the player:
         data = {
-            'name'     : msg['playerId'],
-            'vcpus'    : msg['data']['vcpus'   ],
-            'memory'   : msg['data']['memory'  ],
-            'local_gb' : msg['data']['local_gb']
+            'name'         : msg['playerId'],
+            'vcpus'        : msg['data']['vcpus'       ],
+            'memory'       : msg['data']['memory'      ],
+            'local_gb'     : msg['data']['local_gb'    ],
+            'max_instance' : msg['data']['max_instance']
         };
 
         self.__db.update_reg(Player, Player.name == msg['playerId'], data);
@@ -566,7 +571,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM str playerId == player's id who made the request.
     ##
     def __get_player(self, division, playerId):
-       selectedPlayer = {};
+       sPlayer = {};
 
        ## Genereate the query to select the players belong to specific division.
        fColumns = and_(Player.division >= division, 
@@ -580,23 +585,21 @@ class MCT_Referee(RabbitMQ_Consume):
 
        if dRecv != []:
 
-           ## TODO: ordenar por division e por timestamp!!!!!!!!!!!!!!!!!!!!!!!
-           ## tem que considerar tambem o numero de vms aceitas, se passou o ma
-           ## ximo vai para o proximo.
-
-
-           ## Perform the player selection. Utilize the scheduller algorithm se
-           ## lected before.
-           selectedPlayer = self.__scheduller.run(dRecv);
+           ## Select the player. Using the schduller approach defined in config
+           ## file.
+           sPlayer = self.__scheduller.run(dRecv);
 
            ## Set in Player table the timestamp that meaning the selected player
-           ## TODO!!!
-           
+           data = {
+               'last_choice' : str(datetime.datetime.now())
+           };
+
+           self.__db.update_reg(Player, Player.name == sPlayer['name'], data);
 
        ## LOG:
-       self.__print.show('PLAYER SELECTED: ' + str(selectedPlayer), 'I');
+       self.__print.show('PLAYER SELECTED: ' + str(sPlayer), 'I');
 
-       return selectedPlayer;
+       return sPlayer;
 
 
     ##
@@ -606,10 +609,15 @@ class MCT_Referee(RabbitMQ_Consume):
     ## 
     def __show_all_player_candidates(self, players):
 
+        ## LOG:
+        self.__print.show('\n---------- ALL PLAYER CANDIDATES ----------','I');
+
         for player in players:
             ## LOG:
             self.__print.show(str(player), 'I');
 
+        ## LOG:
+        self.__print.show('----------\n', 'I');
         return SUCCESS;
 
 

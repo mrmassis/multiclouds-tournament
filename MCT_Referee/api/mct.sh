@@ -41,6 +41,18 @@ function instances() {
             fi
             ;;
 
+        'simple')
+            ## Execute the command: 
+            SQL="select name,score,history,fairness,accepts,running,rejects from PLAYER"
+            ${CMYSQL} -e "${SQL}"
+
+            if [[ ${2} == 'detail' ]]; then
+                ## Execute the command: 
+                SQL="select * from VM"
+                ${CMYSQL} -e "${SQL}"
+            fi
+            ;;
+
         ## Verify all instances that are running in enviroment.
         'running')
             ## Execute the command: 
@@ -137,24 +149,56 @@ function vm() {
 
 
 
+
+
+function status() {
+
+    case ${1} in
+
+        'all')
+            ## Execute the command: 
+            SQL="select * from STATUS"
+            ${CMYSQL} -e "${SQL}"
+            ;;
+
+        ## Unknow actions:
+        *)
+            echo 'Command not suported!'
+            ;;
+    esac
+
+    return 0
+}
+
+
+
+
+
+
+
+
 ###############################################################################
 ## MAIN                                                                      ##
 ###############################################################################
 case ${1} in
 
     'instance')
-        ## Remove the instance argument from the list of arguments.
         shift
         instances ${@}
         ;;
 
     'vm')
-        ## Remove the instance argument from the list of arguments.
         shift
         vm ${@}
         ;;
 
-    *)
+    'status')
+        shift
+        status ${@}
+        ;;
+
+    *)  echo "Command not valid!"
+        ;;
 esac
 
 ## EOF
