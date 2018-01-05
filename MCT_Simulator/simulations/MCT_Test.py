@@ -17,6 +17,7 @@ import os;
 import operator;
 import mysql.connector;
 import mysql;
+import random;
 
 from mysql.connector import RefreshOption, errorcode;
 from multiprocessing import Process, Queue, Lock;
@@ -31,14 +32,13 @@ from multiprocessing import Process, Queue, Lock;
 ###############################################################################
 ## DEFINITIONS                                                               ##
 ###############################################################################
-V_BASE = '.';
-R_BASE = '.';
+V_BASE = '/etc/mct/vplayers';
+R_BASE = '/etc/mct/quotas'  ;
 
 D_HOST = '192.168.0.201';
 D_USER = 'mct';
 D_PASS = 'password';
 D_BASE = 'mct';
-
 
 
 
@@ -64,6 +64,7 @@ class MCT_Test(Process):
     __operators         = None;
     __db                = None;
     __testString        = None;
+    __vplayerId         = None;
 
 
     ###########################################################################
@@ -83,7 +84,8 @@ class MCT_Test(Process):
             'ACCEPTS' : self.__get_accepts,
             'REJECTS' : self.__get_rejects,
             'RUNNING' : self.__get_running,
-            'FINISHED': self.__get_finished
+            'FINISHED': self.__get_finished,
+            'NOTHING' : self.__nothing
         };
 
         ## String with test:
@@ -101,6 +103,8 @@ class MCT_Test(Process):
         self.__db = mysql.connector.connect(**dbConfig);
         self.__db.autocommit = True;
 
+        self.__vplayerId = 0;
+
 
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
@@ -112,36 +116,49 @@ class MCT_Test(Process):
     def run(self): 
         ## Split the string in four others: vplayer, condition, action, and re-
         ## sources.
-        parameters = self.__testString.split('-');
+        pars = self.__testString.split('-');
         
         ## Format and handle each terms presents in parameter list (parameter).
-        vplayer,condition,action,resources =self.__formatParameter(parameters);
+        vplayer,loop,condition,action,resources = self.__formatParameter(pars);
 
         ## Check if the condtions is valid and return in the dictionary format.
         dictTest = self.__valid_conditions(condition); 
 
-        if dictTest['condition'] == 'TIMER_AFTER':
-            functions[action](vplayer, action);
+        ## Information abou loop:
+        iteractions, timeToWait = loop.split(':');
 
-        else:
-            while True:
-                n = self.__mHandleConditions[dictTest['condition']](vplayer);
+        i = 0;
+        while True:
+            i += 1;
 
-                ## Create (on-demand) the conditional to evaluate the trigger.
-                if self.__ops(dictTest['tag'])(n, dictTest['quantity']):
+            if dictTest['condition'] == 'TIMER_AFTER':
+                functions[action](vplayer, action);
+            else:
+                while True:
 
-                    if   action == 'UPD':
-                       self.__upd_player(vplayer, resources);
+                    n=self.__mHandleConditions[dictTest['condition']](vplayer);
 
-                    elif action == 'ADD':
-                       self.__add_player(vplayer, resources);
+                    ## Create the conditional to evaluate the trigger.
+                    if self.__ops(dictTest['tag'])(n, dictTest['quantity']):
 
-                    elif action == 'DEL':
-                       self.__del_player(vplayer);
+                        if   action == 'UPD':
+                            self.__upd_player(vplayer, resources);
 
-                    break;
+                        elif action == 'ADD':
+                            self.__add_player(vplayer, resources);
 
-                time.sleep(5);
+                        elif action == 'DEL':
+                           self.__del_player(vplayer);
+
+                        break;
+
+                    time.sleep(5);
+
+            ## Control de iteraction (loop while):
+            if i == int(iteractions):
+                break;
+
+            time.sleep(float(timeToWait));
         return 0;
 
 
@@ -174,14 +191,22 @@ class MCT_Test(Process):
     ## @PARAM resources == list with virtual player resources.
     ##
     def __add_player(self, vplayer, resources):
+        playerNm, playerId = vplayer.split('_');
 
-        fileNameVT = os.path.join(V_BASE, 'vplayer'  +vplayer[-1] +'.yml');
-        fileNameRT = os.path.join(R_BASE, 'resources'+vplayer[-1] +'.yml');
+        if playerId == '*':
+            playerId = str(self.__vplayerId);
+            self.__vplayerId += 1;
+
+        ## Create player name:
+        vplayer = playerNm + playerId; 
+
+        fileNameVT = os.path.join(V_BASE, 'vplayer'   + playerId + '.yml');
+        fileNameRT = os.path.join(R_BASE, 'resources' + playerId + '.yml');
 
         ## Get the resources and virtual player perfil. Booth are necessry to 
         ## add a new player.
         templateR = self.__template_resource(vplayer, resources);
-        templateV = self.__template_v_player(vplayer);
+        templateV = self.__template_v_player(vplayer, playerId );
 
         fd = open(fileNameRT, 'w'); 
         fd.writelines(templateR);
@@ -322,6 +347,14 @@ class MCT_Test(Process):
 
 
     ##
+    ## BRIEF: do nothing.
+    ## ------------------------------------------------------------------------
+    ##
+    def __nothing(self, vplayer):
+        return 1;
+
+
+    ##
     ## BRIEF: obtain the player's finished vms.
     ## ------------------------------------------------------------------------
     ## @PARAM vplayer == virtual player name.
@@ -385,9 +418,7 @@ class MCT_Test(Process):
     ## -----------------------------------------------------------------------
     ## @PARAM vplayer == virtual player name.
     ##
-    def __template_v_player(self, vplayer): 
-
-        numberId = "agent_drive" + vplayer[-1];
+    def __template_v_player(self, vplayer, playerId): 
 
         t = [];
         t.append("name                        : " + vplayer + "\n");
@@ -398,14 +429,14 @@ class MCT_Test(Process):
         t.append("amqp_queue_name             : agent\n");
         t.append("amqp_user                   : mct\n");
         t.append("amqp_pass                   : password\n");
-        t.append("agent_id                    : " + numberId + "\n");
+        t.append("agent_id                    : agent_drive" + playerId + "\n");
         t.append("ratio                       : 610\n");
         t.append("request_pending_iteract     : 10\n");
         t.append("request_pending_waiting     : 60\n");
         t.append("authenticate_address        : 192.168.0.201\n");
         t.append("authenticate_port           : 2000\n");
         t.append("agent_address               : 192.168.0.200\n");
-        t.append("resources_file              : /etc/mct/quotas/resources.yml\n");
+        t.append("resources_file              : /etc/mct/quotas/resources"+playerId+".yml\n");
         t.append("port                        : 10000\n");
         t.append("addr                        : localhost\n");
         t.append("get_set_resources_info_time : 120\n");
@@ -441,19 +472,29 @@ class MCT_Test(Process):
     def __formatParameter(self, parameter):
 
         vplayer   = parameter[0];
-        condition = parameter[1];
-        action    = parameter[2];
+        iteraction= parameter[1];
+        condition = parameter[2];
+        action    = parameter[3];
         resources = {};
 
-        if len(parameter) == 4:
-            stringResources = parameter[3].split('_');
+        if len(parameter) == 5:
+            stringResources = parameter[4].split('_');
 
-            resources['vcpu'        ] = stringResources[0];
-            resources['memory'      ] = stringResources[1];
-            resources['local_gb'    ] = stringResources[2];
-            resources['max_instance'] = stringResources[3];
+            ## Check:
+            qtde,mood = stringResources[3].split('|');
 
-        return vplayer, condition, action, resources;
+            ##
+            if qtde == '*':
+               stringResources[3] = random.randrange(0, int(mood));
+            else:
+               stringResources[3] = qtde;
+
+            resources['vcpu'        ] = str(stringResources[0]);
+            resources['memory'      ] = str(stringResources[1]);
+            resources['local_gb'    ] = str(stringResources[2]);
+            resources['max_instance'] = str(stringResources[3]);
+
+        return vplayer, iteraction, condition, action, resources;
 
 
     ##

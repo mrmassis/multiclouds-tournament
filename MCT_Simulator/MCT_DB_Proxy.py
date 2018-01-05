@@ -270,7 +270,8 @@ class MCT_DB_Proxy:
     def __get_next_action(self, idx):
 
         ## If the valid is equal 2, meaning that there isnt record in database.
-        actionData = {'valid' : 2};
+        ## action 666 :|
+        actionData = {'action': 666, 'valid' : 2};
 
         dRecv = self.__db.all_regs_filter(Simulation, Simulation.id == idx);
 

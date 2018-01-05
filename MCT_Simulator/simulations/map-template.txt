@@ -14,11 +14,18 @@
 ## * REJECTS...:                                                             ##
 ## * RUNNING...:                                                             ##
 ## * FINISHED..:                                                             ##
+## * NOTHING...:                                                             ##
+##                                                                           ##
+## ITERACTION:                                                               ##
+## * LOOPS:TIME_TO_WAIT (LOOPS==0 is while true)                             ##
 ##                                                                           ##
 ## ACTION:                                                                   ##
 ## ADD: addition new player.                                                 ##
 ## DEL: remove an existent player.                                           ##
 ## UPD: update player resources.                                             ##
+##                                                                           ##
+## *|20 -- * == random and |? is the mod randon.                             ##
+##                                                                           ##
 ## ------------------------------------------------------------------------- ##
 ## Examples:
 ##
@@ -32,5 +39,10 @@
 ## Disable vplayer2 10 minutes after the mct started.
 ## vplayer0-TIME_BEFORE==10-DEL
 ##
-playerVirtual0-RUNNING==10-DEL
+## playerVirtual_*-2:10-RUNNING==10-ADD-1023_1047552_10230_*|20
+## playerVirtual_*-2:10-NOTHING==1-ADD-1023_1047552_10230_*|20
+
+
+## create 100 players, iteract 100 times and waiting 5 minutes. 
+playerVirtual_*-100:300-NOTHING==1-ADD-1023_1047552_10230_50|*
 ## EOF

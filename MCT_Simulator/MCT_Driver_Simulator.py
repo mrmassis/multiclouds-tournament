@@ -334,9 +334,10 @@ class MCT_Action(object):
         msgToSend = self.__create_basic_message(SETINF_RESOURCE, idx);
 
         msgToSend['data'] = {
-            'vcpus'   : data['vcpus'   ],
-            'memory'  : data['memory'  ],
-            'local_gb': data['local_gb']
+            'vcpus'       : data['vcpus'       ],
+            'memory'      : data['memory'      ],
+            'local_gb'    : data['local_gb'    ],
+            'max_instance': data['max_instance']
         }
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
@@ -710,6 +711,9 @@ class MCT_States:
 
             ## Load the JSON msg.Convert from JSON format to simple dictionary.
             mDictRecv = json.loads(mJsonRecv);
+
+            if int(mDictRecv['valid']) == 2:
+                sock.close();
 
         except socket.error as error:
             ## LOG:
