@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
   `token`              VARCHAR(45)     NULL,
   `suspend`            TIMESTAMP       NULL,
   `enabled`            INT             DEFAULT 0,
-  `last_choice`        TIMESTAMP       NULL,
+  `last_choice`        TIMESTAMP       DEFAULT '2018-01-01 00:00:00',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -87,6 +87,7 @@ DROP TABLE IF EXISTS `mct`.`STATUS` ;
 
 CREATE  TABLE IF NOT EXISTS `mct`.`STATUS` (
   `id`                 INT         NOT NULL AUTO_INCREMENT,
+  `players`            INT         DEFAULT 0,
   `all_requests`       INT         DEFAULT 0,
   `accepts`            INT         DEFAULT 0,
   `rejects`            INT         DEFAULT 0,

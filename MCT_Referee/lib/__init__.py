@@ -5,5 +5,6 @@ from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Request, Player
 from mct.lib.amqp                import RabbitMQ_Publish, RabbitMQ_Consume;
 from mct.lib.emulator            import MCT_Emulator;  
 from mct.lib.utils               import *; 
+from mct.lib.scheduller          import *; 
 
 ## EOF
