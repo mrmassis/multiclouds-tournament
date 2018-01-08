@@ -64,7 +64,7 @@ class MCT_Test(Process):
     __operators         = None;
     __db                = None;
     __testString        = None;
-    __vplayerId         = None;
+    __vplayerIdsList    = [];
 
 
     ###########################################################################
@@ -92,18 +92,19 @@ class MCT_Test(Process):
         self.__testString = testString;
 
         ## Database connection:
-        dbConfig = {
-            'host'             : D_HOST,
-            'user'             : D_USER,
-            'password'         : D_PASS,
-            'database'         : D_BASE,
-            'raise_on_warnings': True
-        };
+        #dbConfig = {
+        #    'host'             : D_HOST,
+        #    'user'             : D_USER,
+        #    'password'         : D_PASS,
+        #    'database'         : D_BASE,
+        #    'raise_on_warnings': True
+        #};
 
-        self.__db = mysql.connector.connect(**dbConfig);
-        self.__db.autocommit = True;
+        #self.__db = mysql.connector.connect(**dbConfig);
+        #self.__db.autocommit = True;
 
-        self.__vplayerId = 0;
+        ## Work in everiment aware mode (default):
+        self.__strategy  = '0';
 
 
     ###########################################################################
@@ -114,12 +115,20 @@ class MCT_Test(Process):
     ## ------------------------------------------------------------------------
     ##
     def run(self): 
+        valRet = 0;
+
         ## Split the string in four others: vplayer, condition, action, and re-
         ## sources.
         pars = self.__testString.split('-');
         
         ## Format and handle each terms presents in parameter list (parameter).
-        vplayer,loop,condition,action,resources = self.__formatParameter(pars);
+        vplayer, loop, strategy, condition, action, resources = self.__formatParameter(pars);
+
+        ## Get Ids:
+        vplayerNm = self.__get_vplayers_ids(vplayer);
+
+        ## Set the strategy:
+        self.__strategy = strategy;
 
         ## Check if the condtions is valid and return in the dictionary format.
         dictTest = self.__valid_conditions(condition); 
@@ -132,23 +141,23 @@ class MCT_Test(Process):
             i += 1;
 
             if dictTest['condition'] == 'TIMER_AFTER':
-                functions[action](vplayer, action);
+                functions[action](vplayerNm, action);
             else:
                 while True:
-
-                    n=self.__mHandleConditions[dictTest['condition']](vplayer);
+                    n=self.__mHandleConditions[dictTest['condition']](vplayerNm);
 
                     ## Create the conditional to evaluate the trigger.
                     if self.__ops(dictTest['tag'])(n, dictTest['quantity']):
 
                         if   action == 'UPD':
-                            self.__upd_player(vplayer, resources);
-
+                            valRet = self.__upd_player(vplayerNm, resources);
                         elif action == 'ADD':
-                            self.__add_player(vplayer, resources);
-
+                            valRet = self.__add_player(vplayerNm, resources);
                         elif action == 'DEL':
-                           self.__del_player(vplayer);
+                            valRet = self.__del_player(vplayerNm);
+
+                        if valRet == 1:
+                            return 0;
 
                         break;
 
@@ -159,12 +168,39 @@ class MCT_Test(Process):
                 break;
 
             time.sleep(float(timeToWait));
-        return 0;
+        return valRet;
 
 
     ###########################################################################
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
+    ##
+    ## BRIEF: get vplayers ID.
+    ## ------------------------------------------------------------------------
+    ## @PARAM vplayer == virtual player name.
+    ## 
+    def __get_vplayers_ids(self, vplayer):
+
+        prefix, sufix = vplayer.split('_');
+
+        ## One player only:
+        if   ',' not in sufix and ':' not in sufix:
+            self.__vplayerIdsList.append(sufix);
+
+        ## Set a lot of player defined by alternate id.
+        elif ',' in sufix:
+            self.__vplayerIdsList = sufix.split(',');
+
+        ## Set a lot of player defined in an interval.
+        elif ':' in sufix:
+            ini, end = sufix.split(':');
+
+            for idPlayer in range(int(ini), int(end)+1):
+                self.__vplayerIdsList.append(idPlayer);
+
+        return prefix;
+
+
     ##
     ## BRIEF: update the resources of an existent virtual player.
     ## ------------------------------------------------------------------------
@@ -187,26 +223,20 @@ class MCT_Test(Process):
     ##
     ## BRIEF: add a new virtual player to tournament.
     ## ------------------------------------------------------------------------
-    ## @PARAM vplayer == virtual player name.
+    ## @PARAM vplayerNm == virtual player name.
     ## @PARAM resources == list with virtual player resources.
     ##
-    def __add_player(self, vplayer, resources):
-        playerNm, playerId = vplayer.split('_');
+    def __add_player(self, vplayerNm, resources):
 
-        if playerId == '*':
-            playerId = str(self.__vplayerId);
-            self.__vplayerId += 1;
-
-        ## Create player name:
-        vplayer = playerNm + playerId; 
+        playerId = self.__vplayerIdsList[0];
 
         fileNameVT = os.path.join(V_BASE, 'vplayer'   + playerId + '.yml');
         fileNameRT = os.path.join(R_BASE, 'resources' + playerId + '.yml');
 
         ## Get the resources and virtual player perfil. Booth are necessry to 
         ## add a new player.
-        templateR = self.__template_resource(vplayer, resources);
-        templateV = self.__template_v_player(vplayer, playerId );
+        templateR = self.__template_resource(vplayerNm, resources);
+        templateV = self.__template_v_player(vplayerNm, playerId );
 
         fd = open(fileNameRT, 'w'); 
         fd.writelines(templateR);
@@ -216,7 +246,12 @@ class MCT_Test(Process):
         fd.writelines(templateV);
         fd.close();
 
-        return 0;
+        del self._vplayerIdsList[0];
+
+        if len(self.__vplayerIdsList) == 0:
+            return 1;
+        else:
+            return 0;
 
 
     ##
@@ -455,11 +490,12 @@ class MCT_Test(Process):
     def __template_resource(self, vplayer, resources): 
 
         t = [];
-        t.append("name: "         + vplayer                  + "\n");
-        t.append("vcpus: "        + resources['vcpu']        + "\n");
-        t.append("memory: "       + resources['memory']      + "\n");
-        t.append("local_gb: "     + resources['local_gb']    + "\n");
+        t.append("name        : " + vplayer                  + "\n");
+        t.append("vcpus       : " + resources['vcpu']        + "\n");
+        t.append("memory      : " + resources['memory']      + "\n");
+        t.append("local_gb    : " + resources['local_gb']    + "\n");
         t.append("max_instance: " + resources['max_instance']+ "\n");
+        t.append("strategy    : " + self.__strategy          + "\n");
 
         return t;
 
@@ -473,12 +509,13 @@ class MCT_Test(Process):
 
         vplayer   = parameter[0];
         iteraction= parameter[1];
-        condition = parameter[2];
-        action    = parameter[3];
+        strategy  = parameter[2];
+        condition = parameter[3];
+        action    = parameter[4];
         resources = {};
 
         if len(parameter) == 5:
-            stringResources = parameter[4].split('_');
+            stringResources = parameter[5].split('_');
 
             ## Check:
             qtde,mood = stringResources[3].split('|');
@@ -494,7 +531,7 @@ class MCT_Test(Process):
             resources['local_gb'    ] = str(stringResources[2]);
             resources['max_instance'] = str(stringResources[3]);
 
-        return vplayer, iteraction, condition, action, resources;
+        return vplayer, iteraction, strategy, condition, action, resources;
 
 
     ##
