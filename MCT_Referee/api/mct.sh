@@ -43,7 +43,7 @@ function instances() {
 
         'simple')
             ## Execute the command: 
-            SQL="select name,score,history,fairness,accepts,running,rejects from PLAYER"
+            SQL="select name,score,history,fairness,accepts,running,rejects,max_instance from PLAYER"
             ${CMYSQL} -e "${SQL}"
 
             if [[ ${2} == 'detail' ]]; then
