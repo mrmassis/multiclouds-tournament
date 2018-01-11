@@ -31,7 +31,7 @@ import os;
 from sqlalchemy                  import and_, or_;
 from threading                   import Timer;
 from multiprocessing             import Process, Queue, Lock;
-from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Request,Player;
+from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Request;
 from mct.lib.utils               import *;
 from mct.lib.amqp                import MCT_Simple_AMQP_Publish;
 
@@ -60,7 +60,7 @@ DEFAULT_CONFIG_FOLDER = os.path.join('/etc/mct/'       , CONFIG_FILE);
 ###############################################################################
 ## LOG                                                                       ##
 ###############################################################################
-logging.basicConfig()
+#logging.basicConfig()
 
 
 
@@ -252,7 +252,7 @@ class MCT_Action(object):
     ## @PARAM action == action to execute.
     ## @PARAM data   == dictionary with data to dispatch.
     ##
-    def dispatch(self, action, data):
+    def dispatch(self, action, data={}):
        dRecv = {};
 
        ## Perform the new player register in MCT_Register. Get an access token.
@@ -266,7 +266,7 @@ class MCT_Action(object):
 
        ## Get resouces information from MCT_Referee. 
        if   action == GETINF_RESOURCE:
-           dRecv = self.getinf_resource();
+           dRecv = self.getinf_resource(data);
 
        ## Set resources information to  MCT_Referee.
        elif action == SETINF_RESOURCE:
@@ -280,14 +280,19 @@ class MCT_Action(object):
        elif action == DELETE_INSTANCE:
            dRecv = self.delete_instance(data);
 
+       ## Stop the vms executing by virtual player.
+       elif action == STOPVM_INSTANCE:
+           dRecv = self.stopvm_instance(data);
+
        return dRecv;
 
 
     ##
     ## BRIEF: Get the resources from player's division.
     ## ------------------------------------------------------------------------
+    ## @PARAM data == specific data to send.
     ##
-    def getinf_resource(self):
+    def getinf_resource(self, data):
 
         ## LOG:
         self.__print.show('GETTING MCT RESOURCE INFORMATION!', 'I');
@@ -337,7 +342,8 @@ class MCT_Action(object):
             'vcpus'       : data['vcpus'       ],
             'memory'      : data['memory'      ],
             'local_gb'    : data['local_gb'    ],
-            'max_instance': data['max_instance']
+            'max_instance': data['max_instance'],
+            'strategy'    : data['strategy'    ]
         }
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
@@ -355,6 +361,33 @@ class MCT_Action(object):
 
         ## Return the data:
         return dRecv;
+
+
+    ##
+    ## BRIEF: stop all vms that this vplayer is running.
+    ## ------------------------------------------------------------------------
+    ## @PARAM data == specific data to send.
+    ##
+    def stopvm_instance(self, data):
+
+        ## LOG:
+        self.__print.show('SEND REQUEST TO STOP ALL VMS INSTANCE!', 'I');
+
+        ## Create an idx to identify the request for the resources information.
+        idx = self.__name + '_' + self.__create_index();
+
+        ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
+        ## to exec de action.
+        msgToSend = self.__create_basic_message(STOPVM_INSTANCE, idx);
+
+        ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
+        valret = self.__publish.publish(msgToSend, 'Agent_Drive');
+
+        ## LOG:
+        self.__print.show('|STOPVM|', 'I');
+
+        ## Returns the data:
+        return {};
 
 
     ##
@@ -395,14 +428,14 @@ class MCT_Action(object):
         else:
             dRecv = {};
 
+        ## LOG:
+        self.__print.show('|CREATE| - data received: ' + str(dRecv), 'I');
+
         ## VM CONTROL ------------------------------------------------------ ##
         ## If status is sucessfull put vm running in vm structure:           ##
         ## ----------------------------------------------------------------- ##
-        if dRecv['status'] == SUCCESS:
+        if int(dRecv['status']) == SUCCESS:
             self.__runningVM[dRecv['data']['uuid']] = 1;
-
-        ## LOG:
-        self.__print.show('|CREATE| - data received: ' + str(dRecv), 'I');
 
         ## Returns the data:
         return dRecv;
@@ -530,10 +563,6 @@ class MCT_Action(object):
                     'data'  : ast.literal_eval(dRecv[0]['message'])
                 };
 
-                ## Update the "player' satisfaction" level. Verify the status.
-                if dRecv[-1]['action'] == CREATE_INSTANCE:
-                    self.__fairness(dRecv[-1]['status'], dRecv[-1]['data']);
-
                 return valRet;
 
             ## Wating for a predefined time to check (pooling) the list again.
@@ -544,58 +573,6 @@ class MCT_Action(object):
             self.__print.show('WAITING FOR REQUEST RETURN: ' + requestId, 'I');
 
         return {};        
-
-
-    ##
-    ## BRIEF: calculate the player's fairness level.
-    ## ------------------------------------------------------------------------
-    ## @PARAM str status == status from action.
-    ## @PARAM str data   == data received from agent.
-    ##
-    def __fairness(self, status, data):
-
-        ## Create filter.
-        fColumns = (Player.name == self.__name);
-
-        ## Select the requests number and calculate the fairness! Mount the se-
-        ## lect query.
-        with self.__db['lock']:
-            dReceived = self.__db['db'].all_regs_filter(Player, fColumns);
-
-        accepts = int(dReceived[-1]['accepts']);
-        rejects = int(dReceived[-1]['rejects']);
-        
-        totalRequest = accepts + rejects;
-
-        ## Status "1" meaning that request for VM was accept by remote player!
-        if status == SUCESS:
-            accepts += 1;
-        else:
-            rejects += 1;
-
-        try:
-            ## Caculate the porcetage:
-            fairness = float((accepts*100)/requests);
-        except:
-            fairness = 0.0;
-                
-        data = {
-            'name'     : self.__name,
-            'accepts'  : accepts,
-            'rejects'  : rejects,
-            'fairness' : fairness
-        };
-
-        ## Update player status:
-        with self.__db['lock']:
-           self.__db['db'].update_reg(Player,Player.name == self.__name,data);
-            
-        ## LOG:
-        self.__print.show(self.__name + ' REJECTS : | ' + str(rejects ), 'I');
-        self.__print.show(self.__name + ' ACCEPTS : | ' + str(accepts ), 'I');
-        self.__print.show(self.__name + ' FAIRNESS: | ' + str(fairness), 'I');
-
-        return 0;
 
  
     ##
@@ -832,7 +809,7 @@ class MCT_VPlayer(Process):
         self.__set_resources_info();
 
         ## Scheduller set and get information action t/from MCT main components.
-        getSetInfRepeat = Repeated_Timer(self.__interval, self.__get_set_info);
+        getSetInfRepeat= Repeated_Timer(self.__interval, self.__get_set_info);
 
         while True:
 
@@ -902,11 +879,7 @@ class MCT_VPlayer(Process):
     ## ------------------------------------------------------------------------
     ##
     def __set_resources_info(self):
-
-        errorDatabase = False;
-
-        ## Obtain the dictionary with resource informations (vcpus, memory, and
-        ## disk).
+        ## Obtain the dictionary with resource informations (vcpus ,mem, disk).
         try:
             rDict = yaml.load(file(self.__resourcesFile, 'r')); 
 
@@ -914,25 +887,18 @@ class MCT_VPlayer(Process):
                 'vcpus'        : rDict['vcpus'       ],
                 'memory'       : rDict['memory'      ],
                 'local_gb'     : rDict['local_gb'    ],
-                'max_instance' : rDict['max_instance']
+                'max_instance' : rDict['max_instance'],
+                'strategy'     : rDict['strategy'    ]
             };
-
-            ## Execute in exclusive mode-lock block-the database update action.
-            with self.__db['lock']:
-                self.__db['db'].update_reg(Player, 
-                                           Player.name == self.__name, data); 
 
             ## Send the request to update 'resources' values to 'MCT_Dispatch':
             dRecv = self.__mctAction.dispatch(SETINF_RESOURCE, data);
-
-            ## LOG:
-            self.__print.show('UPDATE RESOURCE VALUES IN TABLE!','I');
-            return 0;
+            return SUCCESS;
 
         except yaml.reader.ReaderError:
             pass;
 
-        return 1;
+        return FAILED;
 
 
     ##
@@ -950,21 +916,6 @@ class MCT_VPlayer(Process):
              ## LOG:
              self.__print.show('ERROR TO PARSE THE TOKEN!','I');
              return {};
-        
-        try:
-            ## Insert the player in database:
-            player = Player();
-
-            player.name     = self.__name;
-            player.address  = self.__addr;
-            player.division = 0;
-            player.token    = token;
-
-            valRet = self.__db['db'].insert_reg(player);
-
-        except:
-            ## LOG:
-             self.__print.show('VPLAYER YET INSERTED IN LOCAL BASE!', 'I');
 
         return token;
 

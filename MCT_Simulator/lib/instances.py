@@ -78,23 +78,23 @@ class MCT_Instances:
     ## PUBLIC METHODS                                                       ##
     ###########################################################################
     ##
-    ## BRIEF: check instance status.
+    ## BRIEF: check if instance is alive.
     ## ------------------------------------------------------------------------
     ## @PARAM msg == message with instance data.
     ##
-    def check_instance(self, msg):
+    def is_alive(self, msg):
 
-        playerSrc = msg['data']['origName'];
-        requestId = msg['data']['origId'  ];
+        vplayerNm = msg['data']['origNm'];
+        requestId = msg['data']['origId'];
 
-        ## If the reqId in dictionary means that the instance was created and
-        ## is running. 
-        for player in self.__instances.keys():
-            if requestId in self.__instances[player]:
-                if self.__instances[player][requestId]['status'] == 'running':
-                    return SUCCESS;
-                else:
-                    return FAILED;
+        try:
+            status = self.__instances[vplayerNm][requestId]['status'];
+
+            ## Check if the instance is running. 
+            if status == 'running':
+                return SUCCESS;
+        except:
+            pass;
 
         return FAILED;
 
@@ -139,8 +139,12 @@ class MCT_Instances:
     def del_instance(self, msg):
         playerOrign = msg['playerId'];
 
-        ## Change status to finished:
-        self.__instances[playerOrign].pop(msg['reqId']);
+        try:
+            ## Change status to finished:
+            self.__instances[playerOrign].pop(msg['reqId']);
+        except:
+            pass;
+
         return SUCCESS;
 
 

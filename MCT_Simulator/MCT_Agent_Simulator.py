@@ -55,7 +55,7 @@ DEFAULT_CONFIG_FOLDER = os.path.join('/etc/mct/'       , CONFIG_FILE);
 ###############################################################################
 ## LOG                                                                       ##
 ###############################################################################
-logging.basicConfig()
+#logging.basicConfig()
 
 
 
@@ -83,20 +83,21 @@ class MCT_Agent(RabbitMQ_Consume):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __routeInt     = None;
-    __routeExt     = None;
-    __publishInt   = None;
-    __publishExt   = None;
-    __my_ip        = None;
-    __cloud        = None;
-    __cloudType    = None;
-    __db           = None;
-    __print        = None;
-    __security     = None;
-    __sanity       = None;
-    __instances    = None;
-    __dispatchId   = None;
-    __debug        = None;
+    __routeInt        = None;
+    __routeExt        = None;
+    __publishInt      = None;
+    __publishExt      = None;
+    __my_ip           = None;
+    __cloud           = None;
+    __cloudType       = None;
+    __db              = None;
+    __print           = None;
+    __security        = None;
+    __sanity          = None;
+    __instances       = None;
+    __dispatchId      = None;
+    __debug           = None;
+    __vplayerStrategy = {};
 
 
     ###########################################################################
@@ -203,77 +204,235 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     ## BRIEF: send message to MCT_Dispatch.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict message == received message.
-    ## @PARAM str  appId   == id from sender.
+    ## @PARAM dict msg   == received message.
+    ## @PARAM str  appId == id from sender.
     ##
-    def __send_message_dispatch(self, message, appId):
+    def __send_message_dispatch(self, msg, appId):
 
         ## Insert the requet in object that mantain the VM running controller.
-        if   message['code'] == CREATE_INSTANCE:
-            self.__instances.add_instance(message);
+        if   msg['code'] == CREATE_INSTANCE:
+             if self.__prepare_msg_to_go_add(msg) == FAILED:
+                 return FAILED; 
 
-        elif message['code'] == STOPVM_INSTANCE:
-            self.__instances.del_instance(message);
-            return 0;
+        ## Insert the requet in object that mantain the VM running controller.
+        elif msg['code'] == DELETE_INSTANCE:
+             if self.__prepare_msg_to_go_del(msg) == FAILED:
+                 return FAILED; 
+
+        elif msg['code'] == SETINF_RESOURCE:
+            ## Before send the messagem to dispatch update local vplayer data-
+            ## base.
+            self.__set_localy_info_resources(msg);
 
         ## Publish the message to dispatch (locate in remote server) via AMQP.
-        valRet = self.__publishExt.publish(message, self.__routeExt);
+        valRet = self.__publishExt.publish(msg, self.__routeExt);
+        return SUCCESS;
+
+
+    ##
+    ## BRIEF: check if exist other vm with the same ID.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict msg == received message.
+    ##
+    def __prepare_msg_to_go_add(self, msg):
+        data = {
+            'data' : {
+                'origNm' : str(msg['playerId']),
+                'origId' : str(msg['reqId'   ])
+            }
+        };
+
+        ## Check if the instance to delete is running: 
+        if self.__instances.is_alive(data) == SUCCESS:
+            ## LOG:
+            self.__print.show('INSTANCE DUPLICATED: ' + str(msg), 'I');
+
+            msg['status'] = ERROR_DB_ADD;
+
+            ## Update the database:
+            self.__update_database(msg);
+            return FAILED;
+
+        self.__instances.add_instance(msg);
+        return SUCCESS;
+
+
+    ##
+    ## BRIEF: check if exist with the same ID.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict msg == received message.
+    ##
+    def __prepare_msg_to_go_del(self, msg):
+        data = {
+            'data' : {
+                'origNm' : str(msg['playerId']),
+                'origId' : str(msg['reqId'   ])
+            }
+        };
+
+        ## Check if the instance to delete is running: 
+        if self.__instances.is_alive(data) == FAILED:
+            ## LOG:
+            self.__print.show('INSTANCE NOT FOUND: ' + str(msg), 'I');
+
+            msg['status'] = ERROR_DB_DEL;
+
+            ## Update the database:
+            self.__update_database(msg);
+            return FAILED;
+
         return SUCCESS;
 
 
     ##
     ## BRIEF: receive message from MCT_Dispatch.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict message == received message.
-    ## @PARAM str  appId   == id from sender.
+    ## @PARAM dict msg   == received message.
+    ## @PARAM str  appId == id from sender.
     ##
-    def __recv_message_dispatch(self, message, appId):
+    def __recv_message_dispatch(self, msg, appId):
 
         ## In this case,the MCT_Agent received actions from MCT to be performed
         ## locally. Execute and return to MCT dispatch.
-        if message['destAddr'] != '':
-
-            ## Select the appropriate action (create instance, delete instance,
-            ## suspend instance e resume instance): 
-            if   message['code'] == CREATE_INSTANCE:
-                message = self.__create_server(message);
-
-            elif message['code'] == DELETE_INSTANCE:
-                message = self.__delete_server(message);
-
-            elif message['code'] == SANITY_INSTANCE:
-                message = self.__sanity_server(message);
-
-            ## LOG:
-            self.__print.show('RETURN EXECUTION VALUE TO MCT DISPATCH!', 'I');
-
-            ## Return data to MCT_Dispatch.
-            self.__publishExt.publish(message, self.__routeExt);
+        if msg['destAddr'] != '':
+            self.__remote(msg);
 
         ## The second case, the message received from MCT Dispatch has the resu
         ## lt of action performed in other player.
         else:
+            self.__localy(msg);
+
+        return SUCCESS;
+
+
+    ##
+    ## BRIEF: execute actions "remote" (actions received from DISPATCH).
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict msg == received message.
+    ##
+    def __remote(self, msg):
+        ## LOG:
+        self.__print.show('REMOTE EXECUTION!', 'I');
+
+        ## Select the appropriate action (create instance, delete server, sus-
+        ## pend instance e resume instance): 
+        if   msg['code'] == CREATE_INSTANCE:
+            msg = self.__create_server(msg);
+
+        elif msg['code'] == DELETE_INSTANCE:
+            msg = self.__delete_server(msg);
+
+        elif msg['code'] == SANITY_INSTANCE:
+            msg = self.__sanity_server(msg);
+
+        ## LOG:
+        self.__print.show('RET. EXEC VALUE TO MCT DISPATCH: ' + str(msg), 'I');
+
+        ## Return data to MCT_Dispatch.
+        self.__publishExt.publish(msg, self.__routeExt);
+
+        return SUCCESS;
+
+ 
+    ##
+    ## BRIEF: execute actions "localy" (return - result from action).
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict msg == received message.
+    ##
+    def __localy(self, msg):
+
+        ## LOG:
+        self.__print.show('RETURN FROM ACTION!', 'I');
+
+        ## Check the return, if the action is to insert and return was succefull
+        ## store the new vm instance in a special dictionary.
+        if   msg['code'] == CREATE_INSTANCE:
+
+            ## Define vplayer behavior. If diff of AWARE the player is using the 
+            ## cheating and will be destroy the VM after accept the request.
+            strategy = self.__vplayerStrategy[msg['playerId']];
+
+            if msg['status'] == SUCCESS and strategy == AWARE:
+                self.__instances.upd_instance(msg);
+            else:
+                self.__instances.del_instance(msg);
+
+            ## TODO: calculate here the individual fairness.
+
+        elif msg['code'] == DELETE_INSTANCE:
+            if msg['status'] == SUCCESS:
+                self.__instances.del_instance(msg);
+            
+        ## Set the token in player database:
+        elif msg['code'] == ADD_REG_PLAYER:
+            if msg['status'] == SUCCESS:
+                self.__set_localy_token(msg);
+
+        ## Update the database:
+        self.__update_database(msg);
+
+        ## Get and show from 'MCT_Instance' object status of all instances.
+        self.__show_all_instances_status();
+
+        return SUCCESS;
+
+
+    ##
+    ## BRIEF: set individual fairnes.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict msg == received message.
+    ##
+    def __vplayer_fairness(self, msg):
+        return SUCCESS;
+
+
+    ##
+    ## BRIEF: set token in database.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict msg == received message.
+    ##
+    def __set_localy_token(self, msg):
+        status = FAILED;
+
+        try:
+            ## Insert the player in database:
+            player = Player();
+
+            player.name     = msg['playerId'];
+            player.address  = msg['origAddr'];
+            player.division = 0;
+            player.token    = msg['data']['token'];
+
+            valRet = self.__db.insert_reg(player);
+            status = SUCCESS;
 
             ## LOG:
-            self.__print.show('EXECUTE ACTION LOCALLY!', 'I');
+            self.__print.show('VPLAYER '+msg['playerId']+' INSERTED IN MCT','I');
 
-            ## Check the return, if the action is to insert and return was suc-
-            ## cefull: store the new vm instance in a special dictionary.
-            if   message['code'] == CREATE_INSTANCE:
-                if message['status'] == SUCCESS:
-                    self.__instances.upd_instance(message);
-                else:
-                    self.__instances.del_instance(message);
+        except:
+            ## LOG:
+            self.__print.show('VPLAYER '+msg['playerId']+' YET INSERTED', 'I');
 
-            elif message['code'] == DELETE_INSTANCE:
-                if message['status'] == SUCCESS:
-                    self.__instances.del_instance(message);
+        return status;
 
-            ## Update the database:
-            self.__update_database(message);
 
-            ## Get and show from 'MCT_Instance' object status of all instances.
-            self.__show_all_instances_status();
+    ##
+    ## BRIEF: before send the messagem to dispatch update local vplayer db.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict msg == received message.
+    ##
+    def __set_localy_info_resources(self, msg):
+        data = {
+           'vcpus'        : msg['data']['vcpus'       ],
+           'memory'       : msg['data']['memory'      ],
+           'local_gb'     : msg['data']['local_gb'    ],
+           'max_instance' : msg['data']['max_instance']
+        };
+
+        self.__db.update_reg(Player, Player.name == msg['playerId'], data);
+
+        ## Set virtual player strategy:
+        self.__vplayerStrategy[msg['playerId']] = msg['data']['strategy'];  
 
         return SUCCESS;
 
@@ -281,18 +440,18 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     ## BRIEF: updata database with return value.
     ## ------------------------------------------------------------------------
-    ## @PARAM dict message == received message.
+    ## @PARAM dict msg == received message.
     ##
-    def __update_database(self, message):
+    def __update_database(self, msg):
 
         ## Insert the message received into the database.
         request = Request();
 
-        request.player_id  = str(message['playerId']);
-        request.request_id = str(message['reqId'   ]);
-        request.action     = int(message['code'    ]);
-        request.status     = int(message['status'  ]);
-        request.message    = str(message['data'    ]);
+        request.player_id  = str(msg['playerId']);
+        request.request_id = str(msg['reqId'   ]);
+        request.action     = int(msg['code'    ]);
+        request.status     = int(msg['status'  ]);
+        request.message    = str(msg['data'    ]);
 
         valRet = self.__db.insert_reg(request);
         return SUCCESS;
@@ -305,8 +464,7 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     def __create_server(self, msg):
 
-        status = 'ERROR';
-        index  = '';
+        status = FAILED;
 
         ## Check if is possible create the new server (vcpu, memory, and disk).
         dRecv=self.__db.all_regs_filter(Player,Player.name == msg['destName']);
@@ -314,26 +472,25 @@ class MCT_Agent(RabbitMQ_Consume):
         if dRecv != []:
 
             ## Max number of instances that the player can accept to be running.
-            newInst = int(dRecv[-1]['running'      ]) + 1;
-            maxInst = int(dRecv[-1]['max_instance' ]);
+            newInst = int(dRecv[-1]['running'     ]) + 1;
+            maxInst = int(dRecv[-1]['max_instance']);
  
-            if newInst <= maxInst:
+            if (newInst <= maxInst):
+                print newInst
+                print maxInst
 
                 ## Check if exist the enough resources to alocate neu instance.
                 if self.__check_resources(dRecv[-1], msg) == SUCCESS:
                   
                    ## Create a real index:
-                   index  = msg['destName'] + '_' + str(self.__create_index()); 
-                   status ='ACTIVE';
-            
+                   msg['retId']=msg['destName']+'_'+str(self.__create_index()); 
+                   status = SUCCESS;
+        
         ## LOG:
-        self.__print.show('>> STATUS ['+ status + '] FROM REQ '+str(msg), 'I');
+        self.__print.show('>> STATUS ['+str(status)+'] FROM REQ '+str(msg),'I');
 
-        ## The MCT_Agent support more than one cloud framework. So is necessary
-        ## prepare the return status to a generic format. Send back to dispatch
-        ## the return for the request.
-        msg['status'] = GENERIC_STATUS[msg['code']][status]; 
-        msg['retId' ] = index;
+        msg['status'] = status;
+        print msg
         return msg;
 
 
@@ -436,10 +593,10 @@ class MCT_Agent(RabbitMQ_Consume):
 
         ## Check if instance is running:
         ## ------------------------------
-        ## destName == the name of running instance player.
-        ## origId   == instance id (generate in the player origin).
+        ## origNm == the name of running instance player.
+        ## origId == instance id (generate in the player origin).
         ##
-        msg['status'] = self.__instances.check_instance(msg);
+        msg['status'] = self.__instances.is_alive(msg);
 
         return msg;
 

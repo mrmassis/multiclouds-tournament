@@ -33,13 +33,15 @@ rm -f ${PATH_PLAYER_DST}/*
 ## Copy the service file to respectives place in the system.
 for ((i=0; i <= ${1}; i++)); do
 
+    MAX_INSTANCES=$((( RANDOM % 10 ) + 1));
+
     RESOURCES=""
     RESOURCES=${RESOURCES}"name         : vPlayer${i}\n"
     RESOURCES=${RESOURCES}"vcpus        : 1023\n"
     RESOURCES=${RESOURCES}"memory       : 1047552\n"
     RESOURCES=${RESOURCES}"local_gb     : 10230\n"
-    RESOURCES=${RESOURCES}"max_instance : 50\n"
-    RESOURCES=${RESOURCES}"strategy     : 0\n"
+    RESOURCES=${RESOURCES}"max_instance : ${MAX_INSTANCES}\n"
+    RESOURCES=${RESOURCES}"strategy     : 0"
 
     echo -e ${RESOURCES} > ${PATH_QUOTAS_DST}/resources${i}.yml
 
@@ -64,7 +66,7 @@ for ((i=0; i <= ${1}; i++)); do
     VPLAYER=${VPLAYER}"addr                        : localhost\n"
     VPLAYER=${VPLAYER}"get_set_resources_info_time : 120\n"
     VPLAYER=${VPLAYER}"print                       : logger\n"
-    VPLAYER=${VPLAYER}"enable                      : 1\n"
+    VPLAYER=${VPLAYER}"enable                      : 1"
 
     echo -e ${VPLAYER}   > ${PATH_PLAYER_DST}/vplayer${i}.yml
 

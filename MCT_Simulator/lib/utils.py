@@ -21,11 +21,20 @@ import time;
 ## Value defined to status when dont find some fields.
 MESSAGE_PARSE_ERROR = -10;
 
+ERROR_DB_ADD = -1000
+ERROR_DB_DEL = -2000
+
 ## Invalid division:
 DIVISION_INVALID = -1;
 
 SUCCESS = 1;
 FAILED  = 0;
+
+## Free-Rider strategy:
+AWARE        = 0
+CHEATING     = 1
+WHITEWASHING = 2
+COALITION    = 3
 
 ## Operation code:
 CREATE_INSTANCE = 0

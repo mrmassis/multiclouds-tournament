@@ -92,16 +92,16 @@ class MCT_Test(Process):
         self.__testString = testString;
 
         ## Database connection:
-        #dbConfig = {
-        #    'host'             : D_HOST,
-        #    'user'             : D_USER,
-        #    'password'         : D_PASS,
-        #    'database'         : D_BASE,
-        #    'raise_on_warnings': True
-        #};
+        dbConfig = {
+            'host'             : D_HOST,
+            'user'             : D_USER,
+            'password'         : D_PASS,
+            'database'         : D_BASE,
+            'raise_on_warnings': True
+        };
 
-        #self.__db = mysql.connector.connect(**dbConfig);
-        #self.__db.autocommit = True;
+        self.__db = mysql.connector.connect(**dbConfig);
+        self.__db.autocommit = True;
 
         ## Work in everiment aware mode (default):
         self.__strategy  = '0';
@@ -228,7 +228,7 @@ class MCT_Test(Process):
     ##
     def __add_player(self, vplayerNm, resources):
 
-        playerId = self.__vplayerIdsList[0];
+        playerId = str(self.__vplayerIdsList[0]);
 
         fileNameVT = os.path.join(V_BASE, 'vplayer'   + playerId + '.yml');
         fileNameRT = os.path.join(R_BASE, 'resources' + playerId + '.yml');
@@ -246,7 +246,7 @@ class MCT_Test(Process):
         fd.writelines(templateV);
         fd.close();
 
-        del self._vplayerIdsList[0];
+        del self.__vplayerIdsList[0];
 
         if len(self.__vplayerIdsList) == 0:
             return 1;
@@ -456,8 +456,8 @@ class MCT_Test(Process):
     def __template_v_player(self, vplayer, playerId): 
 
         t = [];
-        t.append("name                        : " + vplayer + "\n");
-        t.append("amqp_identifier             : " + vplayer + "\n");
+        t.append("name                        : " + vplayer + playerId+ "\n");
+        t.append("amqp_identifier             : " + vplayer + playerId+ "\n");
         t.append("amqp_address                : localhost\n");
         t.append("amqp_route                  : mct_agent\n");
         t.append("amqp_exchange               : mct_exchange\n");
@@ -514,15 +514,15 @@ class MCT_Test(Process):
         action    = parameter[4];
         resources = {};
 
-        if len(parameter) == 5:
+        if len(parameter) == 6:
             stringResources = parameter[5].split('_');
 
             ## Check:
-            qtde,mood = stringResources[3].split('|');
+            qtde, mod = stringResources[3].split('|');
 
             ##
-            if qtde == '*':
-               stringResources[3] = random.randrange(0, int(mood));
+            if mod == '*':
+               stringResources[3] = random.randrange(0, int(mod));
             else:
                stringResources[3] = qtde;
 
