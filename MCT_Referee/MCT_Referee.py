@@ -581,7 +581,7 @@ class MCT_Referee(RabbitMQ_Consume):
        dRecv = self.__db.all_regs_filter(Player, fColumns);
 
        ## Print all player able to execute the request.
-       self.__show_all_player_candidates(dRecv);
+       #self.__show_all_player_candidates(dRecv);
 
        if dRecv != []:
 
@@ -595,9 +595,6 @@ class MCT_Referee(RabbitMQ_Consume):
            };
 
            self.__db.update_reg(Player, Player.name == sPlayer['name'], data);
-
-       ## LOG:
-       self.__print.show('PLAYER SELECTED: ' + str(sPlayer), 'I');
 
        return sPlayer;
 

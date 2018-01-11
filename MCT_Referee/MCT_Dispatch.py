@@ -137,7 +137,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
         msg = json.loads(msg);
 
         ## LOG:
-        self.__print.show('MSG RECEIVED: ' + str(msg['code']), 'I');
+        self.__print.show('MSG RECEIVED: ' + str(msg), 'I');
 
         ## Check if is a request received from players or a return from a divi-
         ## sions. The identifier is the properties.app_id.
@@ -335,21 +335,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
     def __valid_action_player(self, msg):
         ## LOG:
         self.__print.show('VALID THE ACTION: ' + str(msg), 'I');
-
-        ## Get information about the player.
-        dRecv=self.__db.all_regs_filter(Player,(Player.name == msg['playerId']));
-
-        if dRecv != []:
-
-            ## Verify if the player is enabled and the token received is valid. 
-            if dRecv[-1]['enabled'] == '1': 
-                ## LOG:
-                self.__print.show('PLAYER VALID: ' + str(msg), 'I');
-                return SUCCESS;
-
-        ## LOG:
-        self.__print.show('PLAYER NOT VALID TO EXECUTE ACTION: '+str(msg), 'I');
-        return FAILED;
+        return SUCCESS;
 
 
     ##

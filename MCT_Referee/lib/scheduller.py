@@ -231,7 +231,6 @@ class Timestamp:
     def run(self, players):
 
         playersSorted = sorted(players, key=lambda k: k['last_choice']);
-        print playersSorted
 
         for player in playersSorted:
             

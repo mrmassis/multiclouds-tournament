@@ -327,7 +327,7 @@ class MCT_Sanity_Send(Process):
                    msg['destName'] = vm['destiny_name'];
 
                    msg['data']['origAddr'] = vm['origin_add' ];
-                   msg['data']['origName'] = vm['origin_name'];
+                   msg['data']['origNm'  ] = vm['origin_name'];
                    msg['data']['origId'  ] = vm['origin_id'  ];
                    msg['data']['vcpus'   ] = vm['vcpus'      ];
                    msg['data']['mem'     ] = vm['mem'        ];
