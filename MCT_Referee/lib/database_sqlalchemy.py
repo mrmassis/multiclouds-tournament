@@ -7,7 +7,7 @@
 
 
 
-__all__ = ['MCT_Database_SQLAlchemy', 'Request', 'Player', 'Vm', 'Status']
+__all__ = ['MCT_Database_SQLAlchemy', 'Request', 'Player', 'Vm', 'Status', 'Threshold']
 
 
 
@@ -68,6 +68,32 @@ class Request(Base):
 ## END CLASS.
 
     
+
+
+
+
+
+
+class Threshold(Base):
+
+    """
+    Class Threshold:
+    ---------------------------------------------------------------------------
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __tablename__ = 'THRESHOLD';
+
+    division = Column(INT  , nullable=False, primary_key=True);
+    botton   = Column(FLOAT, nullable=True , default=0.0);
+    top      = Column(FLOAT, nullable=True , default=0.0);
+
+## END CLASS.
+
+
+
 
 
 
@@ -146,6 +172,7 @@ class Player(Base):
     suspend       = Column(TIMESTAMP  , nullable=True);
     enabled       = Column(INT        , nullable=True , default=0  );
     last_choice   = Column(TIMESTAMP  , nullable=True , default='2018-01-01 00:00:00');
+    playoff       = Column(TINYINT(1) , nullable=True , default=0  );
 ## END CLASS.
 
 

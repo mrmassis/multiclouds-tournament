@@ -10,7 +10,7 @@ import logging;
 import logging.handlers;
 
 from mct.lib.utils               import *;
-from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Player, Vm, Status;
+from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Player, Vm, Status, Threshold;
 from multiprocessing             import Process, Queue, Lock;
 
 
@@ -25,9 +25,8 @@ HOME_FOLDER           = os.path.join(os.environ['HOME'], CONFIG_FILE);
 RUNNING_FOLDER        = os.path.join('./'              , CONFIG_FILE);
 DEFAULT_CONFIG_FOLDER = os.path.join('/etc/mct/'       , CONFIG_FILE);
 
-
-
-
+PLAYOFF_OUT = 0;
+PLAYOFF_IN  = 1;
 
 
 
@@ -39,6 +38,119 @@ DEFAULT_CONFIG_FOLDER = os.path.join('/etc/mct/'       , CONFIG_FILE);
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
+class Threshold_Monitor(Process):
+
+    """
+    Class Threshold_Monitor:
+    ---------------------------------------------------------------------------
+    PUBLIC METHODS:
+    * run == threshold main loop.
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __print          = None;
+    __db             = None;
+    __approach       = None;
+    __interval       = None;
+    __numberDivisions= None;
+
+
+    ###########################################################################
+    ## SPECIAL METHODS                                                       ##
+    ###########################################################################
+    def __init__(self, cfg, db, logger, divisions):
+        super(Threshold_Monitor, self).__init__();
+
+        ## Get the option that define to where the logs will are sent to show.
+        self.__print = Show_Actions(cfg['print'], logger);
+
+        ## LOG:
+        self.__print.show('INITIALIZE THRESHOLD MONITOR', 'I');
+
+        ## Get the threshold approach:
+        self.__approach = cfg['approach'];
+
+        ## Get loop waiting interval. This value determine the time to waiting
+        ## between the loops.
+        self.__interval = float(cfg['interval']);
+
+        ## Obtain total of divisions:
+        self.__numberDivisions = divisions;
+
+        ## Setting the database attribute. In this attribute are the db connec-
+        ## tion and the lock to avoid data corruption.
+        self.__db = db;
+
+        ## Setting the initial values to threshold table:
+        self.__set_initial_values(cfg['min_values'], cfg['max_values']);
+
+
+    ###########################################################################
+    ## PUBLIC METHODS                                                        ##
+    ###########################################################################
+    ##
+    ## Brief: threshold main loop.
+    ## ------------------------------------------------------------------------
+    ##
+    def run(self):
+
+        while True:
+
+            ## Use the static approach to setting the threshold:
+            if self.__approach == 'static':  
+                self.__static();
+
+            time.sleep(self.__interval);
+
+        return SUCCESS;
+
+
+    ###########################################################################
+    ## PRIVATE METHODS                                                       ##
+    ###########################################################################
+    ##
+    ## BRIEF: in static mode 
+    ## ------------------------------------------------------------------------
+    ##
+    def __static(self):
+        return SUCCESS;
+
+
+    ##
+    ## BRIEF: set the initial values to threshold table.
+    ## ------------------------------------------------------------------------
+    ## @PARAM minValues == list of botton threshold (by division).
+    ## @PARAM maxValues == list of top    threshold (by division).
+    ##
+    def __set_initial_values(self, minValues, maxValues):
+
+        minValues = minValues.split(',');
+        maxValues = maxValues.split(',');
+
+        for division in range(0, self.__numberDivisions):
+            ## Insert:
+            threshold = Threshold();
+
+            threshold.division = division;
+            threshold.botton   = float(minValues[division]);
+            threshold.top      = float(maxValues[division]);
+ 
+            self.__db['lock'].acquire();
+            self.__db['db'  ].insert_reg(threshold);
+            self.__db['lock'].release();
+
+        return SUCCESS;
+## END CLASS.
+
+
+
+
+
+
+
+
 class Division(Process):
 
     """
@@ -51,40 +163,60 @@ class Division(Process):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __print = None;
-    __db    = None;
-    __id    = None;
+    __print         = None;
+    __db            = None;
+    __id            = None;
+    __interval      = None;
+    __round         = None;
+    __awareMinTime  = None;
+    __timeThreshold = None;
+    __maxDivision   = None;
+    __realloc       = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self, cfg, db, logger):
+    def __init__(self, cfg, db, logger, divisions):
         super(Division, self).__init__();
 
         ## Get the option that define to where the logs will are sent to show.
         self.__print = Show_Actions(cfg['print'], logger);
 
         ## Get the identification number (id) of division.
-        self.__number = cfg['number'];
+        self.__id = cfg['id'];
 
         ## Get loop waiting interval. This value determine the time to waiting
         ## between the loops.
-        self.__interval = float(cfg['interval']);
+        self.__interval = float(cfg['loop_interval']);
 
         ## Get the round value. At end of this value the system compute the pla
         ## eyrs attributes.
         self.__round = int(cfg['round']);
 
+        ## Obtain the max division in tournament:
+        self.__maxDivision = divisions;
+
         ## LOG:
-        self.__print.show('INITIALIZE DIVISION: ' + self.__number, 'I');
+        self.__print.show('INITIALIZE DIVISION: ' + self.__id, 'I');
 
         ## Setting the database attribute. In this attribute are the db connec-
         ## tion and the lock to avoid data corruption.
         self.__db = db;
 
-        ## Get time running threshold:
-        self.__timeThreshold = int(cfg['threshold']);
+        ## Enable realloc:
+        self.__realloc = cfg['realloc'];
+
+        ## Optional:
+        try:
+            ## Check if that will the minimum execution time is avaliable to ac
+            ## cept a request.
+            self.__awareMimTime = bol(cfg['individual_fairness_minimum_time']);
+
+            ## Get time running threshold:
+            self.__timeThreshold = int(cfg['min_instance_run_threshold']);
+        except:
+            pass;
 
 
     ###########################################################################
@@ -109,17 +241,18 @@ class Division(Process):
             
             ## Minutes:
             if float(divmod(eT.total_seconds(),60)[0]) >= float(self.__round):
+
                  ## LOG:
-                 self.__print.show('ROUND ENDED DIV: '+str(self.__number),'I');
+                 self.__print.show('ROUND ENDED DIV: '+str(self.__id), 'I');
 
                  ## Calculate attributes (score|hist) of each player in the div.
-                 self.__calculate_attributes();
+                 self.__end_of_round();
 
                  timeOld = datetime.datetime.now();
 
             time.sleep(self.__interval);
 
-        return 0;
+        return SUCCESS;
 
 
     ###########################################################################
@@ -129,100 +262,125 @@ class Division(Process):
     ## BRIEF: Calculate attributes of each player in the  division.
     ## ------------------------------------------------------------------------
     ## 
-    def __calculate_attributes(self):
+    def __end_of_round(self):
 
         ## LOG:
-        self.__print.show('CALC PLAYER ATTR FROM DIV: '+str(self.__number),'I');
+        self.__print.show('CALC PLAYER ATTR FROM DIV: '+str(self.__id),'I');
 
         ## Select all player belongs at division self.__id (1, 2, 3, 4 ..., n);
-        fColumns = (Player.division == self.__number);
+        fColumns = (Player.division == self.__id);
 
         self.__db['lock'].acquire();
         dRecv = self.__db['db'  ].all_regs_filter(Player, fColumns);
         self.__db['lock'].release();
 
         if dRecv != []:
+            ## Obtain division limits.  
+            thresholds = self.__obtain_thresholds();
 
             ## To each player belong to division calculate the attributes (sco-
             ## res, history etc).
             for player in dRecv:
-                nScore = self.__calculate_score(player);
-                nHistc = self.__calculate_histc(player);
-                nFairn = self.__calculate_fairn(player);
-
-                ## TODO: CHECK DIVISION:
 
                 data = {
-                    'name'    : player['name'],
-                    'score'   : nScore,
-                    'history' : nHistc,
-                    'fairness': nFairn
-                }
+                    'name'    : player['name'    ],
+                    'score'   : player['score'   ],
+                    'history' : player['history' ],
+                    'fairness': player['fairness'],
+                    'division': player['division']
+                };
 
-                ##
+                ## Calculate three player's attributes: new score, new individu
+                ## al fairness, and new history.
+                data = self.__calculate_score(data);
+                data = self.__calculate_fairn(data);
+                data = self.__calculate_histc(data, thresholds);
+
+                ## Get the new division:
+                if self.__realloc == "True":
+                    data = self.__realloc_player_by_divisions(data, thresholds);
+
                 fColumns = (Player.name == player['name']);
 
                 self.__db['lock'].acquire();
                 self.__db['db'  ].update_reg(Player, fColumns, data)
                 self.__db['lock'].release();
+
         return 0;
+
+
+    ##
+    ## BRIEF: obtain the division' thresholds.
+    ## ------------------------------------------------------------------------
+    ## 
+    def __obtain_thresholds(self):
+
+        fColumns = (Threshold.division == self.__id);
+
+        self.__db['lock'].acquire();
+        dRecv = self.__db['db'  ].all_regs_filter(Threshold, fColumns);
+        self.__db['lock'].release();
+
+        bThreshold = float(dRecv[-1]['botton']);
+        tThreshold = float(dRecv[-1]['top'   ]);
+
+        return (bTheshold, tThreshold);
 
 
     ##
     ## BRIEF: calculate a new player's score. 
     ## ------------------------------------------------------------------------
-    ## @PARAM player == player data dictionary.
+    ## @PARAM data == player data dictionary.
     ## 
-    def __calculate_score(self, player):
-        nScore   = 0.0;
-        accepts  = 0;
-        rejects  = 0;
+    def __calculate_score(self, data):
 
         ## Obtain all entry that meaning requests indicated to the player:
-        #fColumn = (Vm.destiny_name == player['name']);
+        fColumn = (Vm.destiny_name == data['name']);
 
-        #self.__db['lock'].acquire();
-        #dRecv = self.__db['db'].all_regs_filter(Vm, fColumn);
-        #self.__db['lock'].release();
+        self.__db['lock'].acquire();
+        dRecv = self.__db['db'].all_regs_filter(Vm, fColumn);
+        self.__db['lock'].release();
 
-        #if dRecv != []:
-        #    for request in dRecv:
+        if dRecv != []:
+            data['score'] = self.__score.calculate_score(dRecv);
 
-        #        memory = request['mem'  ];
-        #        vcpus  = request['vcpus'];
-        #        disk   = request['disk' ];
-
-        #        flavor = self.__get_flavor(memo, vcpus, disk);
-
-
-
-        return nScore;
+        return data;
 
 
     ##
     ## BRIEF: calculate a new player's historic.
     ## ------------------------------------------------------------------------
-    ## @PARAM player == player data dictionary.
+    ## @PARAM data       == player data dictionary.
+    ## @PARAM thresholds == botton and up threshold'division.
     ## 
-    def __calculate_histc(self, player):
-        nHistory = 0;
+    def __calculate_histc(self, data, thresholds):
+        threshold = thresholds[0]
 
-        return nHistory;
+        ## Obtain the old history:
+        history = data['history'];
+        score   = data['score'  ];
+
+        ## check playoff state
+        if data['playoff'] == PLAYOFF_OUT:
+            data['history'] = self.__score.calculate_history(score, 
+                                                             history, 
+                                                             threshold);
+
+        return data;
 
 
     ##
     ## BRIEF: calculate player fairness.
     ## ------------------------------------------------------------------------
-    ## @PARAM player == player data dictionary.
+    ## @PARAM data == player data dictionary.
     ## 
-    def __calculate_fairn(self, player):
-        fairness = 0.0;
+    def __calculate_fairn(self, data):
         accepts  = 0;
         rejects  = 0;
         requests = 0;
 
         ## Obtain all entries from VM table:
-        fColumn = (Vm.origin_name == player['name']);
+        fColumn = (Vm.origin_name == data['name']);
 
         self.__db['lock'].acquire();
         dRecv = self.__db['db'].all_regs_filter(Vm, fColumn);
@@ -232,32 +390,116 @@ class Division(Process):
             requests = len(dRecv);
 
             for request in dRecv:
+                status = int(request['status']);
 
-                if  int(request['status']) == FINISHED:
-                    tsIni = request['timestamp_received'];
-                    tsEnd = request['timestamp_finished'];
+                if  status != FAILED:
+                    if self.__awareMimTime == "True": 
+                        tsIni = request['timestamp_received'];
+                        tsEnd = request['timestamp_finished'];
 
-                    ## Calculate the time of the instance is running. Accept the
-                    ## instance only the time is under the threadshold.
-                    tRunSecs = calculate_time(tsIni, tsEnd);
+                        ## Calculate the time of the instance is running. Accept
+                        ## the instance only the time is under the threadshold.
+                        tRunSecs = calculate_time(tsIni, tsEnd);
                     
-                    if tRunSecs > self.__timeThreshold or tRunSecs < 0.0:
-                        accepts += 1;
+                        if tRunSecs > self.__timeThreshold or tRunSecs < 0.0:
+                            accepts += 1;
+                        else:
+                            rejects += 1;
                     else:
-                        rejects += 1;
+                        accepts += 1;
 
-                elif int(request['status']) == SUCCESS :
-                    accepts += 1;
                 else:
                     rejects += 1;
 
         ## Calculate:
         try:
-            fairness = float(accepts) / float(requests);
+            data['fairness'] = float(accepts) / float(requests);
         except:
-            fairness = 0.0;
+            data['fairness'] = 0.0;
 
-        return fairness;
+        return data;
+
+
+    ##
+    ## BRIEF: realloc the player by divisions.
+    ## TODO: use the realloc algorithm.
+    ## ------------------------------------------------------------------------
+    ## @PARAM player == player data dictionary.
+    ## 
+    def __realloc_player_by_divisions(self, player, thresholds):
+
+        if player['playoff'] == 'True':
+            player = self.__playoff_mode(player, thresholds);
+        else:
+            player = self.__normal_mode(player , thresholds);
+
+        return player;
+
+
+    ##
+    ## BRIEF: handle the player in normal mode (playoff == False).
+    ## ------------------------------------------------------------------------
+    ## @PARAM player     == player data dictionary.
+    ## @PARAM thresholds == botton and up threshold'division.
+    ##
+    def __normal_mode(self, player, thresholds):
+
+        ## Promote player:
+        if   player['score'] > float(thresholds[1]):
+            ## Check if the division is not the firs, does not exist other divi
+            ## sion to reach.
+            if player['division'] < 1:
+                 player['division'] = int(player['division']) - 1;
+
+        ## Demote player:
+        elif player['score'] < float(thresholds[0]):
+            ## Set playoff to on:
+            player['playoff'] = PLAYOFF_IN;
+
+        return player;
+
+
+    ##
+    ## BRIEF: handle the player in normal mode (playoff == True).
+    ## ------------------------------------------------------------------------
+    ## @PARAM player     == player data dictionary.
+    ## @PARAM thresholds == botton and up threshold'division.
+    ##
+    def __playoff_mode(self, player, thresholds):
+
+        ## Promote player:
+        if   player['score'] > float(thresholds[1]):
+                
+            ## Check if the division is not the firs, does not exist other divi
+            ## vision to reach.
+            if player['division'] < 1:
+                player['division'] = int(player['division']) - 1;
+
+            player['playoff'] = PLAYOFF_OUT;
+
+        ## Demote player:
+        elif player['score'] < float(thresholds[0]):
+
+            ## If the player has history to maintain hinself in the playoff de-
+            ## crement the history.
+            if player['history'] > 0:
+
+                ## Drecrement the player' history:
+                player['history' ] = int(player['history' ]) - 1;
+            else:
+                ## Demote the player:
+                player['division'] = int(player['division']) + 1;
+
+                ## Check if the player is in access division:
+                if player['division'] > self.__maxDivision:
+                    player['enable'] = 0;
+
+        ## Exit from playoff status.
+        else:
+            player['playoff'] = PLAYOFF_OUT;
+
+        return player;      
+
 ## END CLASS.
 
 
@@ -280,11 +522,13 @@ class MCT_Divisions:
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __threadsId = [];
-    __db        = None;
-    __logger    = None;
-    __divCfgs   = [];
-    __print     = None;
+    __threadsId           = [];
+    __db                  = None;
+    __logger              = None;
+    __divCfgs             = [];
+    __print               = None;
+    __thresholdCfg        = None;
+    __runThresholdMonitor = None;
 
 
     ###########################################################################
@@ -309,9 +553,12 @@ class MCT_Divisions:
         self.__logger = logger;
 
         ## Get all division configurations:
-        divisions = int(cfg['main']['divisions']);
+        self.__divisions = int(cfg['main']['divisions']);
         
-        for div in range(1, divisions + 1):
+        ## Threshold monitor configuration:
+        self.__thresholdCfg = cfg['threshold'];
+
+        for div in range(1, self.__divisions + 1):
             self.__divCfgs.append(cfg['division' + str(div)]);
         
         ## Intance a new object to handler all operation in the local database.
@@ -321,7 +568,7 @@ class MCT_Divisions:
         };
 
         ## Get time running threshold:
-        self.__timeThreshold = int(cfg['main']['threshold']);
+        self.__runThresholdMonitor = cfg['main']['monitor_threshold'];
 
 
     ###########################################################################
@@ -337,6 +584,10 @@ class MCT_Divisions:
         for divCfg in self.__divCfgs:
             self.start(divCfg);
 
+        ## Run the threshold monitor.
+        if self.__runThresholdMonitor == "True":
+            self.__run_threshold_monitor();
+
         self.__waiting_finish();
         return SUCCESS;
 
@@ -351,7 +602,7 @@ class MCT_Divisions:
         self.__print.show('START A NEW DIVISION IN THE MCT', 'I');
 
         ## Start the new division running in thread.
-        newDivision = Division(divCfg, self.__db, self.__logger);
+        newDivision = Division(divCfg,self.__db,self.__logger,self.__divisions);
         newDivision.daemon = True;
         newDivision.start();
 
@@ -377,6 +628,25 @@ class MCT_Divisions:
     ###########################################################################
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
+    ##
+    ## BRIEF: execute threshold monitor.
+    ## ------------------------------------------------------------------------
+    ## 
+    def __run_threshold_monitor(self):
+        ## LOG:
+        self.__print.show('START THE THRESHOLD MONITOR', 'I');
+
+        ## Start the new division running in thread.
+        threshold = Threshold_Monitor(self.__thresholdCfg, 
+                                      self.__db, 
+                                      self.__logger, 
+                                      self.__divisions);
+        threshold.daemon = True;
+        threshold.start();
+
+        return SUCCESS;
+
+
     ##
     ## BRIEF: wait threads finish.
     ## ------------------------------------------------------------------------
@@ -418,13 +688,10 @@ class MCT_Divisions:
         self.__db['lock'].release();
 
         if dRecv != []:
-
             ## Obtain the number of the all request by create new instances.
             allReqs = len(dRecv);
 
-            ## Iteract throw the records.
             for vm in dRecv:
-
                 ## If the vm is finished or running they were accepts.
                 if  int(vm['status']) == FINISHED:
                     tsIni = vm['timestamp_received'];
@@ -444,12 +711,6 @@ class MCT_Divisions:
                 else:
                     rejects += 1;
 
-                print vm
-            print '-------------------------------------------\n'
-            print allReqs
-            print accepts
-            print rejects
-
             ## Calculate:
             try:
                 globalFairness = float(accepts) / float(allReqs);
@@ -461,7 +722,6 @@ class MCT_Divisions:
         players = self.__db['db'].all_regs(Player);
         self.__db['lock'].release();
 
-        ## Status
         status = Status();
 
         status.players      = len(players);
@@ -515,7 +775,7 @@ class Main:
     def __init__(self):
 
         ## Get the configurantion parameters.
-        self.__cfg    = self.__get_configs();
+        self.__cfg = self.__get_configs();
 
         ## Configurate the logger. Use the parameters defineds in configuration
         ## file.

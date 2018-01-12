@@ -25,6 +25,20 @@ PACK_KEYS = DEFAULT;
 
 
 -- -----------------------------------------------------
+-- Table `mct`.`THRESHOLD`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mct`.`THRESHOLD` ;
+
+CREATE TABLE IF NOT EXISTS `mct`.`THRESHOLD` (
+  `division` INT   NOT NULL,
+  `botton`   FLOAT DEFAULT 0.0,
+  `top`      FLOAT DEFAULT 0.0,
+  PRIMARY KEY (`division`))
+ENGINE = InnoDB
+PACK_KEYS = DEFAULT;
+
+
+-- -----------------------------------------------------
 -- Table `mct`.`PLAYER`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `mct`.`PLAYER` ;
@@ -53,6 +67,7 @@ CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
   `suspend`            TIMESTAMP       NULL,
   `enabled`            INT             DEFAULT 0,
   `last_choice`        TIMESTAMP       DEFAULT '2018-01-01 00:00:00',
+  `playoff`            TINYINT(1)      DEFAULT 0,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
