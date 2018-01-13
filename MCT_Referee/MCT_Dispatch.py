@@ -324,6 +324,24 @@ class MCT_Dispatch(RabbitMQ_Consume):
                ## Send msg to referee.
                self.__publishReferee.publish(msg, self.__routeReferee);
 
+           else:
+
+               ## Set player disable (removed from tournament) code:
+               msg['status'] = PLAYER_REMOVED;
+
+               config = {
+                   'identifier': AGENT_IDENTIFIER,
+                   'route'     : AGENT_ROUTE,
+                   'exchange'  : AGENT_EXCHANGE,
+                   'queue_name': AGENT_QUEUE,
+                   'address'   : msg['origAddr'],
+                   'user'      : self.__rabbitUser,
+                   'pass'      : self.__rabbitPass
+               };
+               
+               targetPublish = RabbitMQ_Publish(config);
+               targetPublish.publish(msg, AGENT_ROUTE);
+
        return SUCCESS;
 
 
@@ -335,6 +353,13 @@ class MCT_Dispatch(RabbitMQ_Consume):
     def __valid_action_player(self, msg):
         ## LOG:
         self.__print.show('VALID THE ACTION: ' + str(msg), 'I');
+                
+        ## Check if the player is enabled.
+        dRecv = self.__db.all_regs_filter(Player, (Player.name == msg['playerId']));
+
+        if dRecv == [] or dRecv[-1]['enabled'] == PLAYER_DISABLED:
+            return FAILED;
+
         return SUCCESS;
 
 

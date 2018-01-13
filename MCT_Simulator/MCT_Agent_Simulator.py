@@ -344,10 +344,13 @@ class MCT_Agent(RabbitMQ_Consume):
         ## LOG:
         self.__print.show('RETURN FROM ACTION!', 'I');
 
-        ## Check the return, if the action is to insert and return was succefull
-        ## store the new vm instance in a special dictionary.
-        if   msg['code'] == CREATE_INSTANCE:
+        ## Remove player from table:
+        if msg['status'] == PLAYER_REMOVED:
+            self.__remove_player_from_simulation(msg);
 
+        ## Handle the action return:
+        ############################
+        if   msg['code'] == CREATE_INSTANCE:
             ## Define vplayer behavior. If diff of AWARE the player is using the 
             ## cheating and will be destroy the VM after accept the request.
             strategy = self.__vplayerStrategy[msg['playerId']];
@@ -357,13 +360,10 @@ class MCT_Agent(RabbitMQ_Consume):
             else:
                 self.__instances.del_instance(msg);
 
-            ## TODO: calculate here the individual fairness.
-
         elif msg['code'] == DELETE_INSTANCE:
-            if msg['status'] == SUCCESS:
+            if msg['status'] == SUCCESS or msg['status'] == PLAYER_REMOVED:
                 self.__instances.del_instance(msg);
             
-        ## Set the token in player database:
         elif msg['code'] == ADD_REG_PLAYER:
             if msg['status'] == SUCCESS:
                 self.__set_localy_token(msg);
@@ -378,11 +378,17 @@ class MCT_Agent(RabbitMQ_Consume):
 
 
     ##
-    ## BRIEF: set individual fairnes.
+    ## BRIEF: remove player from database.
     ## ------------------------------------------------------------------------
     ## @PARAM dict msg == received message.
     ##
-    def __vplayer_fairness(self, msg):
+    def __remove_player_from_simulation(self, msg):
+
+        data = {
+           'enable' : PLAYER_DISABLED
+        };
+
+        self.__db.update_reg(Player, Player.name == msg['playerId'], data);
         return SUCCESS;
 
 

@@ -30,6 +30,11 @@ DIVISION_INVALID = -1;
 SUCCESS = 1;
 FAILED  = 0;
 
+##
+PLAYER_DISABLED = 0;
+PLAYER_ENABLED  = 1;
+PLAYER_REMOVED  = 9999
+
 ## Free-Rider strategy:
 AWARE        = 0
 CHEATING     = 1
@@ -54,7 +59,7 @@ SUS_REG_PLAYER  = 1003
 DEL_REG_PLAYER  = 1004
 
 ## Reset Enviroment
-RESET_ENVIROMENT= 666
+RESET_ENVIROMENT= 555
 
 ## Instances definitions (SIMULATION):
 IMG_NAME = 'cirros-0.3.3-x86_64';

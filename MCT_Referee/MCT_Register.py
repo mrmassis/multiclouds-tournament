@@ -270,7 +270,7 @@ class MCT_Register(RabbitMQ_Consume):
         player.score    = iScore;
         player.history  = iHistory;
         player.token    = token;
-        player.enabled  = 1;
+        player.enabled  = PLAYER_ENABLED;
 
         self.__db.insert_reg(player);
 

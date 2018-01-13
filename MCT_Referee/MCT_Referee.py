@@ -146,7 +146,7 @@ class MCT_Referee(RabbitMQ_Consume):
         if   int(msg['code']) == GETINF_RESOURCE:
             ## LOG:
             self.__print.show('GETINF' ,'I');
-            msg['data'] = self.__get_resources_inf(division);
+            msg['data'] = self.__get_resources_inf(division, msg);
 
         ## ----------------------------------------------------------------- ##
         ## SET RESOUCES INF.                                                 ##
@@ -505,9 +505,10 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     ## BRIEF: get the resources info to specfic division.
     ## ------------------------------------------------------------------------
-    ## @PARAM int division.
+    ## @PARAM int division == division to considerated.
+    ## @PARAM dict msg     == message data.
     ##
-    def __get_resources_inf(self, division):
+    def __get_resources_inf(self, division, msg):
 
         ## LOG:
         self.__print.show('GET RESOURCES FROM DISIONS LEQ '+str(division), 'I');
@@ -518,15 +519,19 @@ class MCT_Referee(RabbitMQ_Consume):
         dRecv=self.__db.all_regs_filter(Player, (Player.division <= division));
 
         if dRecv != []:
+ 
             values = [0, 0, 0, 0, 0, 0];
 
             for player in dRecv:
-                 values[0] += int(player['vcpus'        ]);
-                 values[1] += int(player['vcpus_used'   ]);
-                 values[2] += int(player['local_gb'     ]);
-                 values[3] += int(player['local_gb_used']);
-                 values[4] += int(player['memory'       ]);
-                 values[5] += int(player['memory_used'  ]);
+                values[0] += int(player['vcpus'        ]);
+                values[1] += int(player['vcpus_used'   ]);
+                values[2] += int(player['local_gb'     ]);
+                values[3] += int(player['local_gb_used']);
+                values[4] += int(player['memory'       ]);
+                values[5] += int(player['memory_used'  ]);
+
+                if player['name'] == msg['playerId']:
+                    resources['fairness'] = float(player['fairness']);
 
             resources['vcpus'        ] = values[0];
             resources['vcpus_used'   ] = values[1];
@@ -541,7 +546,7 @@ class MCT_Referee(RabbitMQ_Consume):
     ##
     ## BRIEF: set the resources info to specfic division.
     ## ------------------------------------------------------------------------
-    ## @PARAM int division ==.
+    ## @PARAM int division == division to considerated.
     ## @PARAM dict msg     == message data.
     ##
     def __set_resources_inf(self, division, msg):
@@ -579,9 +584,6 @@ class MCT_Referee(RabbitMQ_Consume):
                        Player.enabled  == 1);
 
        dRecv = self.__db.all_regs_filter(Player, fColumns);
-
-       ## Print all player able to execute the request.
-       #self.__show_all_player_candidates(dRecv);
 
        if dRecv != []:
 

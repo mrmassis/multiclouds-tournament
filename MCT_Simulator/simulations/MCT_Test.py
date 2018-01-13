@@ -457,6 +457,7 @@ class MCT_Test(Process):
 
         t = [];
         t.append("name                        : " + vplayer + playerId+ "\n");
+        t.append("id                          : " + playerId+ "\n");
         t.append("amqp_identifier             : " + vplayer + playerId+ "\n");
         t.append("amqp_address                : localhost\n");
         t.append("amqp_route                  : mct_agent\n");

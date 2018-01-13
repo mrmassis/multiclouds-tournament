@@ -738,6 +738,7 @@ class MCT_VPlayer(Process):
     __print                   = None;
     __token                   = None;
     __ratio                   = None;
+    __fairness                = 0.0;
 
 
     ###########################################################################
@@ -830,7 +831,13 @@ class MCT_VPlayer(Process):
 
                 ## Dispatch the action to MCT_Dispatch:
                 dRecv = self.__mctAction.dispatch(data['action'], data);
-           
+
+                ## Check if the virtual player is enabled to execute actions in
+                ## tournament.
+                if dRecv['status'] == PLAYER_REMOVED:
+                    self.__remove_player_files();
+                    break;
+
             else:
                 getSetInfRepeat.stop();
                 break;
@@ -872,6 +879,12 @@ class MCT_VPlayer(Process):
         ## Send the request to get information to the MCT_Dispatch in the remo-
         ## te server.
         dRecv = self.__mctAction.dispatch(GETINF_RESOURCE, {});
+
+        ## Obtain the individual fairness:
+        try:
+            self.__fairness = float(dRecv['data']['fairness']);
+        except:
+            pass;
 
 
     ##
@@ -929,6 +942,20 @@ class MCT_VPlayer(Process):
         dRecv = self.__mctAction.dispatch(DELREG_PLAYER, {});
 
         return dRecv;
+
+    ##
+    ## BRIEF: remove player files.
+    ## ------------------------------------------------------------------------
+    ##
+    def __remove_player_files(self):
+        qFile = os.path.join('/etc/mct/quotas'  , 'resources' + str(self.__id) + '.yml';
+        pFile = os.path.join('/etc/mct/vplayers', 'vplayer'   + str(self.__id) + '.yml';
+
+        ## Remove all files:
+        os.remove(qFile);
+        os.remove(pFile);
+
+        return SUCCESS.
 ## END CLASS.
 
 

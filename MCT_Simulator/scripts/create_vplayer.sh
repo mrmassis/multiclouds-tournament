@@ -47,6 +47,7 @@ for ((i=0; i <= ${1}; i++)); do
 
     VPLAYER=""
     VPLAYER=${VPLAYER}"name                        : playerVirtual${i}\n"
+    VPLAYER=${VPLAYER}"id                          : ${i}\n"
     VPLAYER=${VPLAYER}"amqp_identifier             : playerVirtual${i}\n"
     VPLAYER=${VPLAYER}"amqp_address                : localhost\n"
     VPLAYER=${VPLAYER}"amqp_route                  : mct_agent\n"

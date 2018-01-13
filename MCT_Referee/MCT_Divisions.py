@@ -492,7 +492,7 @@ class Division(Process):
 
                 ## Check if the player is in access division:
                 if player['division'] > self.__maxDivision:
-                    player['enable'] = 0;
+                    player['enable'] = PLAYER_DISABLED;
 
         ## Exit from playoff status.
         else:
