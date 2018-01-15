@@ -948,14 +948,14 @@ class MCT_VPlayer(Process):
     ## ------------------------------------------------------------------------
     ##
     def __remove_player_files(self):
-        qFile = os.path.join('/etc/mct/quotas'  , 'resources' + str(self.__id) + '.yml';
-        pFile = os.path.join('/etc/mct/vplayers', 'vplayer'   + str(self.__id) + '.yml';
+        qFile = os.path.join('/etc/mct/quotas'  , 'resources' + str(self.__id) + '.yml');
+        pFile = os.path.join('/etc/mct/vplayers', 'vplayer'   + str(self.__id) + '.yml');
 
         ## Remove all files:
         os.remove(qFile);
         os.remove(pFile);
 
-        return SUCCESS.
+        return SUCCESS;
 ## END CLASS.
 
 
