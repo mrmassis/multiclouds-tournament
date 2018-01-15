@@ -531,7 +531,7 @@ class MCT_Referee(RabbitMQ_Consume):
                 values[5] += int(player['memory_used'  ]);
 
                 if player['name'] == msg['playerId']:
-                    resources['fairness'] = float(player['fairness']);
+                    resources['fairness'] = player['fairness'];
 
             resources['vcpus'        ] = values[0];
             resources['vcpus_used'   ] = values[1];

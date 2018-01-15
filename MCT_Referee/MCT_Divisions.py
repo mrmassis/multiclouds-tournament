@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__                  import with_statement;
 
 import time;
 import sys;
@@ -10,6 +11,7 @@ import logging;
 import logging.handlers;
 
 from mct.lib.utils               import *;
+from mct.lib.attributes          import MCT_Attributes;
 from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Player, Vm, Status, Threshold;
 from multiprocessing             import Process, Queue, Lock;
 
@@ -129,17 +131,27 @@ class Threshold_Monitor(Process):
         minValues = minValues.split(',');
         maxValues = maxValues.split(',');
 
-        for division in range(0, self.__numberDivisions):
+        for division in range(1, self.__numberDivisions+1):
             ## Insert:
             threshold = Threshold();
 
             threshold.division = division;
-            threshold.botton   = float(minValues[division]);
-            threshold.top      = float(maxValues[division]);
+            threshold.botton   = float(minValues[division-1]);
+            threshold.top      = float(maxValues[division-1]);
  
-            self.__db['lock'].acquire();
-            self.__db['db'  ].insert_reg(threshold);
-            self.__db['lock'].release();
+            try:
+                self.__db['db'].insert_reg(threshold);
+
+            except:
+                data = {
+                    'botton': float(minValues[division-1]),
+                    'top'   : float(maxValues[division-1])
+                };
+
+                fColumn = (Threshold.division == division);
+
+                self.__db['db'].update_reg(Threshold, fColumn, data);
+
 
         return SUCCESS;
 ## END CLASS.
@@ -172,6 +184,10 @@ class Division(Process):
     __timeThreshold = None;
     __maxDivision   = None;
     __realloc       = None;
+    __attributes    = None;
+    __awareMinTime  = None;
+    __timeThreshold = None;
+
 
 
     ###########################################################################
@@ -211,12 +227,15 @@ class Division(Process):
         try:
             ## Check if that will the minimum execution time is avaliable to ac
             ## cept a request.
-            self.__awareMimTime = bol(cfg['individual_fairness_minimum_time']);
+            self.__awareMinTime=cfg['individual_fairness_request_minimum_time'];
 
             ## Get time running threshold:
             self.__timeThreshold = int(cfg['min_instance_run_threshold']);
         except:
             pass;
+
+        ##
+        self.__attributes = MCT_Attributes();
 
 
     ###########################################################################
@@ -270,9 +289,8 @@ class Division(Process):
         ## Select all player belongs at division self.__id (1, 2, 3, 4 ..., n);
         fColumns = (Player.division == self.__id);
 
-        self.__db['lock'].acquire();
-        dRecv = self.__db['db'  ].all_regs_filter(Player, fColumns);
-        self.__db['lock'].release();
+        with self.__db['lock']:
+            dRecv = self.__db['db'].all_regs_filter(Player, fColumns);
 
         if dRecv != []:
             ## Obtain division limits.  
@@ -287,7 +305,8 @@ class Division(Process):
                     'score'   : player['score'   ],
                     'history' : player['history' ],
                     'fairness': player['fairness'],
-                    'division': player['division']
+                    'division': player['division'],
+                    'playoff' : player['playoff' ]
                 };
 
                 ## Calculate three player's attributes: new score, new individu
@@ -302,10 +321,11 @@ class Division(Process):
 
                 fColumns = (Player.name == player['name']);
 
-                self.__db['lock'].acquire();
-                self.__db['db'  ].update_reg(Player, fColumns, data)
-                self.__db['lock'].release();
+                with self.__db['lock']:
+                    self.__db['db'].update_reg(Player, fColumns, data);
 
+        ## LOG:
+        self.__print.show('NEWS ATTRS CALCULATED TO DIV: '+str(self.__id),'I');
         return 0;
 
 
@@ -324,7 +344,7 @@ class Division(Process):
         bThreshold = float(dRecv[-1]['botton']);
         tThreshold = float(dRecv[-1]['top'   ]);
 
-        return (bTheshold, tThreshold);
+        return (bThreshold, tThreshold);
 
 
     ##
@@ -342,7 +362,10 @@ class Division(Process):
         self.__db['lock'].release();
 
         if dRecv != []:
-            data['score'] = self.__score.calculate_score(dRecv);
+            data['score'] = self.__attributes.calculate_score(dRecv);
+
+        ## LOG:
+        self.__print.show(data['name'] + ' NEW SCORE:'+str(data['score']),'I');
 
         return data;
 
@@ -362,10 +385,12 @@ class Division(Process):
 
         ## check playoff state
         if data['playoff'] == PLAYOFF_OUT:
-            data['history'] = self.__score.calculate_history(score, 
-                                                             history, 
-                                                             threshold);
+            data['history'] = self.__attributes.calculate_history(score, 
+                                                                  history, 
+                                                                  threshold);
 
+        ## LOG:
+        self.__print.show(data['name']+' NEW HIST:'+str(data['history']),'I');
         return data;
 
 
@@ -393,7 +418,7 @@ class Division(Process):
                 status = int(request['status']);
 
                 if  status != FAILED:
-                    if self.__awareMimTime == "True": 
+                    if self.__awareMinTime == "True": 
                         tsIni = request['timestamp_received'];
                         tsEnd = request['timestamp_finished'];
 
@@ -529,6 +554,8 @@ class MCT_Divisions:
     __print               = None;
     __thresholdCfg        = None;
     __runThresholdMonitor = None;
+    __awareMinTime        = None;
+    __timeThreshold       = None;
 
 
     ###########################################################################
@@ -569,6 +596,17 @@ class MCT_Divisions:
 
         ## Get time running threshold:
         self.__runThresholdMonitor = cfg['main']['monitor_threshold'];
+
+        ## Optional:
+        try:
+            ## Check if that will the minimum execution time is avaliable to ac
+            ## cept a request.
+            self.__awareMinTime = cfg['global_fairness_request_minimum_time'];
+
+            ## Get time running threshold:
+            self.__timeThreshold = int(cfg['min_instance_run_threshold']);
+        except:
+            pass;
 
 
     ###########################################################################
@@ -693,21 +731,22 @@ class MCT_Divisions:
 
             for vm in dRecv:
                 ## If the vm is finished or running they were accepts.
-                if  int(vm['status']) == FINISHED:
-                    tsIni = vm['timestamp_received'];
-                    tsEnd = vm['timestamp_finished'];
+                if  int(vm['status']) != FAILED:
 
-                    ## Calculate the time of the instance is running. Accept the
-                    ## instance only the time is under the threadshold.
-                    tRunSecs = calculate_time(tsIni, tsEnd);
+                    if self.__awareMinTime == "True":
+                        tsIni = vm['timestamp_received'];
+                        tsEnd = vm['timestamp_finished'];
 
-                    if tRunSecs > self.__timeThreshold or tRunSecs < 0.0:
-                        accepts += 1;
+                        ## Calculate the time of the instance is running. Accept
+                        ## the instance only the time is under the threadshold.
+                        tRunSecs = calculate_time(tsIni, tsEnd);
+
+                        if tRunSecs >  self.__timeThreshold or tRunSecs < 0.0:
+                            accepts += 1;
+                        else:
+                            rejects += 1;
                     else:
-                        rejects += 1;
-
-                elif int(vm['status']) == SUCCESS :
-                    accepts += 1;
+                        accepts += 1;
                 else:
                     rejects += 1;
 

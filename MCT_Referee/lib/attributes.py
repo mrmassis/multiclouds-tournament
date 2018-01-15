@@ -39,9 +39,9 @@ class MCT_Attributes(object):
     ###########################################################################
     ## DEFINITION                                                           ##
     ###########################################################################
-    __pS      = 0.1;
-    __pM      = 0.5;
-    __pB      = 1.0;
+    __pS      = 1.33;
+    __pM      = 1.66;
+    __pB      = 1.99;
     __cost    = 1.0;
     __flavors = {};
 
@@ -89,13 +89,13 @@ class MCT_Attributes(object):
         for request in requests:
             status = int(request['status']);
 
-            if status == SUCCESS and status == FINISHED:
+            if status == SUCCESS or status == FINISHED:
 
                 memory = request['mem'  ];
                 vcpus  = request['vcpus'];
                 disk   = request['disk' ];
 
-                flavor = self.__get_flavor(memo, vcpus, disk);
+                flavor = self.__get_flavor(memory, vcpus, disk);
 
                 if   flavor == "S":
                     fS += 1;

@@ -90,6 +90,18 @@ function instances() {
             fi
             ;;
 
+        'score')
+            ## Execute the command: 
+            SQL="select name, score from PLAYER"
+            ${CMYSQL} -e "${SQL}"
+            ;;
+
+        'history')
+            ## Execute the command: 
+            SQL="select name,history from PLAYER"
+            ${CMYSQL} -e "${SQL}"
+            ;;
+
         ## Unknow actions:
         *)
             echo 'Command not suported!'
