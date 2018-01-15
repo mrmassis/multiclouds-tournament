@@ -16,7 +16,7 @@ PATH_CONF_SRC="../configuration_files/"
 ## If debian == dist_packages!
 ## If centOs == site_packages!
 
-PATH_CODE_DST="/usr/lib/python2.7/dist-packages/mct"
+PATH_CODE_DST="/usr/lib/python2.7/site-packages/mct"
 PATH_CONF_DST="/etc/mct/"
 PATH_LOGS_DST="/var/log/mct"
 

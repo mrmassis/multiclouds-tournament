@@ -131,27 +131,29 @@ class Threshold_Monitor(Process):
         minValues = minValues.split(',');
         maxValues = maxValues.split(',');
 
-        for division in range(1, self.__numberDivisions+1):
+        idx = 0;
+        for division in reversed(range(1, self.__numberDivisions+1)):
             ## Insert:
             threshold = Threshold();
 
             threshold.division = division;
-            threshold.botton   = float(minValues[division-1]);
-            threshold.top      = float(maxValues[division-1]);
- 
+            threshold.botton   = float(minValues[idx]);
+            threshold.top      = float(maxValues[idx]);
+            
             try:
                 self.__db['db'].insert_reg(threshold);
 
             except:
                 data = {
-                    'botton': float(minValues[division-1]),
-                    'top'   : float(maxValues[division-1])
+                    'botton': float(minValues[idx]),
+                    'top'   : float(maxValues[idx])
                 };
 
                 fColumn = (Threshold.division == division);
 
                 self.__db['db'].update_reg(Threshold, fColumn, data);
 
+            idx += 1;
 
         return SUCCESS;
 ## END CLASS.
@@ -301,12 +303,12 @@ class Division(Process):
             for player in dRecv:
 
                 data = {
-                    'name'    : player['name'    ],
-                    'score'   : player['score'   ],
-                    'history' : player['history' ],
-                    'fairness': player['fairness'],
-                    'division': player['division'],
-                    'playoff' : player['playoff' ]
+                    'name'    : player['name'],
+                    'score'   : float(player['score'   ]),
+                    'fairness': float(player['fairness']),
+                    'history' : int(player['history' ]),
+                    'division': int(player['division']),
+                    'playoff' : int(player['playoff' ])
                 };
 
                 ## Calculate three player's attributes: new score, new individu
@@ -337,9 +339,8 @@ class Division(Process):
 
         fColumns = (Threshold.division == self.__id);
 
-        self.__db['lock'].acquire();
-        dRecv = self.__db['db'  ].all_regs_filter(Threshold, fColumns);
-        self.__db['lock'].release();
+        with self.__db['lock']:
+            dRecv = self.__db['db'  ].all_regs_filter(Threshold, fColumns);
 
         bThreshold = float(dRecv[-1]['botton']);
         tThreshold = float(dRecv[-1]['top'   ]);
@@ -357,9 +358,8 @@ class Division(Process):
         ## Obtain all entry that meaning requests indicated to the player:
         fColumn = (Vm.destiny_name == data['name']);
 
-        self.__db['lock'].acquire();
-        dRecv = self.__db['db'].all_regs_filter(Vm, fColumn);
-        self.__db['lock'].release();
+        with self.__db['lock']:
+            dRecv = self.__db['db'].all_regs_filter(Vm, fColumn);
 
         if dRecv != []:
             data['score'] = self.__attributes.calculate_score(dRecv);
@@ -388,7 +388,6 @@ class Division(Process):
             data['history'] = self.__attributes.calculate_history(score, 
                                                                   history, 
                                                                   threshold);
-
         ## LOG:
         self.__print.show(data['name']+' NEW HIST:'+str(data['history']),'I');
         return data;
@@ -407,9 +406,8 @@ class Division(Process):
         ## Obtain all entries from VM table:
         fColumn = (Vm.origin_name == data['name']);
 
-        self.__db['lock'].acquire();
-        dRecv = self.__db['db'].all_regs_filter(Vm, fColumn);
-        self.__db['lock'].release();
+        with self.__db['lock']:
+            dRecv = self.__db['db'].all_regs_filter(Vm, fColumn);
 
         if dRecv != []:
             requests = len(dRecv);
@@ -452,6 +450,9 @@ class Division(Process):
     ## @PARAM player == player data dictionary.
     ## 
     def __realloc_player_by_divisions(self, player, thresholds):
+ 
+        ## LOG:
+        self.__print.show('START TH REALLOC PROCESS...', 'I');
 
         if player['playoff'] == 'True':
             player = self.__playoff_mode(player, thresholds);
@@ -470,15 +471,15 @@ class Division(Process):
     def __normal_mode(self, player, thresholds):
 
         ## Promote player:
-        if   player['score'] > float(thresholds[1]):
+        if   player['score'] >= thresholds[1]:
+
             ## Check if the division is not the firs, does not exist other divi
             ## sion to reach.
-            if player['division'] < 1:
-                 player['division'] = int(player['division']) - 1;
+            if player['division'] != 1:
+                 player['division'] = player['division'] - 1;
 
         ## Demote player:
-        elif player['score'] < float(thresholds[0]):
-            ## Set playoff to on:
+        elif player['score'] < thresholds[0]:
             player['playoff'] = PLAYOFF_IN;
 
         return player;
@@ -493,27 +494,26 @@ class Division(Process):
     def __playoff_mode(self, player, thresholds):
 
         ## Promote player:
-        if   player['score'] > float(thresholds[1]):
+        if   player['score'] >= thresholds[1]:
                 
             ## Check if the division is not the firs, does not exist other divi
             ## vision to reach.
-            if player['division'] < 1:
-                player['division'] = int(player['division']) - 1;
+            if player['division'] != 1:
+                player['division'] = player['division'] - 1;
 
             player['playoff'] = PLAYOFF_OUT;
 
         ## Demote player:
-        elif player['score'] < float(thresholds[0]):
+        elif player['score'] < thresholds[0]:
 
             ## If the player has history to maintain hinself in the playoff de-
             ## crement the history.
             if player['history'] > 0:
-
                 ## Drecrement the player' history:
-                player['history' ] = int(player['history' ]) - 1;
+                player['history' ] = player['history' ] - 1;
             else:
                 ## Demote the player:
-                player['division'] = int(player['division']) + 1;
+                player['division'] = player['division'] + 1;
 
                 ## Check if the player is in access division:
                 if player['division'] > self.__maxDivision:

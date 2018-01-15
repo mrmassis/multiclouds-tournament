@@ -100,7 +100,7 @@ class MCT_Attributes(object):
                 if   flavor == "S":
                     fS += 1;
                 elif flavor == "M":
-                    fM += 1;
+                    fM += 0;
                 elif flavor == "B":
                     fB += 1;
             else:
