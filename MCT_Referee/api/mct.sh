@@ -96,6 +96,18 @@ function instances() {
             ${CMYSQL} -e "${SQL}"
             ;;
 
+        'max_score')
+            ## Execute the command: 
+            SQL="select MAX(score) from PLAYER"
+            ${CMYSQL} -e "${SQL}"
+            ;;
+
+        'min_score')
+            ## Execute the command: 
+            SQL="select MIN(score) from PLAYER"
+            ${CMYSQL} -e "${SQL}"
+            ;;
+
         'history')
             ## Execute the command: 
             SQL="select name,history from PLAYER"
