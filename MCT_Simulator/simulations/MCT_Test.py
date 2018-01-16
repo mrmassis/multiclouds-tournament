@@ -35,7 +35,7 @@ from multiprocessing import Process, Queue, Lock;
 V_BASE = '/etc/mct/vplayers';
 R_BASE = '/etc/mct/quotas'  ;
 
-D_HOST = '192.168.0.201';
+D_HOST = "localhost";
 D_USER = 'mct';
 D_PASS = 'password';
 D_BASE = 'mct';
@@ -522,7 +522,7 @@ class MCT_Test(Process):
             qtde, mod = stringResources[3].split('|');
 
             ##
-            if mod == '*':
+            if qtde == '*':
                stringResources[3] = random.randrange(0, int(mod));
             else:
                stringResources[3] = qtde;

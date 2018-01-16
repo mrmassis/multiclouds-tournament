@@ -49,6 +49,7 @@
 ##
 ## create 100 players aware, iteract 100 times and waiting 5 minutes. 
 #playerVirtual_0:99-100:300-0-NOTHING==1-ADD-1023_1047552_10230_50|*
-playerVirtual_10:99-100:300-0-NOTHING==1-ADD-1023_1047552_10230_0|0
+#playerVirtual_10:99-100:300-0-NOTHING==1-ADD-1023_1047552_10230_0|0
 
+playerVirtual_0:99-100:300-0-NOTHING==1-ADD-1023_1047552_10230_30|*
 ## EOF
