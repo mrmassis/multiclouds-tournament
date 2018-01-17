@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS `mct`.`REQUEST` (
   `action` INT NOT NULL,
   `timestamp_received` TIMESTAMP NULL,
   `timestamp_finished` TIMESTAMP NULL,
-  `status` TINYINT(1) NOT NULL,
+  `status` INT NOT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 PACK_KEYS = DEFAULT;

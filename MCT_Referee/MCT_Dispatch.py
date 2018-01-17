@@ -326,6 +326,9 @@ class MCT_Dispatch(RabbitMQ_Consume):
 
            else:
 
+               ## LOG:
+               self.__print.show('PLAYER REMOVED ' + str(msg), 'I');
+
                ## Set player disable (removed from tournament) code:
                msg['status'] = PLAYER_REMOVED;
 
@@ -357,7 +360,7 @@ class MCT_Dispatch(RabbitMQ_Consume):
         ## Check if the player is enabled.
         dRecv = self.__db.all_regs_filter(Player, (Player.name == msg['playerId']));
 
-        if dRecv == [] or dRecv[-1]['enabled'] == PLAYER_DISABLED:
+        if dRecv == [] or int(dRecv[-1]['enabled']) == PLAYER_DISABLED:
             return FAILED;
 
         return SUCCESS;

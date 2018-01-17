@@ -262,12 +262,17 @@ class Division(Process):
             
             ## Minutes:
             if float(divmod(eT.total_seconds(),60)[0]) >= float(self.__round):
+                 ## LOG:
+                 self.__print.show('\n-------------------------------', 'I');
 
                  ## LOG:
                  self.__print.show('ROUND ENDED DIV: '+str(self.__id), 'I');
 
                  ## Calculate attributes (score|hist) of each player in the div.
                  self.__end_of_round();
+
+                 ## LOG:
+                 self.__print.show('-------------------------------\n', 'I');
 
                  timeOld = datetime.datetime.now();
 
@@ -306,9 +311,10 @@ class Division(Process):
                     'name'    : player['name'],
                     'score'   : float(player['score'   ]),
                     'fairness': float(player['fairness']),
-                    'history' : int(player['history' ]),
-                    'division': int(player['division']),
-                    'playoff' : int(player['playoff' ])
+                    'history' : int(  player['history' ]),
+                    'division': int(  player['division']),
+                    'playoff' : int(  player['playoff' ]),
+                    'enabled' : int(  player['enabled' ])
                 };
 
                 ## Calculate three player's attributes: new score, new individu
@@ -454,7 +460,7 @@ class Division(Process):
         ## LOG:
         self.__print.show('START TH REALLOC PROCESS...', 'I');
 
-        if player['playoff'] == 'True':
+        if player['playoff'] == 1:
             player = self.__playoff_mode(player, thresholds);
         else:
             player = self.__normal_mode(player , thresholds);
@@ -469,6 +475,8 @@ class Division(Process):
     ## @PARAM thresholds == botton and up threshold'division.
     ##
     def __normal_mode(self, player, thresholds):
+        ## LOG:
+        self.__print.show('NORMAL MODE...', 'I');
 
         ## Promote player:
         if   player['score'] >= thresholds[1]:
@@ -492,6 +500,8 @@ class Division(Process):
     ## @PARAM thresholds == botton and up threshold'division.
     ##
     def __playoff_mode(self, player, thresholds):
+        ## LOG:
+        self.__print.show('PLAYOFF MODE...', 'I');
 
         ## Promote player:
         if   player['score'] >= thresholds[1]:
@@ -517,7 +527,7 @@ class Division(Process):
 
                 ## Check if the player is in access division:
                 if player['division'] > self.__maxDivision:
-                    player['enable'] = PLAYER_DISABLED;
+                    player['enabled'] = PLAYER_DISABLED;
 
         ## Exit from playoff status.
         else:

@@ -63,7 +63,7 @@ class Request(Base):
     action             = Column(INT        , nullable=True);
     timestamp_received = Column(TIMESTAMP  , nullable=True);
     timestamp_finished = Column(TIMESTAMP  , nullable=True);
-    status             = Column(TINYINT(1) , nullable=True , default=0 );
+    status             = Column(INT        , nullable=True , default=0 );
 
 ## END CLASS.
 
