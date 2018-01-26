@@ -579,9 +579,10 @@ class MCT_Referee(RabbitMQ_Consume):
        sPlayer = {};
 
        ## Genereate the query to select the players belong to specific division.
-       fColumns = and_(Player.division >= division, 
-                       Player.name     != playerId,
-                       Player.enabled  == 1);
+       fColumns = and_(Player.division     >= division, 
+                       Player.name         != playerId,
+                       Player.enabled      == 1,
+                       Player.max_instance != 0);
 
        dRecv = self.__db.all_regs_filter(Player, fColumns);
 

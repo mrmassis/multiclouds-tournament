@@ -3,3 +3,5 @@
 00003 -- 100 CSPs previous inserteds, max intances infinity -- mct (three division).
 00004 -- 100 CSPs incrementality inserteds, max intances infinity -- mct (three division).
 00005 --  10 CSPs incrementality inserteds, max intances variable, and plus 90 freeriders -- mct (three division).
+00006 --  10 CSPs incrementality inserteds, max intances variable, and plus 90 freeriders (99 accept instances but return FAILED) -- mct (three division).
+00007 --  10 CSPs incrementality inserteds, max intances variable, and plus 90 freeriders (99 accept instances, return SUCCES, and finish the instance) -- mct (three division).

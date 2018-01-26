@@ -177,19 +177,19 @@ class Division(Process):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __print         = None;
-    __db            = None;
-    __id            = None;
-    __interval      = None;
-    __round         = None;
-    __awareMinTime  = None;
-    __timeThreshold = None;
-    __maxDivision   = None;
-    __realloc       = None;
-    __attributes    = None;
-    __awareMinTime  = None;
-    __timeThreshold = None;
-
+    __print           = None;
+    __db              = None;
+    __id              = None;
+    __interval        = None;
+    __round           = None;
+    __awareMinTime    = None;
+    __timeThreshold   = None;
+    __maxDivision     = None;
+    __realloc         = None;
+    __attributes      = None;
+    __awareMinTime    = None;
+    __timeThreshold   = None;
+    __accept_cheating = None;
 
 
     ###########################################################################
@@ -238,6 +238,9 @@ class Division(Process):
 
         ##
         self.__attributes = MCT_Attributes();
+
+        ## Check if the cheating is enable in enviromment:
+        self.__accept_cheating = cfg['accept_cheating'];
 
 
     ###########################################################################
@@ -368,7 +371,10 @@ class Division(Process):
             dRecv = self.__db['db'].all_regs_filter(Vm, fColumn);
 
         if dRecv != []:
-            data['score'] = self.__attributes.calculate_score(dRecv);
+            if self.__accept_cheating == "True": 
+                data['score'] = self.__attributes.calculate_score_with_cheating(dRecv);
+            else:
+                data['score'] = self.__attributes.calculate_score(dRecv);
 
         ## LOG:
         self.__print.show(data['name'] + ' NEW SCORE:'+str(data['score']),'I');

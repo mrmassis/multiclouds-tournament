@@ -165,9 +165,8 @@ class MCT_Sanity_Recv(Process, RabbitMQ_Consume):
                 'status'             : CHEATING 
             };
 
-            whereFilter = and_(Vm.origin_id    == msg['data']['origId'  ],
-                               Vm.origin_add   == msg['data']['origAddr'],
-                               Vm.origin_name  == msg['data']['origName'],
+            whereFilter = and_(Vm.origin_id    == msg['data']['origId'],
+                               Vm.origin_name  == msg['data']['origNm'],
                                Vm.destiny_name == msg['destName']);
 
             self.__db['lock'].acquire();

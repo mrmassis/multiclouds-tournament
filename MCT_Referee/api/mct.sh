@@ -171,6 +171,27 @@ function vm() {
 
 
 
+##
+## BRIEF: dump.
+## ----------------------------------------------------------------------------
+##
+function dump() {
+    case ${1} in
+       'all')
+            ## Execute the command: 
+            SQL1="select * from VM where status=1"
+            SQL2="select * from VM where status=2"
+            SQL3="select * from VM where status=3"
+
+            RUNNING_=$(${CMYSQL} -e "${SQL1}" |wc -l)
+            CHEATING=$(${CMYSQL} -e "${SQL2}" |wc -l)
+            FINISHED=$(${CMYSQL} -e "${SQL3}" |wc -l)
+
+            echo ${RUNNING_} ${CHEATING} ${FINISHED}
+            ;;
+    esac
+    return 0;
+}
 
 
 
@@ -219,6 +240,11 @@ case ${1} in
     'status')
         shift
         status ${@}
+        ;;
+
+    'dump')
+        shift
+        dump ${@}
         ;;
 
     *)  echo "Command not valid!"

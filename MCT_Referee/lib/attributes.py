@@ -116,6 +116,48 @@ class MCT_Attributes(object):
 
 
     ##
+    ## BRIEF: calculate the score (accept cheating).
+    ## -----------------------------------------------------------------------
+    ## @PARAM requests == list of requests.
+    ## 
+    def calculate_score_with_cheating(self, requests):
+        accepts = 0;
+        rejects = 0;
+
+        fS = 0;
+        fM = 0;
+        fB = 0;
+
+        for request in requests:
+            status = int(request['status']);
+
+            if status == SUCCESS or status == FINISHED or status == CHEATING:
+
+                memory = request['mem'  ];
+                vcpus  = request['vcpus'];
+                disk   = request['disk' ];
+
+                flavor = self.__get_flavor(memory, vcpus, disk);
+
+                if   flavor == "S":
+                    fS += 1;
+                elif flavor == "M":
+                    fM += 0;
+                elif flavor == "B":
+                    fB += 1;
+            else:
+                rejects += 1;
+
+        ## Calculate the score:
+        totalAccepts = (fS*self.__pS + fM*self.__pM + fB*self.__pB);
+        totalRejects = (rejects*self.__cost);
+
+        nScore = totalAccepts - totalRejects;
+
+        return nScore;
+
+
+    ##
     ## BRIEF: calculate the score.
     ## -----------------------------------------------------------------------
     ## @PARAM score           == score of players.
