@@ -33,8 +33,8 @@ rm -f ${PATH_PLAYER_DST}/*
 ## Copy the service file to respectives place in the system.
 for ((i=0; i <= ${1}; i++)); do
 
-    #MAX_INSTANCES=$((( RANDOM % 10 ) + 1));
-    MAX_INSTANCES=30
+    MAX_INSTANCES=$((( RANDOM % 10 ) + 1));
+    #MAX_INSTANCES=30
 
     RESOURCES=""
     RESOURCES=${RESOURCES}"name         : vPlayer${i}\n"

@@ -31,6 +31,8 @@ CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
   `local_gb_used`      BIGINT(20)      DEFAULT 0,
   `max_instance`       INT             DEFAULT 0,
   `token`              VARCHAR(45)     NULL,
+  `enabled`            TINYINT(1)      DEFAULT 0,
+  `fairness`           FLOAT           DEFAULT 0.0,
   PRIMARY KEY (`name`))
 ENGINE = InnoDB;
 
@@ -65,7 +67,7 @@ CREATE TABLE IF NOT EXISTS `mct`.`REQUEST` (
   `action` INT NULL,
   `timestamp_received` TIMESTAMP NULL,
   `timestamp_finished` TIMESTAMP NULL,
-  `status` TINYINT(1) NULL,
+  `status` INT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 PACK_KEYS = DEFAULT;

@@ -40,6 +40,7 @@ AWARE        = 0
 CHEATING     = 1
 WHITEWASHING = 2
 COALITION    = 3
+FREERIDER    = 4
 
 ## Operation code:
 CREATE_INSTANCE = 0

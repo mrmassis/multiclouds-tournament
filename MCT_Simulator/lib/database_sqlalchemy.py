@@ -123,7 +123,7 @@ class Request(Base):
     action             = Column(INT        , nullable=True);
     timestamp_received = Column(TIMESTAMP  , nullable=True);
     timestamp_finished = Column(TIMESTAMP  , nullable=True);
-    status             = Column(TINYINT(1) , nullable=True);
+    status             = Column(INT        , nullable=True);
 
 ## END CLASS.
 
@@ -207,6 +207,8 @@ class Player(Base):
     local_gb_used = Column(BIGINT(20) , nullable=True , default=0  );
     max_instance  = Column(INT        , nullable=True , default=0  );
     token         = Column(VARCHAR(45), nullable=True);
+    enabled       = Column(TINYINT(1) , nullable=True , default=0  );
+    fairness      = Column(FLOAT      , nullable=True , default=0.0);
 ## END CLASS.
 
 

@@ -353,7 +353,10 @@ class MCT_Agent(RabbitMQ_Consume):
         if   msg['code'] == CREATE_INSTANCE:
             ## Define vplayer behavior. If diff of AWARE the player is using the 
             ## cheating and will be destroy the VM after accept the request.
-            strategy = self.__vplayerStrategy[msg['playerId']];
+            try:
+                strategy = self.__vplayerStrategy[msg['destName']];
+            except:
+                pass;
 
             if msg['status'] == SUCCESS and strategy == AWARE:
                 self.__instances.upd_instance(msg);
@@ -384,8 +387,11 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     def __remove_player_from_simulation(self, msg):
 
+        ## LOG:
+        self.__print.show('DISABLE PLAYER: ' + str(msg), 'I');
+
         data = {
-           'enable' : PLAYER_DISABLED
+           'enabled' : PLAYER_DISABLED
         };
 
         self.__db.update_reg(Player, Player.name == msg['playerId'], data);
@@ -432,7 +438,8 @@ class MCT_Agent(RabbitMQ_Consume):
            'vcpus'        : msg['data']['vcpus'       ],
            'memory'       : msg['data']['memory'      ],
            'local_gb'     : msg['data']['local_gb'    ],
-           'max_instance' : msg['data']['max_instance']
+           'max_instance' : msg['data']['max_instance'],
+           'fairness'     : msg['data']['max_instance']
         };
 
         self.__db.update_reg(Player, Player.name == msg['playerId'], data);
@@ -469,34 +476,48 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict msg == received message.
     ##
     def __create_server(self, msg):
-
         status = FAILED;
 
         ## Check if is possible create the new server (vcpu, memory, and disk).
         dRecv=self.__db.all_regs_filter(Player,Player.name == msg['destName']);
 
+        idx = msg['destName'] + '_' + str(self.__create_index());                  
+
         if dRecv != []:
+            strategy = self.__vplayerStrategy[msg['destName']];
 
-            ## Max number of instances that the player can accept to be running.
-            newInst = int(dRecv[-1]['running'     ]) + 1;
-            maxInst = int(dRecv[-1]['max_instance']);
+            ##
+            ## Player is a tipical Free-Rders, denny all request by instances.
+            ##
+            if   strategy == FREERIDER:
+                pass;
+
+            ##
+            ## Player is in cheating mode, accept but not execute the instance.
+            ##
+            elif strategy == CHEATING :
+                 msg['retId']=idx; 
+                 status = SUCCESS;
+
+            ##
+            ## Enviroment aware:
+            ##
+            else:
+                ## Max number of instances that the player can accept to be run
+                ## ning.
+                newInst = int(dRecv[-1]['running'     ]) + 1;
+                maxInst = int(dRecv[-1]['max_instance']);
  
-            if (newInst <= maxInst):
-                print newInst
-                print maxInst
-
-                ## Check if exist the enough resources to alocate neu instance.
-                if self.__check_resources(dRecv[-1], msg) == SUCCESS:
-                  
-                   ## Create a real index:
-                   msg['retId']=msg['destName']+'_'+str(self.__create_index()); 
-                   status = SUCCESS;
+                if (newInst <= maxInst):
+                    ## Check if exist the enough resources to alocate new "VM".
+                    if self.__check_resources(dRecv[-1], msg) == SUCCESS:
+                        msg['retId']=idx; 
+                        status = SUCCESS;
         
         ## LOG:
         self.__print.show('>> STATUS ['+str(status)+'] FROM REQ '+str(msg),'I');
 
         msg['status'] = status;
-        print msg
         return msg;
 
 
@@ -604,6 +625,8 @@ class MCT_Agent(RabbitMQ_Consume):
         ##
         msg['status'] = self.__instances.is_alive(msg);
 
+        ## LOG:
+        self.__print.show('>> RETURN FROM SANITY: '+str(msg),'I');
         return msg;
 
 

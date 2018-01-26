@@ -434,8 +434,11 @@ class MCT_Action(object):
         ## VM CONTROL ------------------------------------------------------ ##
         ## If status is sucessfull put vm running in vm structure:           ##
         ## ----------------------------------------------------------------- ##
-        if int(dRecv['status']) == SUCCESS:
-            self.__runningVM[dRecv['data']['uuid']] = 1;
+        try:
+            if int(dRecv['status']) == SUCCESS:
+                self.__runningVM[dRecv['data']['uuid']] = 1;
+        except:
+             pass; 
 
         ## Returns the data:
         return dRecv;
@@ -739,6 +742,8 @@ class MCT_VPlayer(Process):
     __token                   = None;
     __ratio                   = None;
     __fairness                = 0.0;
+    __id                      = None;
+    __strategy                = None;
 
 
     ###########################################################################
@@ -758,8 +763,9 @@ class MCT_VPlayer(Process):
         ## Get the option that define to where the logs will are sent to show.
         self.__print = Show_Actions(vCfg['print'], logger);
 
-        ## Player name and address:
+        ## Player name, id and address:
         self.__name = vCfg['name'];
+        self.__id   = vCfg['id'  ];
         self.__addr = vCfg['agent_address'];
 
         ## LOG:
@@ -784,6 +790,7 @@ class MCT_VPlayer(Process):
 
         ## Value used to determined the time to waiting until the next action.
         self.__ratio = int(vCfg['ratio']);
+
 
 
     ###########################################################################
@@ -834,10 +841,17 @@ class MCT_VPlayer(Process):
 
                 ## Check if the virtual player is enabled to execute actions in
                 ## tournament.
-                if dRecv['status'] == PLAYER_REMOVED:
-                    self.__remove_player_files();
-                    break;
+                try:
+                    if int(dRecv['status']) == PLAYER_REMOVED:
+                        ## LOG:
+                        self.__print.show('REMOVED: ' + self.__name, 'I');
 
+                        self.__remove_player_files();
+                        getSetInfRepeat.stop();
+                        return 0;
+
+                except:
+                    pass;
             else:
                 getSetInfRepeat.stop();
                 break;
@@ -948,6 +962,9 @@ class MCT_VPlayer(Process):
     ## ------------------------------------------------------------------------
     ##
     def __remove_player_files(self):
+        ## LOG:
+        self.__print.show('REMOVE THE PLAYER: ' + str(self.__id), 'I');
+
         qFile = os.path.join('/etc/mct/quotas'  , 'resources' + str(self.__id) + '.yml');
         pFile = os.path.join('/etc/mct/vplayers', 'vplayer'   + str(self.__id) + '.yml');
 
@@ -1030,8 +1047,8 @@ class Main:
                 try:
                     ## Open virtual player config:
                     vCfg = yaml.load(file('/etc/mct/vplayers/' + vPlayer, 'r'));
-                except yaml.reader.ReaderError:
-                    pass;
+                except:
+                    continue;
 
                 if vCfg['enable'] == 1:
                     ## Check if player already in the vplayer excuting list.
