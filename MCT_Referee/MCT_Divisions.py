@@ -210,7 +210,7 @@ class Division(Process):
 
         ## Get the round value. At end of this value the system compute the pla
         ## eyrs attributes.
-        self.__round = int(cfg['round']);
+        self.__round = float(cfg['round']);
 
         ## Obtain the max division in tournament:
         self.__maxDivision = divisions;
@@ -232,7 +232,7 @@ class Division(Process):
             self.__awareMinTime=cfg['individual_fairness_request_minimum_time'];
 
             ## Get time running threshold:
-            self.__timeThreshold = int(cfg['min_instance_run_threshold']);
+            self.__timeThreshold = float(cfg['min_instance_run_threshold']);
         except:
             pass;
 
@@ -264,7 +264,7 @@ class Division(Process):
             eT = timeNow - timeOld;
             
             ## Minutes:
-            if float(divmod(eT.total_seconds(),60)[0]) >= float(self.__round):
+            if float(divmod(eT.total_seconds(),60)[0]) >= self.__round:
                  ## LOG:
                  self.__print.show('\n-------------------------------', 'I');
 
@@ -435,7 +435,7 @@ class Division(Process):
                         ## Calculate the time of the instance is running. Accept
                         ## the instance only the time is under the threadshold.
                         tRunSecs = calculate_time(tsIni, tsEnd);
-                    
+
                         if tRunSecs > self.__timeThreshold or tRunSecs < 0.0:
                             accepts += 1;
                         else:

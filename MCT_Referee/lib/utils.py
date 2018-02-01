@@ -156,16 +156,16 @@ def mutable_time_to_waiting(ini, end):
 ##
 def calculate_time(tIniStr, tEndStr):
 
-    try:
-        tIni = datetime.datetime.strptime(tIniStr, '%Y-%m-%d %H:%M:%S.%f');
-        tEnd = datetime.datetime.strptime(tEndStr, '%Y-%m-%d %H:%M:%S.%f');
+    if tEndStr != 'None':
 
-        tDiffSeconds = (tEnd - tDiff).total_seconds();
+        tIni = datetime.datetime.strptime(tIniStr, '%Y-%m-%d %H:%M:%S');
+        tEnd = datetime.datetime.strptime(tEndStr, '%Y-%m-%d %H:%M:%S');
 
-    except:
+        tDiffSeconds = (tEnd - tIni).total_seconds();
+    else:
         tDiffSeconds = -1.0;
 
-    return tDiffSeconds;
+    return float(tDiffSeconds);
 ## END.
 
 

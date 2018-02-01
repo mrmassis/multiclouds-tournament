@@ -1,3 +1,0 @@
-./mct.sh status all      >> all.txt 
-./mct.sh instance simple >> instances.txt
-./mct.sh dump all        >> dump.txt
