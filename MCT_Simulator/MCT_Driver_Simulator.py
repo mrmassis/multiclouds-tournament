@@ -824,7 +824,11 @@ class MCT_VPlayer(Process):
             ## Get a new action from database through the MCT_DB_Proxy service.
             data = self.__mctStates.give_me_state_from_database();
  
-            if data['valid'] != 2:
+
+            print data['valid'];
+
+
+            if int(data['valid']) != 2:
 
                 ## Calculate the new time to waiting until perform "new action".
                 newTime = float(data['time'] / (self.__ratio)) - oldTime;
