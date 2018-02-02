@@ -737,9 +737,8 @@ class MCT_Divisions:
         allReqs = 0;
 
         ## Obtain all entries from VM table:
-        self.__db['lock'].acquire();
-        dRecv = self.__db['db'].all_regs(Vm);
-        self.__db['lock'].release();
+        with self.__db['lock']:
+            dRecv = self.__db['db'].all_regs(Vm);
 
         if dRecv != []:
             ## Obtain the number of the all request by create new instances.
@@ -773,9 +772,8 @@ class MCT_Divisions:
                 globalFairness = 0.0;
  
         ## Obtain all players in tournament in this momment:
-        self.__db['lock'].acquire();
-        players = self.__db['db'].all_regs(Player);
-        self.__db['lock'].release();
+        with self.__db['lock']:
+            players = self.__db['db'].all_regs(Player);
 
         status = Status();
 
@@ -786,9 +784,8 @@ class MCT_Divisions:
         status.fairness     = globalFairness;
         status.timestamp    = str(datetime.datetime.now());
 
-        self.__db['lock'].acquire();
-        self.__db['db'  ].insert_reg(status);
-        self.__db['lock'].release();
+        with self.__db['lock']:
+            self.__db['db'  ].insert_reg(status);
               
         ## LOG:
         self.__print.show('GLOBAL FAIRNESS: ' + str(globalFairness), "I");
