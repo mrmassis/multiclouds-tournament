@@ -617,12 +617,14 @@ class MCT_Divisions:
         try:
             ## Check if that will the minimum execution time is avaliable to ac
             ## cept a request.
-            self.__awareMinTime = cfg['global_fairness_request_minimum_time'];
+            self.__awareMinTime=cfg['main']['global_fairness_req_minimum_time'];
 
             ## Get time running threshold:
-            self.__timeThreshold = int(cfg['min_instance_run_threshold']);
+            self.__timeThreshold = int(cfg['main']['min_req_run_threshold']);
         except:
-            pass;
+            ## LOG:
+            self.__print.show("IT IS NOT POSSIBLE FOUND SOME CONFIGS", 'I');
+            sys.exit(-1);
 
 
     ###########################################################################
@@ -770,7 +772,7 @@ class MCT_Divisions:
                 globalFairness = float(accepts) / float(allReqs);
             except:
                 globalFairness = 0.0;
- 
+
         ## Obtain all players in tournament in this momment:
         with self.__db['lock']:
             players = self.__db['db'].all_regs(Player);
