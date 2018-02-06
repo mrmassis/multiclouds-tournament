@@ -343,7 +343,8 @@ class MCT_Action(object):
             'memory'      : data['memory'      ],
             'local_gb'    : data['local_gb'    ],
             'max_instance': data['max_instance'],
-            'strategy'    : data['strategy'    ]
+            'strategy'    : data['strategy'    ],
+            'coalition'   : data['coalition'   ]
         }
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).

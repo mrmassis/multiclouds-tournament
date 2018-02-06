@@ -497,6 +497,7 @@ class MCT_Test(Process):
         t.append("local_gb    : " + resources['local_gb']    + "\n");
         t.append("max_instance: " + resources['max_instance']+ "\n");
         t.append("strategy    : " + self.__strategy          + "\n");
+        t.append("coalition   : " + self.__coalition         + "\n");
 
         return t;
 

@@ -98,6 +98,7 @@ class MCT_Agent(RabbitMQ_Consume):
     __dispatchId      = None;
     __debug           = None;
     __vplayerStrategy = {};
+    __vplayerCoalition= {};
 
 
     ###########################################################################
@@ -358,18 +359,29 @@ class MCT_Agent(RabbitMQ_Consume):
             except:
                 pass;
 
-            if msg['status'] == SUCCESS and strategy == AWARE:
+            if   msg['status'] == SUCCESS and strategy == COALITION:
                 self.__instances.upd_instance(msg);
+
+            elif msg['status'] == SUCCESS and strategy == AWARE:
+                self.__instances.upd_instance(msg);
+
             else:
                 self.__instances.del_instance(msg);
 
+        ## DEL LOCALY INSTANCE - RETURN OF REQUEST:
         elif msg['code'] == DELETE_INSTANCE:
             if msg['status'] == SUCCESS or msg['status'] == PLAYER_REMOVED:
                 self.__instances.del_instance(msg);
             
+        ## ADD LOCALY INSTANCE - RETURN OF REQUEST:
         elif msg['code'] == ADD_REG_PLAYER:
             if msg['status'] == SUCCESS:
-                self.__set_localy_token(msg);
+                self.__return_of_register_player(msg);
+
+        ## GET PLAYER INFORMA. - RETURN OF REQUEST:
+        elif msg['code'] == GETINF_RESOURCE:
+            if msg['status'] == SUCCESS:
+                self.__return_of_get_inf_resources(msg);
 
         ## Update the database:
         self.__update_database(msg);
@@ -394,16 +406,36 @@ class MCT_Agent(RabbitMQ_Consume):
            'enabled' : PLAYER_DISABLED
         };
 
-        self.__db.update_reg(Player, Player.name == msg['playerId'], data);
+        self.__db.update_reg(Player, Player.name == msg['playerId'],  data);
         return SUCCESS;
 
 
     ##
-    ## BRIEF: set token in database.
+    ## BRIEF: return of request -- get info resources.
     ## ------------------------------------------------------------------------
     ## @PARAM dict msg == received message.
     ##
-    def __set_localy_token(self, msg):
+    def __return_of_get_inf_resources(self, msg):
+
+        ## Insert the player in database:
+        data = {
+            'fairness': msg['data']['fairness']
+        };
+     
+        self.__db.update_reg(Player, Player.name == msg['playerId'],  data);
+
+        ## LOG:
+        self.__print.show('VPLAYER ' + msg['playerId']+' SET FAIRNESS', 'I');
+
+        return SUCCESS;
+
+
+    ##
+    ## BRIEF: return of request "register player' - set token in database.
+    ## ------------------------------------------------------------------------
+    ## @PARAM dict msg == received message.
+    ##
+    def __return_of_register_player(self, msg):
         status = FAILED;
 
         try:
@@ -434,18 +466,23 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict msg == received message.
     ##
     def __set_localy_info_resources(self, msg):
+
         data = {
            'vcpus'        : msg['data']['vcpus'       ],
            'memory'       : msg['data']['memory'      ],
            'local_gb'     : msg['data']['local_gb'    ],
            'max_instance' : msg['data']['max_instance'],
-           'fairness'     : msg['data']['max_instance']
         };
 
         self.__db.update_reg(Player, Player.name == msg['playerId'], data);
 
         ## Set virtual player strategy:
         self.__vplayerStrategy[msg['playerId']] = msg['data']['strategy'];  
+
+        ## If the vplayer pefil is coalition, set virtual player coalition mem-
+        ## bers.
+        if msg['data']['strategy'] == COALITION:
+            self.__vplayerCoalition[msg['playerId']] =msg['data']['coalition'];
 
         return SUCCESS;
 
@@ -498,6 +535,16 @@ class MCT_Agent(RabbitMQ_Consume):
             elif strategy == CHEATING :
                  msg['retId']=idx; 
                  status = SUCCESS;
+
+            ##
+            ## Player is in coalition mode, accept but not execute the instance.
+            ##
+            elif strategy == COALITION:
+                 ## Check if the player requested is member of coalition,if yes
+                 ## accept the request, otherwise reject.
+                 if msg['playerId'] in self.__vplayerCoalition[msg['destName']]:
+                     msg['retId']=idx; 
+                     status = SUCCESS;
 
             ##
             ## Enviroment aware:

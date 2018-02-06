@@ -43,6 +43,7 @@ for ((i=0; i <= ${1}; i++)); do
     RESOURCES=${RESOURCES}"local_gb     : 10230\n"
     RESOURCES=${RESOURCES}"max_instance : ${MAX_INSTANCES}\n"
     RESOURCES=${RESOURCES}"strategy     : 0"
+    RESOURCES=${RESOURCES}"coalition    : "
 
     echo -e ${RESOURCES} > ${PATH_QUOTAS_DST}/resources${i}.yml
 

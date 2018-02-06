@@ -75,6 +75,7 @@ class MCT_DB_Proxy:
     __sMax       = None;
     __bMin       = None;
     __bMax       = None;
+    __convertion = None;
 
 
     ###########################################################################
@@ -100,6 +101,9 @@ class MCT_DB_Proxy:
         ## This value ensure that the entry is valid. The simulation has valid
         ## entry after the tBase value.
         self.__tBase = int(cfg['main']['time_base']);
+
+        ## Convertion base:
+        self.__convertion = int(cfg['main']['convertion']);
 
         ## Thresholds:
         self.__tMin = float(cfg['threshold']['t_min']);
@@ -286,7 +290,7 @@ class MCT_DB_Proxy:
             actionData['mem'      ] = float(dRecv[0]['memory'   ]);
 
             ## Convert time from microseconds to seconds. Normalize the time too
-            actionData['time'] = int(actionData['time']/1000000) - self.__tBase;
+            actionData['time'] = int(actionData['time'] - self.__tBase)-self.__convertion;
 
             ## Case the action is to create a new vm instance, check the type of
             ## instance:
