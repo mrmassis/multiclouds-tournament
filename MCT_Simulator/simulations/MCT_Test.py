@@ -40,6 +40,7 @@ D_USER = 'mct';
 D_PASS = 'password';
 D_BASE = 'mct';
 
+COALITION = 3;
 
 
 
@@ -65,6 +66,8 @@ class MCT_Test(Process):
     __db                = None;
     __testString        = None;
     __vplayerIdsList    = [];
+    __coalition         = None;
+    __extra             = None;
 
 
     ###########################################################################
@@ -127,8 +130,16 @@ class MCT_Test(Process):
         ## Get Ids:
         vplayerNm = self.__get_vplayers_ids(vplayer);
 
-        ## Set the strategy:
-        self.__strategy = strategy;
+        ## Case the strategy is coalition:
+        strategy = strategy.split(':');
+
+        if int(strategy[0]) == COALITION:
+            self.__strategy = strategy[0];
+            self.__extra    = int(strategy[1]);
+            self.__increment= int(strategy[1]);
+        else:
+            self.__strategy = strategy[0];
+            self.__increment= 1;
 
         ## Check if the condtions is valid and return in the dictionary format.
         dictTest = self.__valid_conditions(condition); 
@@ -138,7 +149,7 @@ class MCT_Test(Process):
 
         i = 0;
         while True:
-            i += 1;
+            i += self.__increment;
 
             if dictTest['condition'] == 'TIMER_AFTER':
                 functions[action](vplayerNm, action);
@@ -228,30 +239,48 @@ class MCT_Test(Process):
     ##
     def __add_player(self, vplayerNm, resources):
 
-        playerId = str(self.__vplayerIdsList[0]);
-
-        fileNameVT = os.path.join(V_BASE, 'vplayer'   + playerId + '.yml');
-        fileNameRT = os.path.join(R_BASE, 'resources' + playerId + '.yml');
-
-        ## Get the resources and virtual player perfil. Booth are necessry to 
-        ## add a new player.
-        templateR = self.__template_resource(vplayerNm, resources);
-        templateV = self.__template_v_player(vplayerNm, playerId );
-
-        fd = open(fileNameRT, 'w'); 
-        fd.writelines(templateR);
-        fd.close();
-
-        fd = open(fileNameVT, 'w'); 
-        fd.writelines(templateV);
-        fd.close();
-
-        del self.__vplayerIdsList[0];
-
-        if len(self.__vplayerIdsList) == 0:
-            return 1;
+        ## The self.__extra determined the number of the virtual player inser-
+        ## ted on same time.
+        if self.__extra:
+            loop = self.__extra;
         else:
-            return 0;
+            loop = 1;
+
+        ## Construct the coalition if the vplayer strategy is Free-Riders in a
+        ## coalition mode.
+        if int(self.__strategy) == COALITION:
+            string = '';
+            for idx in range(0, self.__extra):
+                string += vplayerNm + str(self.__vplayerIdsList[idx]) + ',';
+
+            self.__coalition = string[:-1];
+
+        ##
+        for I in range(0, loop):
+            playerId = str(self.__vplayerIdsList[0]);
+
+            fileNameVT = os.path.join(V_BASE, 'vplayer'   + playerId + '.yml');
+            fileNameRT = os.path.join(R_BASE, 'resources' + playerId + '.yml');
+
+            ## Get the resources and virtual player perfil. Booth are necessry
+            ## to add a new player.
+            templateR = self.__template_resource(vplayerNm, resources);
+            templateV = self.__template_v_player(vplayerNm, playerId );
+
+            fd = open(fileNameRT, 'w'); 
+            fd.writelines(templateR);
+            fd.close();
+
+            fd = open(fileNameVT, 'w'); 
+            fd.writelines(templateV);
+            fd.close();
+
+            del self.__vplayerIdsList[0];
+
+            if len(self.__vplayerIdsList) == 0:
+                return 1;
+
+        return 0;
 
 
     ##
@@ -489,7 +518,7 @@ class MCT_Test(Process):
     ## @PARAM resources == virtual player resources.
     ##
     def __template_resource(self, vplayer, resources): 
-
+        
         t = [];
         t.append("name        : " + vplayer                  + "\n");
         t.append("vcpus       : " + resources['vcpu']        + "\n");

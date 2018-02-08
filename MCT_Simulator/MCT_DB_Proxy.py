@@ -289,8 +289,11 @@ class MCT_DB_Proxy:
             actionData['cpu'      ] = float(dRecv[0]['cpu'      ]);
             actionData['mem'      ] = float(dRecv[0]['memory'   ]);
 
+            ## Convert from microseconds to seconds: 
+            rational = int(actionData['time'])/self.__convertion;
+
             ## Convert time from microseconds to seconds. Normalize the time too
-            actionData['time'] = int(actionData['time'] - self.__tBase)-self.__convertion;
+            actionData['time'] = rational - self.__tBase;
 
             ## Case the action is to create a new vm instance, check the type of
             ## instance:

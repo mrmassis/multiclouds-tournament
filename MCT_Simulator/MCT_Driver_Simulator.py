@@ -815,20 +815,18 @@ class MCT_VPlayer(Process):
         oldTime = 0;
 
         ## Set virtual players resources: 
-        self.__set_resources_info();
+        #self.__set_resources_info();
 
         ## Scheduller set and get information action t/from MCT main components.
-        getSetInfRepeat= Repeated_Timer(self.__interval, self.__get_set_info);
+        #getSetInfRepeat= Repeated_Timer(self.__interval, self.__get_set_info);
 
         while True:
+            ##
+            self.__get_set_info();
 
             ## Get a new action from database through the MCT_DB_Proxy service.
             data = self.__mctStates.give_me_state_from_database();
  
-
-            print data['valid'];
-
-
             if int(data['valid']) != 2:
 
                 ## Calculate the new time to waiting until perform "new action".
@@ -837,7 +835,7 @@ class MCT_VPlayer(Process):
 
                 if newTime < 1.0:
                     newTime = 1;
-
+                
                 ## Wait nTime seconds to dispatch a new action to the MCT_Agent.
                 time.sleep(float(newTime));
 
@@ -857,8 +855,9 @@ class MCT_VPlayer(Process):
 
                 except:
                     pass;
+
             else:
-                getSetInfRepeat.stop();
+                #getSetInfRepeat.stop();
                 break;
 
         ## LOG:
@@ -920,14 +919,15 @@ class MCT_VPlayer(Process):
                 'memory'       : rDict['memory'      ],
                 'local_gb'     : rDict['local_gb'    ],
                 'max_instance' : rDict['max_instance'],
-                'strategy'     : rDict['strategy'    ]
+                'strategy'     : rDict['strategy'    ],
+                'coalition'    : rDict['coalition'   ]
             };
 
             ## Send the request to update 'resources' values to 'MCT_Dispatch':
             dRecv = self.__mctAction.dispatch(SETINF_RESOURCE, data);
             return SUCCESS;
 
-        except yaml.reader.ReaderError:
+        except:
             pass;
 
         return FAILED;

@@ -482,7 +482,12 @@ class MCT_Agent(RabbitMQ_Consume):
         ## If the vplayer pefil is coalition, set virtual player coalition mem-
         ## bers.
         if msg['data']['strategy'] == COALITION:
-            self.__vplayerCoalition[msg['playerId']] =msg['data']['coalition'];
+            try:
+                coalition = msg['data']['coalition'].split(',');
+            except:
+                coalition = [];
+
+            self.__vplayerCoalition[msg['playerId']] = coalition;
 
         return SUCCESS;
 
