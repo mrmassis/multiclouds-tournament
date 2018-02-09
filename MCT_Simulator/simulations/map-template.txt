@@ -8,5 +8,5 @@
 ## Resources
 ## 99 max instances (no randon).
 ##
-playerVirtual_10:99-100:300-3:4-NOTHING==1-ADD-1023_1047552_10230_99|0
+playerVirtual_10:99-100:300-3:10-NOTHING==1-ADD-1023_1047552_10230_99|0
 ## EOF
