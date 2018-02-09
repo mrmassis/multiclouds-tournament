@@ -159,6 +159,12 @@ function vm() {
             ${CMYSQL} -e "${SQL}"
             ;;
 
+        'failed')
+            ## Execute the command: 
+            SQL="select * from VM where status=0"
+            ${CMYSQL} -e "${SQL}"
+            ;;
+
         ## Unknow actions:
         *)
             echo 'Command not suported!'

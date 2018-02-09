@@ -33,7 +33,7 @@ from threading                   import Timer;
 from multiprocessing             import Process, Queue, Lock;
 from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Request;
 from mct.lib.utils               import *;
-from mct.lib.amqp                import MCT_Simple_AMQP_Publish;
+from mct.lib.amqp                import MCT_Simple_AMQP_Publish, RabbitMQ_Publish;
 
 
 
@@ -50,7 +50,7 @@ HOME_FOLDER           = os.path.join(os.environ['HOME'], CONFIG_FILE);
 RUNNING_FOLDER        = os.path.join('./'              , CONFIG_FILE);
 DEFAULT_CONFIG_FOLDER = os.path.join('/etc/mct/'       , CONFIG_FILE);
 
-
+ROUTE = 'mct_agent';
 
 
 
@@ -188,6 +188,8 @@ class MCT_Action(object):
     __requestPendingWaiting = None;
     __requestPendingIteract = None;
     __runningVM             = {};
+    __lock                  = None;
+    __publish               = None;
 
 
     ###########################################################################
@@ -199,8 +201,10 @@ class MCT_Action(object):
     ## @PARAM vCfg   == configuration dictionary.
     ## @PARAM db     == connection with database.
     ## @PARAM logger == log object.
+    ## @PARAM publish== publish object.
+    ## @PARAM lock   == publish control.
     ##
-    def __init__(self, vCfg, db, logger):
+    def __init__(self, vCfg, db, logger, publish, lock):
         
         ## Get the option that define to where the logs will are sent to show.
         self.__print = Show_Actions(vCfg['print'], logger);
@@ -217,19 +221,23 @@ class MCT_Action(object):
         self.__requestPendingWaiting = float(vCfg['request_pending_waiting']);
         self.__requestPendingIteract =   int(vCfg['request_pending_iteract']);
 
-        amqpConfig = {
-            'user'      : vCfg['amqp_user'      ],
-            'pass'      : vCfg['amqp_pass'      ],
-            'route'     : vCfg['amqp_route'     ],
-            'identifier': vCfg['amqp_identifier'],
-            'address'   : vCfg['amqp_address'   ],
-            'exchange'  : vCfg['amqp_exchange'  ],
-            'queue'     : vCfg['amqp_queue_name'],
-            'print'     : vCfg['print'          ]
-        }
+        #amqpConfig = {
+        #    'user'      : vCfg['amqp_user'      ],
+        #    'pass'      : vCfg['amqp_pass'      ],
+        #    'route'     : vCfg['amqp_route'     ],
+        #    'identifier': vCfg['amqp_identifier'],
+        #    'address'   : vCfg['amqp_address'   ],
+        #    'exchange'  : vCfg['amqp_exchange'  ],
+        #    'queue'     : vCfg['amqp_queue_name'],
+        #    'print'     : vCfg['print'          ]
+        #}
 
         ## Instantiates an object to perform the publication of AMQP messages.
-        self.__publish = MCT_Simple_AMQP_Publish(amqpConfig, logger);
+        #self.__publish = MCT_Simple_AMQP_Publish(amqpConfig, logger);
+        self.__publish = {
+             'publish' : publish,
+             'lock'    : lock
+        };
 
         ## Intance a new object to handler all operation in the local database.
         self.__db = db;
@@ -305,7 +313,8 @@ class MCT_Action(object):
         msgToSend = self.__create_basic_message(GETINF_RESOURCE, idx);
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        valret = self.__publish.publish(msgToSend, 'Agent_Drive');
+        with self.__publish['lock']:
+           valret = self.__publish['publish'].publish(msgToSend, ROUTE);
 
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
@@ -348,7 +357,8 @@ class MCT_Action(object):
         }
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        valret = self.__publish.publish(msgToSend, 'Agent_Drive');
+        with self.__publish['lock']:
+           valret = self.__publish['publish'].publish(msgToSend, ROUTE);
 
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
@@ -382,7 +392,8 @@ class MCT_Action(object):
         msgToSend = self.__create_basic_message(STOPVM_INSTANCE, idx);
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        valret = self.__publish.publish(msgToSend, 'Agent_Drive');
+        with self.__publish['lock']:
+           valret = self.__publish['publish'].publish(msgToSend, ROUTE);
 
         ## LOG:
         self.__print.show('|STOPVM|', 'I');
@@ -420,7 +431,8 @@ class MCT_Action(object):
         }
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        valret = self.__publish.publish(msgToSend, 'Agent_Drive');
+        with self.__publish['lock']:
+           valret = self.__publish['publish'].publish(msgToSend, ROUTE);
 
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
@@ -474,7 +486,8 @@ class MCT_Action(object):
             };
 
             ## Send the request to the MCT_Action by asynchronous protocol AMPQ.
-            valret = self.__publish.publish(msgToSend, 'Agent_Drive');
+            with self.__publish['lock']:
+                valret = self.__publish['publish'].publish(msgToSend, ROUTE);
 
             ## Waiting for the answer is ready in database. The answer is ready
             ## when MCT_Agent send the return.
@@ -512,7 +525,8 @@ class MCT_Action(object):
         msgToSend = self.__create_basic_message(ADD_REG_PLAYER, idx);
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
-        valret = self.__publish.publish(msgToSend, 'Agent_Drive');
+        with self.__publish['lock']:
+            valret = self.__publish['publish'].publish(msgToSend, ROUTE);
 
         ## Waiting for the answer is ready in database.The answer is ready when
         ## MCT_Agent send the return.
@@ -756,8 +770,10 @@ class MCT_VPlayer(Process):
     ## @PARAM vCfg   == configuration file.
     ## @PARAM db     == connection with database.
     ## @PARAM logger == log object.
+    ## @PARAM publish== publish object.
+    ## @PARAM lock   == publish control.
     ##
-    def __init__(self, vCfg, db, logger):
+    def __init__(self, vCfg, db, logger, publish, lock):
 
         super(MCT_VPlayer, self).__init__();
 
@@ -780,7 +796,7 @@ class MCT_VPlayer(Process):
         self.__mctStates = MCT_States(vCfg, logger);
 
         ## Instance object that send actions generate by State to the MCT_Agent
-        self.__mctAction = MCT_Action(vCfg, self.__db, logger);
+        self.__mctAction = MCT_Action(vCfg, self.__db, logger, publish, lock);
 
         ## Time to send get resource info and set resources info request to MCT
         ## referee:
@@ -1005,6 +1021,8 @@ class Main:
     __virtualPlayersPath = None;
     __vRunning           = {};
     __logger             = None;
+    __publish            = None;
+    __lock               = None;
 
 
     ###########################################################################
@@ -1031,6 +1049,12 @@ class Main:
 
         ## Obtain configuration options to the virtual player (amqp cfg, etc).
         self.__virtualPlayersPath = self.__cfg['vplayers']['dir'];
+
+        ## Instantiates an object to perform the publication of AMQP messages.
+        self.__publish = RabbitMQ_Publish(self.__cfg['amqp_internal_publish']);
+
+        ## Lock control:
+        self.__lock = Lock(); 
 
 
     ###########################################################################
@@ -1137,7 +1161,7 @@ class Main:
         self.__print.show("Player to register: " + str(vCfg),'I');
 
         ## Running vplayer in the thread:
-        self.__vRunning[vCfg['name']]=MCT_VPlayer(vCfg,self.__db,self.__logger);
+        self.__vRunning[vCfg['name']]=MCT_VPlayer(vCfg,self.__db,self.__logger,self.__publish,self.__lock);
         self.__vRunning[vCfg['name']].daemon = True;
         self.__vRunning[vCfg['name']].start();
 
