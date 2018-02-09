@@ -75,7 +75,7 @@ while true; do
     R=$(${CMYSQL} -e "select * from VM where status=1" |wc -l)
     C=$(${CMYSQL} -e "select * from VM where status=2" |wc -l)
     F=$(${CMYSQL} -e "select * from VM where status=3" |wc -l)
-    echo ${COUNT} ${R} ${C} ${F} >> ${INSTVM_FILE}
+    #echo ${COUNT} ${R} ${C} ${F} >> ${INSTVM_FILE}
 
 
     ## -----
@@ -88,6 +88,7 @@ while true; do
     done
 
     FREERIDERS=$(egrep 'playerVirtual[0-9]{2}' ${TMPFILE} |wc -l)
+
 
     echo "$(grep "${PLAYER0} " ${TMPFILE}) ${FREERIDERS}" >> ${PLAYER0}.dat
     echo "$(grep "${PLAYER1} " ${TMPFILE}) ${FREERIDERS}" >> ${PLAYER1}.dat
@@ -102,7 +103,7 @@ while true; do
     rm -f ${TMPFILE}
 
 
-    if [[ "${COUNT}" == "100" ]]; then
+    if [[ "${COUNT}" == "50" ]]; then
         ## ---
         ## GLOBAL FAIRNESS VERSUS FREERIDERS
         ## ---
