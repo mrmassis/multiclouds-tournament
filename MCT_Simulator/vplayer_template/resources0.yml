@@ -7,4 +7,5 @@ memory       : 1047552
 local_gb     : 10230
 max_instance : 20
 strategy     : 0
+coalition    : 
 ## END.
