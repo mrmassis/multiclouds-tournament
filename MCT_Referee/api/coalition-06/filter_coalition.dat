@@ -1,0 +1,16 @@
+PLAYER DIVISION SCORE FAIRNESS ACCEPTS REJECT
+-------
+playerVirtual1 3 -1 1 0 1
+playerVirtual4 3 -1 1 0 1
+playerVirtual2 3 -1 1 0 1
+playerVirtual3 3 -1 1 0 1
+playerVirtual5 3 -1 1 0 1
+playerVirtual0 3 -1 1 0 1
+-------
+playerVirtual1 4 -3 1 0 3
+playerVirtual4 4 -3 1 0 3
+playerVirtual2 4 -3 1 0 3
+playerVirtual3 4 -3 1 0 3
+playerVirtual5 4 -2 1 0 2
+playerVirtual0 4 -2 1 0 2
+-------

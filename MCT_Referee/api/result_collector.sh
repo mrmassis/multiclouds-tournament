@@ -75,7 +75,7 @@ while true; do
     R=$(${CMYSQL} -e "select * from VM where status=1" |wc -l)
     C=$(${CMYSQL} -e "select * from VM where status=2" |wc -l)
     F=$(${CMYSQL} -e "select * from VM where status=3" |wc -l)
-    #echo ${COUNT} ${R} ${C} ${F} >> ${INSTVM_FILE}
+    echo ${COUNT} ${R} ${C} ${F} >> ${INSTVM_FILE}
 
 
     ## -----
@@ -103,7 +103,7 @@ while true; do
     rm -f ${TMPFILE}
 
 
-    if [[ "${COUNT}" == "50" ]]; then
+    if [[ "${COUNT}" == ${1} ]]; then
         ## ---
         ## GLOBAL FAIRNESS VERSUS FREERIDERS
         ## ---
@@ -112,7 +112,6 @@ while true; do
             LINE=$(echo ${LINE} |tr -s ' ')
             echo "${LINE} ${FREERIDERS}" >> ${STATUS_FILE}
         done 
-
 
         ## ---
         ## DIVISIONS
