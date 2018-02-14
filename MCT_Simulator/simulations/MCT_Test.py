@@ -257,7 +257,10 @@ class MCT_Test(Process):
 
         ##
         for I in range(0, loop):
-            playerId = str(self.__vplayerIdsList[0]);
+            try:
+                playerId = str(self.__vplayerIdsList[0]);
+            except:
+                 return 1;
 
             fileNameVT = os.path.join(V_BASE, 'vplayer'   + playerId + '.yml');
             fileNameRT = os.path.join(R_BASE, 'resources' + playerId + '.yml');
@@ -487,13 +490,13 @@ class MCT_Test(Process):
         t = [];
         t.append("name                        : " + vplayer + playerId+ "\n");
         t.append("id                          : " + playerId+ "\n");
-        t.append("amqp_identifier             : " + vplayer + playerId+ "\n");
-        t.append("amqp_address                : localhost\n");
-        t.append("amqp_route                  : mct_agent\n");
-        t.append("amqp_exchange               : mct_exchange\n");
-        t.append("amqp_queue_name             : agent\n");
-        t.append("amqp_user                   : mct\n");
-        t.append("amqp_pass                   : password\n");
+        #t.append("amqp_identifier             : " + vplayer + playerId+ "\n");
+        #t.append("amqp_address                : localhost\n");
+        #t.append("amqp_route                  : mct_agent\n");
+        #t.append("amqp_exchange               : mct_exchange\n");
+        #t.append("amqp_queue_name             : agent\n");
+        #t.append("amqp_user                   : mct\n");
+        #t.append("amqp_pass                   : password\n");
         t.append("agent_id                    : agent_drive" + playerId + "\n");
         t.append("ratio                       : 610\n");
         t.append("request_pending_iteract     : 10\n");

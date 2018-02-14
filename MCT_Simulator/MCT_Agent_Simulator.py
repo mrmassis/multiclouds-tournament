@@ -114,8 +114,11 @@ class MCT_Agent(RabbitMQ_Consume):
     ##
     def __init__(self, cfg, logger):
 
+        ## Print mode:
+        printMode = cfg['main']['print'];
+
         ## Get the option that define to where the logs will are sent to show.
-        self.__print = Show_Actions(cfg['main']['print'], logger);
+        self.__print = Show_Actions(printMode, logger);
 
         ## Obtain some infomation that will necessary to correct running. The-
         ## re are: local address, external route to dispach, and dispatch id.

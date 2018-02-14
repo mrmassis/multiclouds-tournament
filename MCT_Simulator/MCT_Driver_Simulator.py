@@ -60,7 +60,7 @@ ROUTE = 'mct_agent';
 ###############################################################################
 ## LOG                                                                       ##
 ###############################################################################
-#logging.basicConfig()
+logging.basicConfig()
 
 
 
@@ -209,9 +209,6 @@ class MCT_Action(object):
         ## Get the option that define to where the logs will are sent to show.
         self.__print = Show_Actions(vCfg['print'], logger);
 
-        ## Get which route is used to deliver the msg to the 'correct destine'.
-        self.__route = vCfg['amqp_route'];
-
         ## Get player credentials (Name, IP, and ID):
         self.__name    = vCfg['name'];
         self.__myIp    = vCfg['agent_address'];
@@ -221,19 +218,7 @@ class MCT_Action(object):
         self.__requestPendingWaiting = float(vCfg['request_pending_waiting']);
         self.__requestPendingIteract =   int(vCfg['request_pending_iteract']);
 
-        #amqpConfig = {
-        #    'user'      : vCfg['amqp_user'      ],
-        #    'pass'      : vCfg['amqp_pass'      ],
-        #    'route'     : vCfg['amqp_route'     ],
-        #    'identifier': vCfg['amqp_identifier'],
-        #    'address'   : vCfg['amqp_address'   ],
-        #    'exchange'  : vCfg['amqp_exchange'  ],
-        #    'queue'     : vCfg['amqp_queue_name'],
-        #    'print'     : vCfg['print'          ]
-        #}
-
         ## Instantiates an object to perform the publication of AMQP messages.
-        #self.__publish = MCT_Simple_AMQP_Publish(amqpConfig, logger);
         self.__publish = {
              'publish' : publish,
              'lock'    : lock
@@ -1037,12 +1022,15 @@ class Main:
         ## Get the configurantion parameters.
         self.__cfg = self.__get_configs();
 
+        ## Print mode:
+        printMode = self.__cfg['main']['print'];
+
         ## Configurate the logger. Use the parameters defineds in configuration
         ## file.
         self.__logger = self.__logger_setting(self.__cfg['log_drive']);
 
         ## Get the option that define to where the logs will are sent to show.
-        self.__print = Show_Actions(self.__cfg['main']['print'], self.__logger);
+        self.__print = Show_Actions(printMode, self.__logger);
 
         ## Connect to database.
         self.__get_database();

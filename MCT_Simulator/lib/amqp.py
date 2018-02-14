@@ -55,7 +55,6 @@ LOG = logging.getLogger(logName);
 
 
 
-
 ###############################################################################
 ## PROCEDURES                                                                ##
 ###############################################################################
@@ -80,8 +79,17 @@ class RabbitMQ_Publish(object):
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
-    ###########################################################################
+    ########################################################################### 
+    ##
+    ## BRIEF: initialize the object.
+    ## ------------------------------------------------------------------------
+    ## @PARAM data   == configuration data.
+    ##
     def __init__(self, data):
+
+        ## LOG:
+        LOG.info('INITIALIZE COMMUNICATION OBJECT');
+
         self.__data = data;
 
 
@@ -138,8 +146,6 @@ class RabbitMQ_Publish(object):
         user = self.__data['user'   ];
         pswd = self.__data['pass'   ];
 
-        ## LOG:
-        LOG.info('PUBLISH - TRY TO CONNECT (AMQP SERVER) ...');
 
         try:
            ## Credentials:
@@ -191,8 +197,6 @@ class RabbitMQ_Publish(object):
             LOG.error('UNKNOW ERROR!');
             return False;
 
-        ## LOG:
-        LOG.info('SUCESS!');
         return True;
 
 
@@ -374,14 +378,17 @@ class RabbitMQ_Consume(object):
             except pika.exceptions.AMQPConnectionError:
                 ## LOG:
                 LOG.error('AMQP CONNECTION ERROR (IS RABBITMQ RUNNING?)!');
+                pass;
 
             except pika.exceptions.AuthenticationError:
                 ## LOG:
                 LOG.error('AMQP AUTHENTICATION ERROR!');
+                pass;
 
             except:
                 ## LOG:
                 LOG.error('UNKNOW ERROR!');
+                pass;
 
             ## LOG:
             LOG.error('FAIL! TRY AGAIN!');
