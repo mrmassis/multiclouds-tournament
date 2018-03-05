@@ -9,9 +9,9 @@ import datetime;
 import ConfigParser;
 import logging;
 import logging.handlers;
+import importlib;
 
 from mct.lib.utils               import *;
-from mct.lib.attributes          import MCT_Attributes;
 from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Player, Vm, Status, Threshold;
 from multiprocessing             import Process, Queue, Lock;
 
@@ -30,6 +30,7 @@ DEFAULT_CONFIG_FOLDER = os.path.join('/etc/mct/'       , CONFIG_FILE);
 PLAYOFF_OUT = 0;
 PLAYOFF_IN  = 1;
 
+ATTRIBUTES_MODULE = None;
 
 
 
@@ -189,7 +190,6 @@ class Division(Process):
     __attributes      = None;
     __awareMinTime    = None;
     __timeThreshold   = None;
-    __accept_cheating = None;
 
 
     ###########################################################################
@@ -222,7 +222,7 @@ class Division(Process):
         ## tion and the lock to avoid data corruption.
         self.__db = db;
 
-        ## Enable realloc:
+        ## Enable realloc players by divisions:
         self.__realloc = cfg['realloc'];
 
         ## Optional:
@@ -236,11 +236,9 @@ class Division(Process):
         except:
             pass;
 
-        ##
-        self.__attributes = MCT_Attributes();
-
-        ## Check if the cheating is enable in enviromment:
-        self.__accept_cheating = cfg['accept_cheating'];
+        ## Attributes.
+        self.__attributes =getattr(importlib.import_module(ATTRIBUTES_MODULE),
+                                                              'MCT_Attributes');
 
 
     ###########################################################################
@@ -371,10 +369,7 @@ class Division(Process):
             dRecv = self.__db['db'].all_regs_filter(Vm, fColumn);
 
         if dRecv != []:
-            if self.__accept_cheating == "True": 
-                data['score'] = self.__attributes.calculate_score_with_cheating(dRecv);
-            else:
-                data['score'] = self.__attributes.calculate_score(dRecv);
+            data['score'] = self.__attributes.calculate_score(dRecv);
 
         ## LOG:
         self.__print.show(data['name'] + ' NEW SCORE:'+str(data['score']),'I');
@@ -625,6 +620,10 @@ class MCT_Divisions:
             ## LOG:
             self.__print.show("IT IS NOT POSSIBLE FOUND SOME CONFIGS", 'I');
             sys.exit(-1);
+ 
+        ## Load attribute calculation module:
+        global ATTRIBUTES_MODULE;
+        ATTRIBUTES_MODULE = cfg['attributes']['calculation_attrs'];
 
 
     ###########################################################################
@@ -743,7 +742,7 @@ class MCT_Divisions:
             dRecv = self.__db['db'].all_regs(Vm);
 
         if dRecv != []:
-            ## Obtain the number of the all request by create new instances.
+            ## Obtain the number of the all request by create new VM instances.
             allReqs = len(dRecv);
 
             for vm in dRecv:
@@ -792,6 +791,7 @@ class MCT_Divisions:
         ## LOG:
         self.__print.show('GLOBAL FAIRNESS: ' + str(globalFairness), "I");
         return SUCCESS;
+
 ## END CLASS.
 
 

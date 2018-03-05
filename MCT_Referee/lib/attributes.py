@@ -21,7 +21,30 @@ from mct.lib.utils import *;
 ###############################################################################
 ## DEFINITION                                                                ##
 ###############################################################################
+H_COST = 10.0
+L_COST =  1.0
 
+WEIGHT_S = 1.33;
+WEIGHT_M = 1.66;
+WEIGHT_B = 1.99;
+
+FLAVORS = {
+    "S" : {
+          'memo' : 512,
+          'vcpu' : 1,
+          'disk' : 1
+     },
+     "M" : {
+          'memo' : 2048,
+          'vcpu' : 1,
+          'disk' : 20
+     },
+     "B" : {
+          'memo' : 4096,
+          'vcpu' : 2,
+          'disk' : 40
+     }
+};
 
 
 
@@ -39,90 +62,25 @@ class MCT_Attributes(object):
     ###########################################################################
     ## DEFINITION                                                           ##
     ###########################################################################
-    __pS      = 1.33;
-    __pM      = 1.66;
-    __pB      = 1.99;
-    __cost    = 1.0;
-    __flavors = {};
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self):
-
-        self.__flavors = {
-            "S" : {
-                'memo' : 512,
-                'vcpu' : 1,
-                'disk' : 1
-            },
-            "M" : {
-                'memo' : 2048,
-                'vcpu' : 1,
-                'disk' : 20
-            },
-            "B" : {
-                'memo' : 4096,
-                'vcpu' : 2,
-                'disk' : 40
-            }
-        };
 
 
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
     ###########################################################################
     ##
-    ## BRIEF: calculate the score.
-    ## -----------------------------------------------------------------------
-    ## @PARAM requests == list of requests.
-    ## 
-    def calculate_score(self, requests):
-        accepts = 0;
-        rejects = 0;
- 
-        fS = 0;
-        fM = 0;
-        fB = 0;
-
-        for request in requests:
-            status = int(request['status']);
-
-            if status == SUCCESS or status == FINISHED:
-
-                memory = request['mem'  ];
-                vcpus  = request['vcpus'];
-                disk   = request['disk' ];
-
-                flavor = self.__get_flavor(memory, vcpus, disk);
-
-                if   flavor == "S":
-                    fS += 1;
-                elif flavor == "M":
-                    fM += 0;
-                elif flavor == "B":
-                    fB += 1;
-            else:
-                rejects += 1;
-
-        ## Calculate the score:
-        totalAccepts = (fS*self.__pS + fM*self.__pM + fB*self.__pB);
-        totalRejects = (rejects*self.__cost);
-
-        nScore = totalAccepts - totalRejects;
-
-        return nScore;
-
-
-    ##
     ## BRIEF: calculate the score (accept cheating).
     ## -----------------------------------------------------------------------
     ## @PARAM requests == list of requests.
     ## 
-    def calculate_score_with_cheating(self, requests):
-        accepts = 0;
-        rejects = 0;
+    @staticmethod
+    def calculate_score(self, requests):
+        totalAccepts = 0;
+        totalRejects = 0;
 
         fS = 0;
         fM = 0;
@@ -133,27 +91,27 @@ class MCT_Attributes(object):
 
             if status == SUCCESS or status == FINISHED or status == CHEATING:
 
-                memory = request['mem'  ];
-                vcpus  = request['vcpus'];
-                disk   = request['disk' ];
+                m = request['mem'  ];
+                v = request['vcpus'];
+                d = request['disk' ];
 
-                flavor = self.__get_flavor(memory, vcpus, disk);
+                for flavorId, data in FLAVORS.items():
+                     if data['memo']==m and data['vcpu']==c and data['disk']==d:
+                         break;
 
-                if   flavor == "S":
+                if   flavorId == "S":
                     fS += 1;
-                elif flavor == "M":
+                elif flavorId == "M":
                     fM += 0;
-                elif flavor == "B":
+                elif flavorId == "B":
                     fB += 1;
             else:
-                rejects += 1;
+                totalRejects += 1 * L_COST;
 
         ## Calculate the score:
-        totalAccepts = (fS*self.__pS + fM*self.__pM + fB*self.__pB);
-        totalRejects = (rejects*self.__cost);
+        totalAccepts = (fS * WEIGHT_S) + (fM * WEIGHT_M) + (fB * WEIGHT_B);
 
         nScore = totalAccepts - totalRejects;
-
         return nScore;
 
 
@@ -164,6 +122,7 @@ class MCT_Attributes(object):
     ## @PARAM history         == old history.
     ## @PARAM bottonThreshold == botton division threshold.
     ## 
+    @staticmethod
     def calculate_history(self, score, history, bottonThreshold):
         history = int(history);
 
@@ -176,22 +135,6 @@ class MCT_Attributes(object):
     ###########################################################################
     ## PRIVATE METHODS                                                       ##
     ###########################################################################
-    ##
-    ## BRIEF: obtain the flavor name..
-    ## -----------------------------------------------------------------------
-    ## @PARAM memo == qtdy of memory.
-    ## @PARAM vcpu == qtdy of virtual cpus.
-    ## @PARAM disk == qtdy of disk.
-    ## 
-    def __get_flavor(self, memo, vcpu, disk):
-
-        memo = int(memo);
-        vcpu = int(vcpu);
-        disk = int(disk);
-
-        for flavorId, data in self.__flavors.items():
-            if data['memo']==memo and data['vcpu']==vcpu and data['disk']==disk:
-                return flavorId; 
 ## END CLASS;
 
 
@@ -205,12 +148,9 @@ class MCT_Attributes(object):
 ## MAIN                                                                      ##
 ###############################################################################
 if __name__ == "__main__":
-
-
     mct_attributes = MCT_Attributes();
     history = mct_attributes.calculate_history(0.1, 1, 0.5);
     print history
-
 
 ## END.
 

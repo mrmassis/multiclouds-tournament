@@ -1,0 +1,308 @@
+PLAYER DIVISION SCORE FAIRNESS ACCEPTS REJECT
+-------
+playerVirtual2 3 0 0 2 0
+playerVirtual0 3 -4 1 0 2
+-------
+playerVirtual2 3 3.98 0 4 0
+playerVirtual0 4 -8 1 0 4
+-------
+playerVirtual2 2 5.31 0.2 6 0
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 3 0 0.5 2 0
+playerVirtual1959 3 -2 1 0 1
+-------
+playerVirtual2 2 5.31 0.428571 6 0
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 3 2.66 0.25 5 0
+playerVirtual1959 4 -6 1 0 3
+-------
+playerVirtual2 2 5.31 0.555556 6 0
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 2 5.98 0.25 7 0
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 3 0 0 0 0
+-------
+playerVirtual2 2 6.64 0.6 7 0
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 2 5.98 0.333333 8 0
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 3 -2 0 0 1
+-------
+playerVirtual2 2 6.64 0.583333 7 0
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 2 5.98 0.428571 9 0
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 3 -6 1 0 3
+playerVirtual8 3 2.66 0 2 0
+-------
+playerVirtual2 2 7.97 0.538462 9 0
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 2 5.98 0.555556 9 0
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 3 2.66 0 3 0
+-------
+playerVirtual2 2 7.97 0.533333 9 0
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 2 5.98 0.6 9 0
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 2 5.32 0.5 5 0
+playerVirtual10 3 3.98 0 2 0
+playerVirtual1371 3 -2 0 0 1
+-------
+playerVirtual2 2 7.97 0.5625 9 0
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 2 5.98 0.636364 9 0
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 2 6.65 0.4 6 0
+playerVirtual10 2 7.3 0 4 0
+playerVirtual1371 4 -8 1 0 4
+-------
+playerVirtual2 2 7.97 0.588235 9 0
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 2 5.98 0.692308 9 0
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 2 7.98 0.5 8 0
+playerVirtual10 2 7.3 0 6 0
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 3 -2 0 0 1
+-------
+playerVirtual2 2 7.97 0.611111 9 0
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 2 5.98 0.692308 9 0
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 9.31 0.428571 9 0
+playerVirtual10 2 7.3 0.25 7 0
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+-------
+playerVirtual2 2 6.97 0.611111 9 1
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 2 7.97 0.642857 10 0
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 9.31 0.5 9 0
+playerVirtual10 2 8.63 0.2 8 0
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 3 0 0 0 0
+-------
+playerVirtual2 2 6.97 0.611111 9 1
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 2 7.97 0.642857 10 0
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 9.31 0.444444 9 0
+playerVirtual10 2 8.63 0.2 8 0
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 3 -2 0 0 1
+-------
+playerVirtual2 2 6.97 0.631579 9 1
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 9.3 0.625 11 0
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 9.31 0.5 9 0
+playerVirtual10 1 11.29 0.166667 10 0
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 3 -6 0 0 3
+-------
+playerVirtual2 2 6.97 0.631579 9 1
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 9.3 0.625 11 0
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 9.31 0.454545 9 0
+playerVirtual10 1 11.29 0.142857 10 0
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 4 -10 0 0 5
+-------
+playerVirtual2 2 6.97 0.631579 9 1
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 9.3 0.588235 11 0
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 8.31 0.454545 9 1
+playerVirtual10 1 11.29 0.142857 10 0
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 4 -10 0 0 5
+-------
+playerVirtual2 2 5.97 0.631579 9 2
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 8.3 0.555556 11 1
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 8.31 0.416667 9 1
+playerVirtual10 1 10.29 0.125 10 1
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 4 -10 0 0 5
+playerVirtual1055 3 0 0 0 0
+-------
+playerVirtual2 2 5.97 0.6 9 2
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 8.3 0.526316 11 1
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 8.31 0.416667 9 1
+playerVirtual10 1 10.29 0.111111 10 1
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 4 -10 0 0 5
+playerVirtual1055 3 -6 0 0 3
+-------
+playerVirtual2 2 5.97 0.6 9 2
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 8.3 0.526316 11 1
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 8.31 0.384615 9 1
+playerVirtual10 1 10.29 0.1 11 1
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 4 -10 0 0 5
+playerVirtual1055 3 -10 0 0 5
+-------
+playerVirtual2 2 5.97 0.6 9 2
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 8.3 0.55 11 1
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 8.31 0.357143 9 1
+playerVirtual10 1 11.62 0.1 11 1
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 4 -10 0 0 5
+playerVirtual1055 4 -12 0 0 6
+-------
+playerVirtual2 2 5.97 0.6 9 2
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 8.3 0.55 11 1
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 7.31 0.357143 9 2
+playerVirtual10 1 11.62 0.0909091 11 1
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 4 -10 0 0 5
+playerVirtual1055 4 -12 0 0 6
+playerVirtual1220 3 0 0 0 0
+-------
+playerVirtual2 2 5.97 0.571429 9 2
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 8.3 0.55 11 1
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 7.31 0.357143 9 2
+playerVirtual10 1 11.62 0.0909091 11 1
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 4 -10 0 0 5
+playerVirtual1055 4 -12 0 0 6
+playerVirtual1220 3 -2 0 0 1
+-------
+playerVirtual2 2 5.97 0.571429 9 2
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 8.3 0.55 11 1
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 7.31 0.357143 9 2
+playerVirtual10 1 11.62 0.0909091 11 1
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 4 -10 0 0 5
+playerVirtual1055 4 -12 0 0 6
+playerVirtual1220 4 -2 0 0 1
+-------
+playerVirtual2 2 4.97 0.571429 9 3
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 8.3 0.55 11 1
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 8.64 0.333333 10 2
+playerVirtual10 1 11.62 0.166667 11 1
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 4 -10 0 0 5
+playerVirtual1055 4 -12 0 0 6
+playerVirtual1220 4 -2 0 0 1
+-------
+playerVirtual2 2 4.97 0.571429 9 3
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 8.3 0.55 11 1
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 8.64 0.333333 10 2
+playerVirtual10 1 11.62 0.166667 11 1
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 4 -10 0 0 5
+playerVirtual1055 4 -12 0 0 6
+playerVirtual1220 4 -2 0 0 1
+playerVirtual1026 3 0 0 0 0
+-------
+playerVirtual2 2 4.97 0.545455 9 3
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 8.3 0.55 11 1
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 1 8.64 0.333333 10 2
+playerVirtual10 1 11.62 0.166667 11 1
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 4 -10 0 0 5
+playerVirtual1055 4 -12 0 0 6
+playerVirtual1220 4 -2 0 0 1
+playerVirtual1026 3 -2 0 0 1
+-------
+playerVirtual2 2 4.97 0.545455 9 3
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 8.3 0.55 11 1
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 2 8.64 0.333333 11 2
+playerVirtual10 1 11.62 0.166667 11 1
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 4 -10 0 0 5
+playerVirtual1055 4 -12 0 0 6
+playerVirtual1220 4 -2 0 0 1
+playerVirtual1026 3 -2 0 0 1
+-------
+playerVirtual2 2 4.97 0.545455 9 3
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 8.3 0.55 11 1
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 2 8.64 0.333333 11 2
+playerVirtual10 1 11.62 0.230769 11 1
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 4 -10 0 0 5
+playerVirtual1055 4 -12 0 0 6
+playerVirtual1220 4 -2 0 0 1
+playerVirtual1026 4 -2 0 0 1
+-------
+playerVirtual2 2 4.97 0.545455 9 3
+playerVirtual0 4 -8 1 0 4
+playerVirtual4 1 8.3 0.571429 11 1
+playerVirtual1959 4 -6 1 0 3
+playerVirtual1127 4 -10 1 0 5
+playerVirtual8 2 8.64 0.3125 11 2
+playerVirtual10 1 12.95 0.214286 12 1
+playerVirtual1371 4 -8 1 0 4
+playerVirtual1577 4 -4 0 0 2
+playerVirtual1163 4 -10 0 0 5
+playerVirtual1055 4 -12 0 0 6
+playerVirtual1220 4 -2 0 0 1
+playerVirtual1026 4 -2 0 0 1
+playerVirtual1875 3 -4 0 0 2
+-------

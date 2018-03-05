@@ -1,0 +1,20 @@
+playerVirtual1 1
+playerVirtual2 0.687
+playerVirtual3 0.933
+playerVirtual4 0.692
+playerVirtual5 0.75
+playerVirtual6 1
+playerVirtual7 0
+playerVirtual8 0.777
+playerVirtual9 0.625
+playerVirtual10 0.714
+playerVirtual11 0.5
+playerVirtual12 0.75
+playerVirtual13 0.75
+playerVirtual14 0.666
+playerVirtual15 1 
+playerVirtual16 1 
+playerVirtual17 0
+playerVirtual18 0
+playerVirtual19 0.5
+

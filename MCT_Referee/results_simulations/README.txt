@@ -6,3 +6,7 @@
 00006 --  10 CSPs incrementality inserteds, max intances variable, and plus 90 freeriders (99 accept instances but return FAILED) -- mct (three division).
 00007 --  10 CSPs incrementality inserteds, max intances variable, and plus 90 freeriders (99 accept instances, return SUCCES, and finish the instance) -- mct (three division).
 00008 --  10 CSPs incrementality inserteds, max intances variable, and plus 90 freeriders (99 accept instances, return SUCCES, and finish the instance, time aware) -- mct (three division).
+00009 -- Coaliztion tests.
+00010 -- Whitewashing tests.
+00011 -- Selfsponsorship tests.
+00012 -- Supporter

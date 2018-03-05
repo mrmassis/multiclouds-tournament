@@ -120,6 +120,7 @@ class Vm(Base):
     destiny_name       = Column(VARCHAR(45), nullable=False);
     destiny_id         = Column(VARCHAR(45), nullable=False);
     status             = Column(TINYINT(1) , nullable=False);
+    has_resources      = Column(TINYINT(1) , nullable=False);
     vcpus              = Column(INT        , nullable=False, default=0);
     mem                = Column(BIGINT     , nullable=False, default=0);
     disk               = Column(BIGINT     , nullable=False, default=0);

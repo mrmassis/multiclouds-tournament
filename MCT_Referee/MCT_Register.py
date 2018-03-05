@@ -64,6 +64,7 @@ class MCT_Register(RabbitMQ_Consume):
     __db             = None;
     __print          = None;
     __accessDivision = None;
+    __costToEnter    = None;
 
 
     ###########################################################################
@@ -98,6 +99,13 @@ class MCT_Register(RabbitMQ_Consume):
 
         ## Obtain the access division:
         self.__accessDivision = cfg['main']['access_division'];
+
+        ## Obtain the cost to enter in the MCT,this value will be compared with
+        ## value informed by the players.
+        if cfg['main']['cost_to_enter'] == 'enable':
+            self.__costToEnter = int(cfg['whitewashing']['cost']);
+        else:
+            self.__costToEnter = '';
 
         ## LOG:
         self.__print.show("###### START MCT_REGISTER ######\n",'I');
@@ -167,20 +175,34 @@ class MCT_Register(RabbitMQ_Consume):
        valRet = FAILED;
 
        if msg != {}:
-           ## Check if the player always registered in the BID. If already reg
+
+           ## If the cost to enter is enable check if the player has condition
+           ## to pay the value (in terms of resources):
+           if self.__costToEnter != '':
+
+               if int(msg['data']['max_instance']) < self.__costToEnter:
+                  ## LOG:
+                  self.__print.show('WITHOUT RESOURCES! '+msg['playerId'],'I');
+                  msg['status'] = FAILED;
+                  return msg;
+           
+           ## Check if the player always registered in the BID. If already reg-
            ## ister return the token.
            token = self.__check_player(msg['playerId']);
 
            if token != '':
                valRet, msg = self.__activate_player(msg, token);
+               action = 'activate';
            else:
                valRet, msg = self.__register_player(msg, token);
-       
+               action = 'register';
+
+           ## LOG:
+           self.__print.show(msg['playerId'] +' '+action+' '+str(valRet), 'I');
+
        ## Set the status!    
        msg['status'] = valRet;
 
-       ## LOG:
-       self.__print.show('PLAYER REGISTERED: ' + msg['playerId'], 'I');
        return msg;
 
 
@@ -291,7 +313,7 @@ class MCT_Register(RabbitMQ_Consume):
 
         ## Set all data to update.
         data = {
-            'enabled' : 1
+            'enabled' : PLAYER_ENABLED
         };
 
         self.__db.update_reg(Player, Player.name == msg['playerId'], data);

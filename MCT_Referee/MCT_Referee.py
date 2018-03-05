@@ -8,6 +8,7 @@ import datetime;
 import json;
 import logging;
 import logging.handlers;
+import importlib;
 
 from sqlalchemy                  import and_, or_;
 from multiprocessing             import Process, Queue, Lock;
@@ -54,12 +55,17 @@ class MCT_Referee(RabbitMQ_Consume):
     ###########################################################################
     ## ATTRIBUTES                                                            ##
     ###########################################################################
-    __threadsId     = None;
-    __allQueues     = None;
-    __routeDispatch = None;
-    __db            = None;
-    __scheduller    = None;
-    __print         = None;
+    __threadsId       = None;
+    __allQueues       = None;
+    __routeDispatch   = None;
+    __db              = None;
+    __scheduller      = None;
+    __print           = None;
+    __costOfPermanance= None;
+    __accessDivision  = None;
+    __pre_season      = None;
+    __preSeasonFlag   = False;
+    __supporter       = {};
 
 
     ###########################################################################
@@ -89,8 +95,22 @@ class MCT_Referee(RabbitMQ_Consume):
         ## Intance a new object to handler all operation in the local database
         self.__db = MCT_Database_SQLAlchemy(cfg['database']);
 
+        ## If cost of permanance is set, check this feature only in access divi
+        ## sion.
+        self.__costOfPermanance=int(cfg['whitewashing']['cost_of_permanance']);
+
+        ## Define access division:
+        self.__accessDivision = int(cfg['main']['access_division']);
+
+        ## Pre-Season:.
+        preSeasonModulePath = cfg['pre_season']['approach'];
+
+        self.__pre_season =getattr(importlib.import_module(preSeasonModulePath),
+                                                              'MCT_Pre_Season');
+
         ## Select the scheduller algorithm responsible for selection of the be-
         ## st player in a division.
+        ## ----
         schedullerOption = cfg['scheduller']['approach'];
 
         ## Choice the scheduller:
@@ -99,7 +119,6 @@ class MCT_Referee(RabbitMQ_Consume):
 
         if schedullerOption == 'timestamp':
             self.__scheduller = Timestamp();
-
         else:
             pass;
 
@@ -354,34 +373,37 @@ class MCT_Referee(RabbitMQ_Consume):
     ## @PARAM dict msg     == message data.
     ##
     def __add_instance_send_destiny(self, division, msg):
+        msg['status'] = FAILED;
 
-        ## Select one player able to comply a request to create VM. Inside the-
-        ## se method is selected the scheduller approach.
-        selectedPlayer = self.__get_player(division, msg['playerId']);
+        ## The method above prevent the whitewashing strategies from Free-Rider
+        valRet = self.__whitewashing_aware(msg);
 
-        if selectedPlayer != {}:
+        if valRet == SUCCESS:
+            ## Select one player able to comply a request to create VM. Inside
+            ## these method is selected the scheduller approach.
+            selectedPlayer = self.__get_player(division, msg['playerId']);
 
-            ## LOG:
-            self.__print.show('SELECTED PLAYER: ' + str(selectedPlayer), 'I');
+            if selectedPlayer != {}:
+                ## LOG:
+                self.__print.show('SELECTED PLAYER: '+str(selectedPlayer),'I');
 
-            ## Set the message to be a forward message (perform a map). Send it
-            ## to the destine and waiting the return.
-            msg['retId'] = msg['reqId'];
+                ## Set the message to be a forward message (perform a map).Send
+                ## it to the destine and waiting the return.
+                msg['retId'] = msg['reqId'];
 
-            ## Set the target address. The target addr is the player' addrs that
-            ## will accept the request.
-            msg['destName'] = selectedPlayer['name'   ];
-            msg['destAddr'] = selectedPlayer['address'];
+                ## Set the target address. The target addr is the player' addrs
+                ## that will accept the request.
+                msg['destName'    ] = selectedPlayer['name'        ];
+                msg['destAddr'    ] = selectedPlayer['address'     ];
 
-            ## LOG:
-            self.__print.show('SEND REQ TO SELECTED DESTINY: '+ str(msg), 'I');
-        else:
-            ## LOG:
-            self.__print.show('THERE ISNT PLAYER ABLE TO EXEC: '+str(msg),'E');
+                ## Inibition coalition:
+                msg['hasResources'] = selectedPlayer['hasResources'];
 
-            ## Case not found a player to execute the request setting status to
-            ## error and return the message to origin.
-            msg['status'] = 0;
+                ## LOG:
+                self.__print.show('SEND REQ TO SELECTED DEST: '+ str(msg),'I');
+            else:
+                ## LOG:
+                self.__print.show('THERE ISNT PLAYER TO EXEC: '+ str(msg),'E');
 
         return msg;
 
@@ -399,13 +421,14 @@ class MCT_Referee(RabbitMQ_Consume):
 
         vm = Vm();
 
-        vm.origin_id          = msg['reqId'   ];
-        vm.origin_add         = msg['origAddr'];
-        vm.origin_name        = msg['playerId'];
-        vm.destiny_name       = msg['destName'];
-        vm.destiny_add        = msg['destAddr'];
-        vm.destiny_id         = msg['retId'   ];
-        vm.status             = msg['status'  ];
+        vm.origin_id          = msg['reqId'       ];
+        vm.origin_add         = msg['origAddr'    ];
+        vm.origin_name        = msg['playerId'    ];
+        vm.destiny_name       = msg['destName'    ];
+        vm.destiny_add        = msg['destAddr'    ];
+        vm.destiny_id         = msg['retId'       ];
+        vm.status             = msg['status'      ];
+        vm.has_resources      = msg['hasResources'];
         vm.vcpus              = int(msg['data']['vcpus']);
         vm.mem                = int(msg['data']['mem'  ]);
         vm.disk               = int(msg['data']['disk' ]);
@@ -414,6 +437,9 @@ class MCT_Referee(RabbitMQ_Consume):
         ## Vm creation request failed.
         if msg['status'] != SUCCESS:
             vm.timestamp_finished = vm.timestamp_received;
+        else:
+            ## Update the supporter value that the destiny 'player belongs'.
+            self.__increment_supporter(msg['destName']);
 
         ## Insert in database.
         valRet = self.__db.insert_reg(vm);
@@ -554,6 +580,18 @@ class MCT_Referee(RabbitMQ_Consume):
         ## LOG:
         self.__print.show('UPDATE RESOURCE TABLE: ' + str(msg), 'I');
 
+        ## Obtain the supporters to this player:
+        if msg['playerId'] not in self.__supporter:
+            try:
+                supporters = msg['data']['supporter'].split(',');
+            except:
+                supporters = [];
+
+            self.__supporter[msg['playerId']] = {
+                'supporters': supporters,
+                'payment'   : 0     
+            };
+
         ## Get all data from the message. Vcpus, memory and disk avaliable in
         ## the player:
         data = {
@@ -565,7 +603,6 @@ class MCT_Referee(RabbitMQ_Consume):
         };
 
         self.__db.update_reg(Player, Player.name == msg['playerId'], data);
-
         return {};
 
 
@@ -730,6 +767,79 @@ class MCT_Referee(RabbitMQ_Consume):
         self.__print.show('VALUES UDPATE AFTER DEL' + str(record),'I');
 
         return record;
+
+
+    ##
+    ## BRIEF: determine the preseason.
+    ## ------------------------------------------------------------------------
+    ##
+    def __pre_season_call(self):
+
+        ## Get all player above the access division.
+        dRecv=self.__db.all_regs_filter(Player, 
+                                     Player.division <= self.__accessDivision);
+
+        ## Obtain from drive the pre season stratus:
+        status = self.__pre_season.status(self.__accessDivision, dRecv);
+        return status;
+
+
+    ##
+    ## BRIEF: execute whitewashing avoid approachs.
+    ## ------------------------------------------------------------------------
+    ## @PARAM msg  == message received.
+    ##
+    def __whitewashing_aware(self, msg):
+
+        preSeasonStatus = self.__pre_season_call();
+
+        ## Player ID:
+        pId = msg['playerId'];
+
+        ## If costOfPermanace is enable check if the player already paid the co
+        ## st of permanance.
+        if self.__costOfPermanance != -1 and preSeasonStatus == True:
+
+            if self.__preSeasonFlag == False:
+                ## LOG:
+                self.__print.show('\n\n -------------------------------', 'I');
+                self.__print.show('-- PRE-SEASON FINISHED -------------', 'I');
+                self.__print.show('--------------------------------\n\n', 'I');
+                self.__preSeasonFlag = True;
+
+            ## Get requester status:
+            dRecv = self.__db.all_regs_filter(Player, (Player.name == pId));
+
+            ## Check if the player has permission to make request. First pay the
+            ## value to ensure it permanance.
+            if int(dRecv[-1]['accepts']) < self.__costOfPermanance:
+
+                ## Verify if the support members has pay the cost to consume in-
+                ## side tournament.
+                if self.__supporter[pId]['payment'] < self.__costOfPermanance:
+                    ## LOG:
+                    self.__print.show(pId + ' DONT PAY!', 'E');
+                    return FAILED;
+        else:
+            ## LOG:
+            self.__print.show('PRE-SEASON RUNNING!', 'I');
+
+        return SUCCESS;
+
+
+    ##
+    ## BRIEF: increment support values that the player belong.
+    ## ------------------------------------------------------------------------
+    ## @PARAM pId == player identification.
+    ##
+    def __increment_supporter(self, pId):
+
+        for key in self.__supporter.keys():
+            if pId in self.__supporter[key]['supporters']:
+                self.__supporter[key]['payment'] += 1;
+                return SUCCESS;
+
+        return SUCCESS;
 ## END CLASS.
 
 

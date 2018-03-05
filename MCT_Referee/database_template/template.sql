@@ -86,6 +86,7 @@ CREATE  TABLE IF NOT EXISTS `mct`.`VM` (
   `destiny_name`       VARCHAR(45) NOT NULL,
   `destiny_id`         VARCHAR(45) NOT NULL,
   `status`             TINYINT(1)  NOT NULL,
+  `has_resources`      TINYINT(1)  NOT NULL,
   `vcpus`              INT         NOT NULL,
   `mem`                BIGINT      NOT NULL,
   `disk`               BIGINT      NOT NULL,

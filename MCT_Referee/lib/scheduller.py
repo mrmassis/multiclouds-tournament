@@ -229,17 +229,23 @@ class Timestamp:
     ## @PARAM list players == a list of player from a specific division.
     ##
     def run(self, players):
-
         playersSorted = sorted(players, key=lambda k: k['last_choice']);
 
         for player in playersSorted:
             
             ## Minimize reject requests:
             if (int(player['running']) + 1) <= int(player['max_instance']):
+                player['hasResources'] = 1;
                 return player;
 
         ## In this case the probability of reject request is 99.99999.
-        return playersSorted[0];
+        player = playersSorted[0];
+
+        ## Set to mitigate coalition effects:
+        player['hasResources'] = 0;
+
+        return player;
+
 
 
     ###########################################################################

@@ -1,0 +1,135 @@
+2018-02-20 19:47:05,481 MCT_Register INFO     ###### START MCT_REGISTER ######
+
+2018-02-20 19:47:32,308 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 19:47:32,308 MCT_Register INFO     WITHOUT RESOURCES! playerVirtual1
+2018-02-20 19:47:32,364 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 19:47:32,548 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 19:47:32,587 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual2
+2018-02-20 19:47:32,658 MCT_Register INFO     playerVirtual2 register 1
+2018-02-20 19:47:32,717 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 19:47:32,802 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 19:47:32,809 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual0
+2018-02-20 19:47:32,851 MCT_Register INFO     playerVirtual0 register 1
+2018-02-20 19:47:32,905 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 19:52:25,232 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 19:52:25,233 MCT_Register INFO     WITHOUT RESOURCES! playerVirtual3
+2018-02-20 19:52:25,284 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 19:57:26,968 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 19:57:26,973 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual4
+2018-02-20 19:57:26,980 MCT_Register INFO     playerVirtual4 register 1
+2018-02-20 19:57:27,035 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 19:59:06,315 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 19:59:06,321 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual1619
+2018-02-20 19:59:06,326 MCT_Register INFO     playerVirtual1619 register 1
+2018-02-20 19:59:06,384 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 20:02:31,742 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 20:02:31,752 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual5
+2018-02-20 20:02:31,761 MCT_Register INFO     playerVirtual5 register 1
+2018-02-20 20:02:31,812 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 20:07:32,705 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 20:07:32,712 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual6
+2018-02-20 20:07:32,721 MCT_Register INFO     playerVirtual6 register 1
+2018-02-20 20:07:32,771 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 20:10:58,384 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 20:10:58,389 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual1169
+2018-02-20 20:10:58,394 MCT_Register INFO     playerVirtual1169 register 1
+2018-02-20 20:10:58,446 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 20:12:27,791 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 20:12:27,791 MCT_Register INFO     WITHOUT RESOURCES! playerVirtual7
+2018-02-20 20:12:27,841 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 20:17:30,437 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 20:17:30,444 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual8
+2018-02-20 20:17:30,452 MCT_Register INFO     playerVirtual8 register 1
+2018-02-20 20:17:30,528 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 20:22:27,717 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 20:22:27,717 MCT_Register INFO     WITHOUT RESOURCES! playerVirtual9
+2018-02-20 20:22:27,768 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 20:27:28,626 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 20:27:28,633 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual10
+2018-02-20 20:27:28,642 MCT_Register INFO     playerVirtual10 register 1
+2018-02-20 20:27:28,690 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 20:31:47,140 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 20:31:47,148 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual1643
+2018-02-20 20:31:47,153 MCT_Register INFO     playerVirtual1643 register 1
+2018-02-20 20:31:47,201 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 20:32:31,830 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 20:32:31,831 MCT_Register INFO     WITHOUT RESOURCES! playerVirtual11
+2018-02-20 20:32:31,873 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 20:37:25,809 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 20:37:25,810 MCT_Register INFO     WITHOUT RESOURCES! playerVirtual12
+2018-02-20 20:37:25,868 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 20:42:27,614 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 20:42:27,621 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual13
+2018-02-20 20:42:27,629 MCT_Register INFO     playerVirtual13 register 1
+2018-02-20 20:42:27,688 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 20:47:37,619 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 20:47:37,632 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual14
+2018-02-20 20:47:37,671 MCT_Register INFO     playerVirtual14 register 1
+2018-02-20 20:47:37,731 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 20:52:24,863 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 20:52:24,872 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual1373
+2018-02-20 20:52:24,879 MCT_Register INFO     playerVirtual1373 register 1
+2018-02-20 20:52:24,933 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 20:52:33,410 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 20:52:33,419 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual15
+2018-02-20 20:52:33,424 MCT_Register INFO     playerVirtual15 register 1
+2018-02-20 20:52:33,480 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 20:57:29,066 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 20:57:29,067 MCT_Register INFO     WITHOUT RESOURCES! playerVirtual16
+2018-02-20 20:57:29,122 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 21:02:29,189 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 21:02:29,190 MCT_Register INFO     WITHOUT RESOURCES! playerVirtual17
+2018-02-20 21:02:29,244 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 21:04:50,336 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 21:04:50,342 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual1329
+2018-02-20 21:04:50,349 MCT_Register INFO     playerVirtual1329 register 1
+2018-02-20 21:04:50,401 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 21:07:28,092 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 21:07:28,092 MCT_Register INFO     WITHOUT RESOURCES! playerVirtual18
+2018-02-20 21:07:28,159 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 21:12:34,302 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 21:12:34,307 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual19
+2018-02-20 21:12:34,313 MCT_Register INFO     playerVirtual19 register 1
+2018-02-20 21:12:34,372 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 21:28:49,654 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 21:28:49,659 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual1055
+2018-02-20 21:28:49,791 MCT_Register INFO     playerVirtual1055 register 1
+2018-02-20 21:28:49,842 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 21:51:34,232 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 21:51:34,239 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual1328
+2018-02-20 21:51:34,244 MCT_Register INFO     playerVirtual1328 register 1
+2018-02-20 21:51:34,294 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 22:16:08,195 MCT_Register INFO     MSG RECEIVED FROM DISPATCH: 1002
+2018-02-20 22:16:08,205 MCT_Register INFO     PLAYER ID NOT REGISTERED: playerVirtual1438
+2018-02-20 22:16:08,210 MCT_Register INFO     playerVirtual1438 register 1
+2018-02-20 22:16:08,260 MCT_Register INFO     ------------------------------------------
+
+2018-02-20 22:33:43,257 MCT_Register INFO     ###### STOP MCT_REGISTER ######
+
