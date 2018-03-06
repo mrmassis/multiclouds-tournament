@@ -40,8 +40,8 @@ D_USER = 'mct';
 D_PASS = 'password';
 D_BASE = 'mct';
 
-COALITION = 3;
-
+COALITION    = 3;
+WHITEWASHING = 2; 
 
 
 
@@ -68,6 +68,8 @@ class MCT_Test(Process):
     __vplayerIdsList    = [];
     __coalition         = None;
     __extra             = None;
+    __sponsorship       = 0;
+    __supporter         = [];
 
 
     ###########################################################################
@@ -76,10 +78,8 @@ class MCT_Test(Process):
     def __init__(self, testString):
         super(MCT_Test, self).__init__();
 
-        ##
         self.__operators = ['==', '>', '<', '!=', '>=', '<='];
 
-        ##
         self.__mHandleConditions= {
             'DIVISION': self.__get_division,
             'SCORE'   : self.__get_score,
@@ -149,6 +149,8 @@ class MCT_Test(Process):
 
         i = 0;
         while True:
+            time.sleep(float(timeToWait));
+
             i += self.__increment;
 
             if dictTest['condition'] == 'TIMER_AFTER':
@@ -159,7 +161,6 @@ class MCT_Test(Process):
 
                     ## Create the conditional to evaluate the trigger.
                     if self.__ops(dictTest['tag'])(n, dictTest['quantity']):
-
                         if   action == 'UPD':
                             valRet = self.__upd_player(vplayerNm, resources);
                         elif action == 'ADD':
@@ -169,7 +170,6 @@ class MCT_Test(Process):
 
                         if valRet == 1:
                             return 0;
-
                         break;
 
                     time.sleep(5);
@@ -177,8 +177,6 @@ class MCT_Test(Process):
             ## Control de iteraction (loop while):
             if i == int(iteractions):
                 break;
-
-            time.sleep(float(timeToWait));
         return valRet;
 
 
@@ -490,13 +488,6 @@ class MCT_Test(Process):
         t = [];
         t.append("name                        : " + vplayer + playerId+ "\n");
         t.append("id                          : " + playerId+ "\n");
-        #t.append("amqp_identifier             : " + vplayer + playerId+ "\n");
-        #t.append("amqp_address                : localhost\n");
-        #t.append("amqp_route                  : mct_agent\n");
-        #t.append("amqp_exchange               : mct_exchange\n");
-        #t.append("amqp_queue_name             : agent\n");
-        #t.append("amqp_user                   : mct\n");
-        #t.append("amqp_pass                   : password\n");
         t.append("agent_id                    : agent_drive" + playerId + "\n");
         t.append("ratio                       : 610\n");
         t.append("request_pending_iteract     : 10\n");
@@ -523,13 +514,25 @@ class MCT_Test(Process):
     def __template_resource(self, vplayer, resources): 
         
         t = [];
-        t.append("name        : " + vplayer                  + "\n");
         t.append("vcpus       : " + resources['vcpu']        + "\n");
         t.append("memory      : " + resources['memory']      + "\n");
         t.append("local_gb    : " + resources['local_gb']    + "\n");
         t.append("max_instance: " + resources['max_instance']+ "\n");
         t.append("strategy    : " + self.__strategy          + "\n");
-        t.append("coalition   : " + self.__coalition         + "\n");
+
+        ## Whitewashing strategu from Free-Riders:
+        if int(self.__strategy) == WHITEWASHING:
+            t.append("self-sponsorship: " + self.__sponsorship + "\n");
+            t.append("supporter       : " + self.__supporter   + "\n");
+        else:
+            t.append("self-sponsorship: \n");
+            t.append("supporter       : \n");
+
+        ## Coalition strategy from Free-Riders.
+        if int(self.__strategy) == COALITION:
+            t.append("coalition   : " + self.__coalition);
+        else:
+            t.append("coalition   : ");
 
         return t;
 

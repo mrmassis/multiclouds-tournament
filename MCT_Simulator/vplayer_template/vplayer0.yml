@@ -2,13 +2,6 @@
 ### VIRTUAL PLAYER                                                           ##
 ###############################################################################
 name                        : playerVirtual0
-#amqp_identifier             : playerVirtual0
-#amqp_address                : localhost
-#amqp_route                  : mct_agent
-#amqp_exchange               : mct_exchange
-#amqp_queue_name             : agent
-#amqp_user                   : mct
-#amqp_pass                   : password
 agent_id                    : agent_drive_0
 ratio                       : 610
 request_pending_iteract     : 10

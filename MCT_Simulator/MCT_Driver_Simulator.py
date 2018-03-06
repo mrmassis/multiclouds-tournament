@@ -52,6 +52,8 @@ DEFAULT_CONFIG_FOLDER = os.path.join('/etc/mct/'       , CONFIG_FILE);
 
 ROUTE = 'mct_agent';
 
+MIN_ID_VALUE = 1000;
+MAX_ID_VALUE = 2000;
 
 
 
@@ -333,12 +335,14 @@ class MCT_Action(object):
         msgToSend = self.__create_basic_message(SETINF_RESOURCE, idx);
 
         msgToSend['data'] = {
-            'vcpus'       : data['vcpus'       ],
-            'memory'      : data['memory'      ],
-            'local_gb'    : data['local_gb'    ],
-            'max_instance': data['max_instance'],
-            'strategy'    : data['strategy'    ],
-            'coalition'   : data['coalition'   ]
+            'vcpus'           : data['vcpus'           ],
+            'memory'          : data['memory'          ],
+            'local_gb'        : data['local_gb'        ],
+            'max_instance'    : data['max_instance'    ],
+            'strategy'        : data['strategy'        ],
+            'coalition'       : data['coalition'       ],
+            'self-sponsorship': data['self-sponsorship'],
+            'supporter'       : data['supporter'       ]
         }
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
@@ -508,6 +512,10 @@ class MCT_Action(object):
         ## Create basic message to send to MCT_Agent. MCT_Agent is responsible
         ## to exec de action.
         msgToSend = self.__create_basic_message(ADD_REG_PLAYER, idx);
+
+        msgToSend['data'] = {
+            'max_instance': data['max_instance']
+        }
 
         ## Send the request to the MCT_Action via asynchronous protocol (AMPQP).
         with self.__publish['lock']:
@@ -730,6 +738,7 @@ class MCT_VPlayer(Process):
     __name                    = None;
     __addr                    = None;
     __lock                    = None;
+    __queue                   = None;
     __dbConnection            = None;
     __get_resources_info_time = None;
     __set_resources_info_time = None;
@@ -743,7 +752,8 @@ class MCT_VPlayer(Process):
     __ratio                   = None;
     __fairness                = 0.0;
     __id                      = None;
-    __strategy                = None;
+    __strategy                = AWARE;
+    __idList                  = [];
 
 
     ###########################################################################
@@ -757,8 +767,9 @@ class MCT_VPlayer(Process):
     ## @PARAM logger == log object.
     ## @PARAM publish== publish object.
     ## @PARAM lock   == publish control.
+    ## @PARAM queue  == queue to comunication between process.
     ##
-    def __init__(self, vCfg, db, logger, publish, lock):
+    def __init__(self, vCfg, db, logger, publish, lock, queue):
 
         super(MCT_VPlayer, self).__init__();
 
@@ -793,6 +804,8 @@ class MCT_VPlayer(Process):
         ## Value used to determined the time to waiting until the next action.
         self.__ratio = int(vCfg['ratio']);
 
+        ## Set queue.
+        self.__queue = queue;
 
 
     ###########################################################################
@@ -806,23 +819,21 @@ class MCT_VPlayer(Process):
 
         ## Register this virtual player. If the process is sucesfull get a to-
         ## ken to comunication with MCT.
-        try:
-            self.__token = self.__addreg_me();
-        except:
+        self.__token = self.__addreg_me();
+
+        if self.__token == {}:
             ## LOG:
-            self.__print.show('IMPOSSIBLE GET TOKEN: ' + self.__name, 'E');
-            return 1;
+            self.__print.show('IMPOSSIBLE REGISTER PLAYER: '+self.__name, 'E');
+            self.__remove_player_files();
+
+            ## Remove from vruninglist:
+            self.__queue.put(self.__name);
+            return FAILED;
 
         oldTime = 0;
 
-        ## Set virtual players resources: 
-        #self.__set_resources_info();
-
-        ## Scheduller set and get information action t/from MCT main components.
-        #getSetInfRepeat= Repeated_Timer(self.__interval, self.__get_set_info);
-
         while True:
-            ##
+            ## Set and get information about resouces to and from the dispatch:
             self.__get_set_info();
 
             ## Get a new action from database through the MCT_DB_Proxy service.
@@ -846,24 +857,31 @@ class MCT_VPlayer(Process):
                 ## Check if the virtual player is enabled to execute actions in
                 ## tournament.
                 try:
+                    print "\n\n-----------------------\n\n" 
+                    print dRecv
                     if int(dRecv['status']) == PLAYER_REMOVED:
+                        print 4
                         ## LOG:
                         self.__print.show('REMOVED: ' + self.__name, 'I');
-
-                        self.__remove_player_files();
-                        getSetInfRepeat.stop();
-                        return 0;
-
+                        print 5
+                        ## Case the virtual player is a whitewashing dont erase
+                        ## file belong it.
+                        if self.__strategy != WHITEWASHING:
+                            self.__remove_player_files();
+                        else:
+                            self.__modify_player_files(); 
+                        print 6
+                        ## Remove from vruninglist:
+                        self.__queue.put(self.__name);
+                        return SUCCESS;
                 except:
                     pass;
-
             else:
-                #getSetInfRepeat.stop();
                 break;
 
         ## LOG:
         self.__print.show('END SIMULATION PLAYER: ' + self.__name, 'I');
-        return 0;
+        return SUCCESS;
 
 
     ###########################################################################
@@ -916,13 +934,18 @@ class MCT_VPlayer(Process):
             rDict = yaml.load(file(self.__resourcesFile, 'r')); 
 
             data = {
-                'vcpus'        : rDict['vcpus'       ],
-                'memory'       : rDict['memory'      ],
-                'local_gb'     : rDict['local_gb'    ],
-                'max_instance' : rDict['max_instance'],
-                'strategy'     : rDict['strategy'    ],
-                'coalition'    : rDict['coalition'   ]
+                'vcpus'           : rDict['vcpus'           ],
+                'memory'          : rDict['memory'          ],
+                'local_gb'        : rDict['local_gb'        ],
+                'max_instance'    : rDict['max_instance'    ],
+                'strategy'        : rDict['strategy'        ],
+                'coalition'       : rDict['coalition'       ],
+                'self-sponsorship': rDict['self-sponsorship'],
+                'supporter'       : rDict['supporter'       ]
             };
+
+            ## Set strategy:
+            self.__strategy = int(rDict['strategy']);
 
             ## Send the request to update 'resources' values to 'MCT_Dispatch':
             dRecv = self.__mctAction.dispatch(SETINF_RESOURCE, data);
@@ -939,8 +962,22 @@ class MCT_VPlayer(Process):
     ## ------------------------------------------------------------------------ 
     ##
     def __addreg_me(self):
+
+        ## Get the max instance that the player will be publish. This define if
+        ## the player has condition to enter in tournament.
+        try:
+            rDict = yaml.load(file(self.__resourcesFile, 'r'));
+            max_instance = rDict['max_instance'];
+        except:
+            max_instance = 0;
+
+        ## Set data to send to dispatch.
+        data = {
+            'max_instance' : max_instance
+        };
+
         ## Send the request:
-        dReceived = self.__mctAction.dispatch(ADD_REG_PLAYER, {});
+        dReceived = self.__mctAction.dispatch(ADD_REG_PLAYER, data);
 
         ## Get the token:
         try:
@@ -963,6 +1000,7 @@ class MCT_VPlayer(Process):
 
         return dRecv;
 
+
     ##
     ## BRIEF: remove player files.
     ## ------------------------------------------------------------------------
@@ -977,6 +1015,44 @@ class MCT_VPlayer(Process):
         ## Remove all files:
         os.remove(qFile);
         os.remove(pFile);
+
+        return SUCCESS;
+
+
+    ##
+    ## BRIEF: modify player ID in a whitewashing approach.
+    ## ------------------------------------------------------------------------
+    ##
+    def __modify_player_files(self):
+        pId   = str(self.__id);
+        pFile = os.path.join('/etc/mct/vplayers', 'vplayer' + pId + '.yml');
+
+        with open(pFile, 'r') as outfile:
+            rDict = yaml.load(outfile);
+
+        ## Remove old file:
+        os.remove(pFile);
+
+        while True:
+            nId = random.randrange(MIN_ID_VALUE, MAX_ID_VALUE);
+
+            ## Chacke if ID is in ids already consumed:
+            if nId not in self.__idList:
+                self.__idList.append(nId);
+                break;
+
+        nId = str(nId); 
+
+        ## Alter the informatiom:
+        rDict['name'    ] = 'playerVirtual'+ nId;
+        rDict['id'      ] = nId;
+        rDict['agent_id'] = 'agent_drive'  + nId;
+
+        ## Create a new file:
+        nFile = os.path.join('/etc/mct/vplayers', 'vplayer' + nId + '.yml');
+
+        with open(nFile, 'w') as outfile:
+            yaml.dump(rDict, outfile, default_flow_style=False);
 
         return SUCCESS;
 ## END CLASS.
@@ -1008,6 +1084,7 @@ class Main:
     __logger             = None;
     __publish            = None;
     __lock               = None;
+    __queue              = None;
 
 
     ###########################################################################
@@ -1044,6 +1121,10 @@ class Main:
         ## Lock control:
         self.__lock = Lock(); 
 
+        ## Create a queue to comunication between process. In case of whitewas-
+        ## shing use to remove from running list.
+        self.__queue=Queue();
+
 
     ###########################################################################
     ## PUBLIC METHODS                                                        ##
@@ -1059,15 +1140,22 @@ class Main:
 
         while True:
 
-            for vPlayer in os.listdir(self.__virtualPlayersPath):
+            ## Remove from virtual player from the list. This action is received
+            ## from threads.
+            try:
+               while True:
+                   value = self.__queue.get(False);
+                   self.__del_vplayer(value);
+            except:
+               pass;
 
+            for vPlayer in os.listdir(self.__virtualPlayersPath):
                 try:
-                    ## Open virtual player config:
                     vCfg = yaml.load(file('/etc/mct/vplayers/' + vPlayer, 'r'));
                 except:
                     continue;
 
-                if vCfg['enable'] == 1:
+                if vCfg['enable'] == PLAYER_ENABLED:
                     ## Check if player already in the vplayer excuting list.
                     if self.__vplayer_in_running_list(vCfg) == False:
                         self.__add_vplayer(vCfg);
@@ -1075,7 +1163,7 @@ class Main:
                 else:
                     ## Check if player already in the vplayer excuting list.
                     if self.__vplayer_in_running_list(vCfg) == True:
-                        self.__del_vplayer(vCfg);
+                        self.__del_vplayer(vCfg['name']);
 
             ## Wait an unpredicable time.Insert some entropy in the enviroment.
             mutable_time_to_waiting(5.0, 10.0);
@@ -1122,7 +1210,7 @@ class Main:
         ## by a particular thread when locked.
         self.__db['lock'] = Lock();
 
-        return 0;
+        return SUCCESS;
 
 
     ##
@@ -1144,33 +1232,40 @@ class Main:
     ## @PARAM vCfg == virtual player configuration.
     ##
     def __add_vplayer(self, vCfg):
+        name = vCfg['name'];
 
         ## LOG:
-        self.__print.show("Player to register: " + str(vCfg),'I');
+        self.__print.show("Player to register: " + name, 'I');
 
         ## Running vplayer in the thread:
-        self.__vRunning[vCfg['name']]=MCT_VPlayer(vCfg,self.__db,self.__logger,self.__publish,self.__lock);
-        self.__vRunning[vCfg['name']].daemon = True;
-        self.__vRunning[vCfg['name']].start();
+        self.__vRunning[name] = MCT_VPlayer(vCfg, self.__db,
+                                                        self.__logger,
+                                                        self.__publish,
+                                                        self.__lock,
+                                                        self.__queue);
+        self.__vRunning[name].daemon = True;
+        self.__vRunning[name].start();
 
-        return True;
+        return SUCCESS;
 
 
     ##
     ## BRIEF: remove a vplayer.
     ## ------------------------------------------------------------------------ 
-    ## @PARAM vCfg == virtual player configuration.
+    ## @PARAM name == player to remove.
     ##
-    def __del_vplayer(self, vCfg):
+    def __del_vplayer(self, name):
+        print self.__vRunning
 
         ## Stop vplayer:
-        self.__vRunning[vCfg['name']].terminate();
-        self.__vRunning[vCfg['name']].join();
+        self.__vRunning[name].terminate();
+        self.__vRunning[name].join();
 
         ## Remove entry:
-        del self.__vRunning[vCfg['name']];
+        del self.__vRunning[name];
 
-        return True;
+        print self.__vRunning
+        return SUCCESS;
 
 
     ##

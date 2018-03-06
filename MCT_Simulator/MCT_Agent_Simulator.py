@@ -100,7 +100,8 @@ class MCT_Agent(RabbitMQ_Consume):
     __dispatchId      = None;
     __debug           = None;
     __vplayerStrategy = {};
-    __vplayerCoalition= {};
+    __coalition       = {};
+    __selfSponsorship = {};
 
 
     ###########################################################################
@@ -378,7 +379,7 @@ class MCT_Agent(RabbitMQ_Consume):
             if msg['status'] == SUCCESS or msg['status'] == PLAYER_REMOVED:
                 self.__instances.del_instance(msg);
             
-        ## ADD LOCALY INSTANCE - RETURN OF REQUEST:
+        ## ADD LOCALY PLAYER - RETURN OF REQUEST:
         elif msg['code'] == ADD_REG_PLAYER:
             if msg['status'] == SUCCESS:
                 self.__return_of_register_player(msg);
@@ -471,28 +472,41 @@ class MCT_Agent(RabbitMQ_Consume):
     ## @PARAM dict msg == received message.
     ##
     def __set_localy_info_resources(self, msg):
+        pId = msg['playerId'];
 
         data = {
            'vcpus'        : msg['data']['vcpus'       ],
            'memory'       : msg['data']['memory'      ],
            'local_gb'     : msg['data']['local_gb'    ],
-           'max_instance' : msg['data']['max_instance'],
+           'max_instance' : msg['data']['max_instance']
         };
 
-        self.__db.update_reg(Player, Player.name == msg['playerId'], data);
+        self.__db.update_reg(Player, Player.name == pId, data);
 
         ## Set virtual player strategy:
-        self.__vplayerStrategy[msg['playerId']] = msg['data']['strategy'];  
+        self.__vplayerStrategy[pId] = msg['data']['strategy'];  
 
+        ## 
+        ## Strategies:
+        ## ------------
         ## If the vplayer pefil is coalition, set virtual player coalition mem-
         ## bers.
         if msg['data']['strategy'] == COALITION:
             try:
-                coalition = msg['data']['coalition'].split(',');
+                self.__coalition[pId] = msg['data']['coalition'].split(',');
             except:
-                coalition = [];
+                self.__coalition[pId] = [];
 
-            self.__vplayerCoalition[msg['playerId']] = coalition;
+        ## If the vplayer perfil is whitewashing set the sub cases:selfSponsors
+        ## supporter.
+        elif msg['data']['strategy'] == WHITEWASHING:
+
+            ## Two possibilities: first, the player can selfsponsorship, or the
+            ## use the supporter approach.
+            ## value > 0: self sponsorship.
+            ## value < 0: supporter enable.
+            ## value = 0: nothing to do, classical whitewashing Free-Rider.
+            self.__selfSponsorship[pId] = int(msg['data']['self-sponsorship']);
 
         return SUCCESS;
 
@@ -540,6 +554,22 @@ class MCT_Agent(RabbitMQ_Consume):
                 pass;
 
             ##
+            ## Player is in whitewashing. Inside this mode, there are three ca-
+            ## ses: whitewashing pure, 
+            ##
+            elif strategy == WHITEWASHING:
+
+                if  self.__selfSponsorship[msg['destName']] > 0:
+                    ## Penality: accept request:
+                    self.__selfSponsorship[msg['destName']]-= 1;
+
+                    ## Set ID:
+                    msg['retId']=idx;
+                    status = SUCCESS;
+                else:
+                    pass;
+
+            ##
             ## Player is in cheating mode, accept but not execute the instance.
             ##
             elif strategy == CHEATING :
@@ -552,7 +582,7 @@ class MCT_Agent(RabbitMQ_Consume):
             elif strategy == COALITION:
                  ## Check if the player requested is member of coalition,if yes
                  ## accept the request, otherwise reject.
-                 if msg['playerId'] in self.__vplayerCoalition[msg['destName']]:
+                 if msg['playerId'] in self.__coalition[msg['destName']]:
                      msg['retId']=idx; 
                      status = SUCCESS;
 
@@ -573,7 +603,6 @@ class MCT_Agent(RabbitMQ_Consume):
         
         ## LOG:
         self.__print.show('>> STATUS ['+str(status)+'] FROM REQ '+str(msg),'I');
-
         msg['status'] = status;
         return msg;
 
