@@ -62,8 +62,8 @@ class Simulation(Base):
     machineId   = Column(BIGINT(20) , nullable=False);
     eventType   = Column(INT        , nullable=False);
     plataformId = Column(VARCHAR(45), nullable=True );
-    cpu         = Column(FLOAT      , nullable=False);
-    memory      = Column(FLOAT      , nullable=False);
+    cpu         = Column(DOUBLE      , nullable=False);
+    memory      = Column(DOUBLE      , nullable=False);
     valid       = Column(INT        , default=0);
         
     id.autoincrement = True;
@@ -192,7 +192,7 @@ class Player(Base):
     name          = Column(VARCHAR(45), nullable=False, primary_key=True);
     address       = Column(VARCHAR(45), nullable=True);
     division      = Column(INT        , nullable=True);
-    score         = Column(FLOAT      , nullable=True , default=0.0);
+    score         = Column(DOUBLE      , nullable=True , default=0.0);
     history       = Column(INT        , nullable=True , default=0  );
     accepts       = Column(INT        , nullable=True , default=0  );
     rejects       = Column(INT        , nullable=True , default=0  );
@@ -208,7 +208,7 @@ class Player(Base):
     max_instance  = Column(INT        , nullable=True , default=0  );
     token         = Column(VARCHAR(45), nullable=True);
     enabled       = Column(TINYINT(1) , nullable=True , default=0  );
-    fairness      = Column(FLOAT      , nullable=True , default=0.0);
+    fairness      = Column(DOUBLE      , nullable=True , default=0.0);
 ## END CLASS.
 
 

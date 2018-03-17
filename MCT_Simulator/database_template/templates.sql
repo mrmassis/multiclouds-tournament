@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
   `name`               VARCHAR(45) NOT NULL,
   `address`            VARCHAR(45)     NULL,
   `division`           INT             NULL,
-  `score`              FLOAT           DEFAULT 0.0,
+  `score`              DOUBLE           DEFAULT 0.0,
   `history`            INT             DEFAULT 0,
   `accepts`            INT             DEFAULT 0,
   `rejects`            INT             DEFAULT 0,
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
   `max_instance`       INT             DEFAULT 0,
   `token`              VARCHAR(45)     NULL,
   `enabled`            TINYINT(1)      DEFAULT 0,
-  `fairness`           FLOAT           DEFAULT 0.0,
+  `fairness`           DOUBLE           DEFAULT 0.0,
   PRIMARY KEY (`name`))
 ENGINE = InnoDB;
 
