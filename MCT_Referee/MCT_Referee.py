@@ -405,6 +405,26 @@ class MCT_Referee(RabbitMQ_Consume):
                 ## LOG:
                 self.__print.show('THERE ISNT PLAYER TO EXEC: '+ str(msg),'E');
 
+                ## Set status to fail and store this information in the database
+                vm = Vm();
+
+                vm.origin_id          = msg['reqId'       ];
+                vm.origin_add         = msg['origAddr'    ];
+                vm.origin_name        = msg['playerId'    ];
+                vm.destiny_name       = msg['destName'    ];
+                vm.destiny_add        = msg['destAddr'    ];
+                vm.destiny_id         = msg['retId'       ];
+                vm.has_resources      = SUCCESS;
+                vm.status             = FAILED ;
+                vm.vcpus              = 0;
+                vm.mem                = 0;
+                vm.disk               = 0;
+                vm.timestamp_received = str(datetime.datetime.now());
+                vm.timestamp_finished = vm.timestamp_received;
+
+                ## Insert in database.
+                valRet = self.__db.insert_reg(vm);
+
         return msg;
 
 
@@ -623,6 +643,9 @@ class MCT_Referee(RabbitMQ_Consume):
 
        dRecv = self.__db.all_regs_filter(Player, fColumns);
 
+       ## LOG:
+       self.__print.show('P_REQ: '+playerId+' DIV: '+str(division)+' CAND: '+str(dRecv), 'I');
+
        if dRecv != []:
 
            ## Select the player. Using the schduller approach defined in config
@@ -798,7 +821,7 @@ class MCT_Referee(RabbitMQ_Consume):
 
         ## If costOfPermanace is enable check if the player already paid the co
         ## st of permanance.
-        if self.__costOfPermanance != -1 and preSeasonStatus == True:
+        if self.__costOfPermanance != 0 and preSeasonStatus == True:
 
             if self.__preSeasonFlag == False:
                 ## LOG:

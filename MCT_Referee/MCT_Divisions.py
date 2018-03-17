@@ -12,7 +12,7 @@ import logging.handlers;
 import importlib;
 
 from mct.lib.utils               import *;
-from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Player, Vm, Status, Threshold;
+from mct.lib.database_sqlalchemy import MCT_Database_SQLAlchemy, Player, Vm, Status, Threshold, Division;
 from multiprocessing             import Process, Queue, Lock;
 
 
@@ -32,6 +32,9 @@ PLAYOFF_IN  = 1;
 
 ATTRIBUTES_MODULE = None;
 
+MANAGER_STEEP = 1
+
+
 
 
 
@@ -41,6 +44,163 @@ ATTRIBUTES_MODULE = None;
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
+class Manager(Process):
+
+    """
+    Class Manager:
+    ---------------------------------------------------------------------------
+    PUBLIC METHODS:
+    * run == .
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __maxDivision    = None;
+    __queue          = None;
+    __db             = None;
+    __print          = None;
+    __distribute     = None;
+    __distributeMode = None;
+
+
+    ###########################################################################
+    ## SPECIAL METHODS                                                       ##
+    ###########################################################################
+    def __init__(self, dictCfg):
+        super(Manager, self).__init__();
+
+        ## Get the option that define to where the logs will are sent to show.
+        self.__print = Show_Actions(dictCfg['cfg']['print'],dictCfg['logger']);
+
+        ## LOG:
+        self.__print.show('INITIALIZE MANAGER PROCESS', 'I');
+
+        ## Obtain the max division from tournament:
+        self.__maxDivision = dictCfg['maxDivision'];
+
+        ## Check if distribute is enable:
+        self.__distribute = dictCfg['distribute'];
+
+        if self.__distribute == 'True':
+            self.__distributeMode = dictCfg['distribute_mode'];
+
+        ## Get the queues:
+        self.__queue = dictCfg['queue'];
+
+        ## Dtabase object:
+        self.__db = dictCfg['db'];
+
+
+    ###########################################################################
+    ## PUBLIC METHODS                                                        ##
+    ###########################################################################
+    ##
+    ## Brief: threshold main loop.
+    ## ------------------------------------------------------------------------
+    ##
+    def run(self):
+
+        while True:
+            ## Get a request from threads:
+            player = self.__queue.get();
+
+            ## Store the value:
+            valRet = self.__do_action(player);
+
+        return SUCCESS;
+
+
+    ###########################################################################
+    ## PRIVATE METHODS                                                       ##
+    ###########################################################################
+    ##
+    ## BRIEF: execute an action.
+    ## ------------------------------------------------------------------------
+    ## @PARAM player == player information. 
+    ##
+    def __do_action(self, player):
+        
+        ## Check if the distribute mode is enable:
+        if self.__distribute == 'True':
+            if self.__distributeMode == 'Pyramid':
+                valRet, player = self.__distribute_players(player);
+        else:
+            valRet = SUCCESS;
+
+        if valRet == SUCCESS:
+
+            ## Delete old division key;
+            try:
+                del player['old'];
+            except KeyError:
+                pass;
+
+            ## :::
+            fColumns = (Player.name == player['name']);
+
+            with self.__db['lock']:
+                self.__db['db'].update_reg(Player, fColumns, player);
+
+        return valRet;
+
+
+    ##
+    ## BRIEF:
+    ## ------------------------------------------------------------------------
+    ## @PARAM player == player information. 
+    ##
+    def __distribute_players(self, player):
+        ## Size:
+        divisionsSize = [0] * self.__maxDivision;
+
+        for idx in range(1, self.__maxDivision + 1):
+            ## Filter by column. Select all player that belong to the specific
+            ## divisio:
+            fColumns = (Player.division == idx);
+
+            with self.__db['lock']:
+                 dRecv = self.__db['db'].all_regs_filter(Player, fColumns);
+
+            divisionsSize[idx-1] = len(dRecv);
+
+        tDiv = int(player['division']);
+        fDiv = int(player['old'     ]);
+
+        ## Check if is to upgrade or downgrade player:
+        result = tDiv - fDiv;
+
+        if tDiv != 4 and fDiv != 4:
+            ## Upgrade:
+            if result < 0:
+                ## Apply the algorithm:
+                if divisionsSize[tDiv-1] + 1 >= divisionsSize[fDiv-1]: 
+                    return FAILED, player;
+            ## Down:
+            elif result > 0:
+                ## Apply the algorithm:
+                if divisionsSize[tDiv-1] + 1 >= divisionsSize[fDiv-1]: 
+                    ## Setting "tapetao":
+                    player['cushion'] = 1;
+
+                    return FAILED, player;
+                else:
+                    ## Check if the division is empty. If yes setting state to.
+                    ## wo state.
+                    pass;
+
+            player['cushion'] = 0;
+
+        return SUCCESS, player;
+## END OF CLASS.
+
+
+
+
+
+
+
+
 class Threshold_Monitor(Process):
 
     """
@@ -190,16 +350,19 @@ class Division(Process):
     __attributes      = None;
     __awareMinTime    = None;
     __timeThreshold   = None;
+    __queue           = None;
 
 
     ###########################################################################
     ## SPECIAL METHODS                                                       ##
     ###########################################################################
-    def __init__(self, cfg, db, logger, divisions):
+    def __init__(self, dictCfg):
         super(Division, self).__init__();
 
+        cfg = dictCfg['cfg'];
+
         ## Get the option that define to where the logs will are sent to show.
-        self.__print = Show_Actions(cfg['print'], logger);
+        self.__print = Show_Actions(cfg['print'], dictCfg['logger']);
 
         ## Get the identification number (id) of division.
         self.__id = cfg['id'];
@@ -213,17 +376,20 @@ class Division(Process):
         self.__round = float(cfg['round']);
 
         ## Obtain the max division in tournament:
-        self.__maxDivision = divisions;
+        self.__maxDivision = dictCfg['maxDivision'];
 
         ## LOG:
         self.__print.show('INITIALIZE DIVISION: ' + self.__id, 'I');
 
         ## Setting the database attribute. In this attribute are the db connec-
         ## tion and the lock to avoid data corruption.
-        self.__db = db;
+        self.__db = dictCfg['db'];
 
         ## Enable realloc players by divisions:
         self.__realloc = cfg['realloc'];
+
+        ## Setting comunnication channel.
+        self.__queue =dictCfg['queue'];
 
         ## Optional:
         try:
@@ -314,6 +480,7 @@ class Division(Process):
                     'fairness': float(player['fairness']),
                     'history' : int(  player['history' ]),
                     'division': int(  player['division']),
+                    'old'     : int(  player['division']),
                     'playoff' : int(  player['playoff' ]),
                     'enabled' : int(  player['enabled' ])
                 };
@@ -323,15 +490,14 @@ class Division(Process):
                 data = self.__calculate_score(data);
                 data = self.__calculate_fairn(data);
                 data = self.__calculate_histc(data, thresholds);
+               
+                ## LOG:
+                self.__print.show('NEW DATA : ' + str(data), 'I');
 
-                ## Get the new division:
                 if self.__realloc == "True":
                     data = self.__realloc_player_by_divisions(data, thresholds);
 
-                fColumns = (Player.name == player['name']);
-
-                with self.__db['lock']:
-                    self.__db['db'].update_reg(Player, fColumns, data);
+                self.__queue.put(data);
 
         ## LOG:
         self.__print.show('NEWS ATTRS CALCULATED TO DIV: '+str(self.__id),'I');
@@ -422,7 +588,11 @@ class Division(Process):
             for request in dRecv:
                 status = int(request['status']);
 
-                if  status != FAILED:
+                if   status == 1:
+                    accepts += 1;
+
+                elif status == 3 or status == 2:
+
                     if self.__awareMinTime == "True": 
                         tsIni = request['timestamp_received'];
                         tsEnd = request['timestamp_finished'];
@@ -452,7 +622,6 @@ class Division(Process):
 
     ##
     ## BRIEF: realloc the player by divisions.
-    ## TODO: use the realloc algorithm.
     ## ------------------------------------------------------------------------
     ## @PARAM player == player data dictionary.
     ## 
@@ -535,7 +704,6 @@ class Division(Process):
             player['playoff'] = PLAYOFF_OUT;
 
         return player;      
-
 ## END CLASS.
 
 
@@ -567,6 +735,10 @@ class MCT_Divisions:
     __runThresholdMonitor = None;
     __awareMinTime        = None;
     __timeThreshold       = None;
+    __queue               = [];
+    __cfg                 = None;
+    __distribute          = None;
+    __distributeMode      = None;
 
 
     ###########################################################################
@@ -590,14 +762,23 @@ class MCT_Divisions:
         ## fined by the User.
         self.__logger = logger;
 
-        ## Get all division configurations:
+        ## Set distribute:
+        self.__distribute = cfg['main']['distribute'];
+
+        ## Case the distribute is enable obtain the distribute approache that
+        ## will be used.
+        if self.__distribute == 'True':
+            self.__distributeMode = cfg['distribute']['mode'];
+
+        ## Get the number of division setting to tournament.This value will be
+        ## used to define max division.
         self.__divisions = int(cfg['main']['divisions']);
-        
-        ## Threshold monitor configuration:
-        self.__thresholdCfg = cfg['threshold'];
 
         for div in range(1, self.__divisions + 1):
             self.__divCfgs.append(cfg['division' + str(div)]);
+        
+        ## Create the division's queues to comunicate between divs. and manage.
+        self.__queue = Queue();
         
         ## Intance a new object to handler all operation in the local database.
         self.__db = {
@@ -605,10 +786,15 @@ class MCT_Divisions:
             'lock': Lock()
         };
 
-        ## Get time running threshold:
+        ## Obtain information about threshold, if True the monitor will be run.
         self.__runThresholdMonitor = cfg['main']['monitor_threshold'];
 
-        ## Optional:
+        ## Threshold monitor configuration.       
+        self.__thresholdCfg = cfg['threshold'];
+
+        ## Cfg:
+        self.__cfg = cfg['main'];
+
         try:
             ## Check if that will the minimum execution time is avaliable to ac
             ## cept a request.
@@ -636,12 +822,15 @@ class MCT_Divisions:
     def run(self):
 
         ## Create all threads.The number of threads are defineds in the cfgFile.
-        for divCfg in self.__divCfgs:
-            self.start(divCfg);
+        for div in range(0, self.__divisions):
+            self.start(div);
 
         ## Run the threshold monitor.
         if self.__runThresholdMonitor == "True":
             self.__run_threshold_monitor();
+
+        ## Run the manager process:
+        self.__run_manager();
 
         self.__waiting_finish();
         return SUCCESS;
@@ -650,14 +839,22 @@ class MCT_Divisions:
     ##
     ## BRIEF: start a thread.
     ## ------------------------------------------------------------------------
-    ## @PARAM divCfg == thread configuration.
+    ## @PARAM division == division id.
     ##
-    def start(self, divCfg):
+    def start(self, division):
         ## LOG:
         self.__print.show('START A NEW DIVISION IN THE MCT', 'I');
 
+        dictCfg = {
+            'cfg'        : self.__divCfgs[division],
+            'db'         : self.__db,
+            'logger'     : self.__logger,
+            'maxDivision': self.__divisions,
+            'queue'      : self.__queue
+        };
+
         ## Start the new division running in thread.
-        newDivision = Division(divCfg,self.__db,self.__logger,self.__divisions);
+        newDivision = Division(dictCfg);
         newDivision.daemon = True;
         newDivision.start();
 
@@ -698,6 +895,32 @@ class MCT_Divisions:
                                       self.__divisions);
         threshold.daemon = True;
         threshold.start();
+
+        return SUCCESS;
+
+
+    ##
+    ## BRIEF: execute manager.
+    ## ------------------------------------------------------------------------
+    ## 
+    def __run_manager(self):
+        ## LOG:
+        self.__print.show('START THE MANAGER PROCESS', 'I');
+
+        dictCfg = {
+            'cfg'             : self.__cfg,
+            'db'              : self.__db,
+            'logger'          : self.__logger,
+            'maxDivision'     : self.__divisions,
+            'queue'           : self.__queue,
+            'distribute'      : self.__distribute,
+            'distribute_mode' : self.__distributeMode
+        };
+
+        ## Start the new division running in thread.
+        manager = Manager(dictCfg);
+        manager.daemon = True;
+        manager.start();
 
         return SUCCESS;
 

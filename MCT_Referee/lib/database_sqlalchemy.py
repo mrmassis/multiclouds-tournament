@@ -7,7 +7,7 @@
 
 
 
-__all__ = ['MCT_Database_SQLAlchemy', 'Request', 'Player', 'Vm', 'Status', 'Threshold']
+__all__ = ['MCT_Database_SQLAlchemy', 'Request', 'Player', 'Vm', 'Status', 'Threshold', 'Division']
 
 
 
@@ -44,6 +44,30 @@ Base = declarative_base();
 ###############################################################################
 ## CLASSES                                                                   ##
 ###############################################################################
+class Division(Base):
+
+    """
+    Class Division:
+    ---------------------------------------------------------------------------
+    """
+
+    ###########################################################################
+    ## ATTRIBUTES                                                            ##
+    ###########################################################################
+    __tablename__ = 'DIVISION';
+
+    division = Column(INT  , nullable=False, primary_key=True);
+    wo       = Column(TINYINT(1) , nullable=False);
+
+## END CLASS.
+
+
+
+
+
+
+
+
 ## Used by MCT_Dispatch.
 class Request(Base):
 
@@ -87,8 +111,8 @@ class Threshold(Base):
     __tablename__ = 'THRESHOLD';
 
     division = Column(INT  , nullable=False, primary_key=True);
-    botton   = Column(FLOAT, nullable=True , default=0.0);
-    top      = Column(FLOAT, nullable=True , default=0.0);
+    botton   = Column(DOUBLE, nullable=True , default=0.0);
+    top      = Column(DOUBLE, nullable=True , default=0.0);
 
 ## END CLASS.
 
@@ -153,9 +177,9 @@ class Player(Base):
     name          = Column(VARCHAR(45), nullable=False); 
     address       = Column(VARCHAR(45), nullable=False); 
     division      = Column(INT        , nullable=False);
-    score         = Column(FLOAT      , nullable=True , default=0.0);
+    score         = Column(DOUBLE      , nullable=True , default=0.0);
     history       = Column(INT        , nullable=True , default=0  );
-    fairness      = Column(FLOAT      , nullable=True , default=0.0);
+    fairness      = Column(DOUBLE      , nullable=True , default=0.0);
     accepts       = Column(INT        , nullable=True , default=0  ); 
     rejects       = Column(INT        , nullable=True , default=0  );
     running       = Column(INT        , nullable=True , default=0  );
@@ -168,12 +192,13 @@ class Player(Base):
     local_gb      = Column(BIGINT(20) , nullable=True , default=0  );
     local_gb_used = Column(BIGINT(20) , nullable=True , default=0  );
     max_instance  = Column(INT        , nullable=True , default=0  );
-    fairness      = Column(FLOAT      , nullable=True , default=0.0);
+    fairness      = Column(DOUBLE      , nullable=True , default=0.0);
     token         = Column(VARCHAR(45), nullable=True);
     suspend       = Column(TIMESTAMP  , nullable=True);
     enabled       = Column(INT        , nullable=True , default=0  );
     last_choice   = Column(TIMESTAMP  , nullable=True , default='2018-01-01 00:00:00');
     playoff       = Column(TINYINT(1) , nullable=True , default=0  );
+    cushion       = Column(TINYINT(1) , nullable=True , default=0  );
 ## END CLASS.
 
 
@@ -201,7 +226,7 @@ class Status(Base):
     all_requests  = Column(INT        , nullable=False);
     accepts       = Column(INT        , nullable=False);
     rejects       = Column(INT        , nullable=False);
-    fairness      = Column(FLOAT      , nullable=True , default=0.0);
+    fairness      = Column(DOUBLE      , nullable=True , default=0.0);
     timestamp     = Column(TIMESTAMP  , nullable=True);
 
 ## END CLASS.

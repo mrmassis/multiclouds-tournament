@@ -6,6 +6,20 @@ DROP DATABASE IF EXISTS `mct`;
 CREATE SCHEMA IF NOT EXISTS `mct` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
 USE `mct` ;
 
+
+-- -----------------------------------------------------
+-- Table `mct`.`DIVISION`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mct`.`DIVISION` ;
+
+CREATE TABLE IF NOT EXISTS `mct`.`DIVISION` (
+  `division` INT             NOT NULL,
+  `wo`       TINYINT(1)      DEFAULT 0,
+  PRIMARY KEY (`division`))
+ENGINE = InnoDB
+PACK_KEYS = DEFAULT;
+
+
 -- -----------------------------------------------------
 -- Table `mct`.`REQUEST`
 -- -----------------------------------------------------
@@ -31,8 +45,8 @@ DROP TABLE IF EXISTS `mct`.`THRESHOLD` ;
 
 CREATE TABLE IF NOT EXISTS `mct`.`THRESHOLD` (
   `division` INT   NOT NULL,
-  `botton`   FLOAT DEFAULT 0.0,
-  `top`      FLOAT DEFAULT 0.0,
+  `botton`   DOUBLE DEFAULT 0.0,
+  `top`      DOUBLE DEFAULT 0.0,
   PRIMARY KEY (`division`))
 ENGINE = InnoDB
 PACK_KEYS = DEFAULT;
@@ -48,9 +62,9 @@ CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
   `name`               VARCHAR(45) NOT NULL,
   `address`            VARCHAR(45) NOT NULL,
   `division`           INT             NULL,
-  `score`              FLOAT           DEFAULT 0.0,
+  `score`              DOUBLE          DEFAULT 0.0,
   `history`            INT             DEFAULT 0,
-  `fairness`           FLOAT           DEFAULT 0.0,
+  `fairness`           DOUBLE          DEFAULT 0.0,
   `accepts`            INT             DEFAULT 0,
   `rejects`            INT             DEFAULT 0,
   `running`            INT             DEFAULT 0,
@@ -68,6 +82,7 @@ CREATE TABLE IF NOT EXISTS `mct`.`PLAYER` (
   `enabled`            INT             DEFAULT 0,
   `last_choice`        TIMESTAMP       DEFAULT '2018-01-01 00:00:00',
   `playoff`            TINYINT(1)      DEFAULT 0,
+  `cushion`            TINYINT(1)      DEFAULT 0,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -107,7 +122,7 @@ CREATE  TABLE IF NOT EXISTS `mct`.`STATUS` (
   `all_requests`       INT         DEFAULT 0,
   `accepts`            INT         DEFAULT 0,
   `rejects`            INT         DEFAULT 0,
-  `fairness`           FLOAT       DEFAULT 0.0,
+  `fairness`           DOUBLE      DEFAULT 0.0,
   `timestamp`          TIMESTAMP   NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;

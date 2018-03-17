@@ -22,6 +22,35 @@ CMYSQL="mysql -u${DBUSER} -p${DBPASS} ${DBBASE}"
 ## FUNCTION                                                                  ##
 ###############################################################################
 ##
+## BRIEF: list the player status.
+## ----------------------------------------------------------------------------
+##
+function player() {
+ 
+    case ${1} in
+        'list')
+            ## Execute the command: 
+            SQL="select name,division,score,fairness,suspend,enabled,playoff from PLAYER"
+            ${CMYSQL} -e "${SQL}"
+            ;;
+
+        'show')
+            ## Execute the command: 
+            SQL="select * from PLAYER where name=\"${2}\""
+
+            VALRET=$(${CMYSQL} -N -e "${SQL}")
+
+            ## GET FIELDS:
+
+            echo ${VALRET}
+            ;;
+    esac
+}
+
+
+
+
+##
 ## BRIEF: list the instance' actions.
 ## ----------------------------------------------------------------------------
 ##
@@ -232,6 +261,10 @@ function status() {
 ## MAIN                                                                      ##
 ###############################################################################
 case ${1} in
+    'player')
+        shift
+        player ${@}
+        ;;
 
     'instance')
         shift
