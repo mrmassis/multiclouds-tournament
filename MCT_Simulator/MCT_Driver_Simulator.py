@@ -340,6 +340,7 @@ class MCT_Action(object):
             'local_gb'        : data['local_gb'        ],
             'max_instance'    : data['max_instance'    ],
             'strategy'        : data['strategy'        ],
+            'cheating'        : data['cheating'        ],
             'coalition'       : data['coalition'       ],
             'self-sponsorship': data['self-sponsorship'],
             'supporter'       : data['supporter'       ]
@@ -939,6 +940,7 @@ class MCT_VPlayer(Process):
                 'local_gb'        : rDict['local_gb'        ],
                 'max_instance'    : rDict['max_instance'    ],
                 'strategy'        : rDict['strategy'        ],
+                'cheating'        : rDict['cheating'        ],
                 'coalition'       : rDict['coalition'       ],
                 'self-sponsorship': rDict['self-sponsorship'],
                 'supporter'       : rDict['supporter'       ]

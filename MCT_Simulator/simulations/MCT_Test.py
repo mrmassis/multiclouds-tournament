@@ -70,6 +70,7 @@ class MCT_Test(Process):
     __extra             = None;
     __sponsorship       = 0;
     __supporter         = [];
+    __cheating          = None;
 
 
     ###########################################################################
@@ -130,16 +131,18 @@ class MCT_Test(Process):
         ## Get Ids:
         vplayerNm = self.__get_vplayers_ids(vplayer);
 
-        ## Case the strategy is coalition:
+        ## Parameter from diferents Free-Riders strategies.
         strategy = strategy.split(':');
 
-        if int(strategy[0]) == COALITION:
-            self.__strategy = strategy[0];
+        ## Set the strategy value to PLAYER:
+        self.__strategy  = strategy[0];
+        self.__increment = 1;
+
+        if   int(strategy[0]) == COALITION:
             self.__extra    = int(strategy[1]);
-            self.__increment= int(strategy[1]);
-        else:
-            self.__strategy = strategy[0];
-            self.__increment= 1;
+
+        elif int(strategy[0]) == CHEATING :
+            self.__cheating = str(strategy[1]);
 
         ## Check if the condtions is valid and return in the dictionary format.
         dictTest = self.__valid_conditions(condition); 
@@ -520,7 +523,13 @@ class MCT_Test(Process):
         t.append("max_instance: " + resources['max_instance']+ "\n");
         t.append("strategy    : " + self.__strategy          + "\n");
 
-        ## Whitewashing strategu from Free-Riders:
+        ## Cheating strategy from Free-Riders:
+        if int(self.__strategy) == CHEATING:
+            t.append("cheating: " + self.__cheating);
+        else:
+            t.append("cheating: \n");
+
+        ## Whitewashing strategy from Free-Riders:
         if int(self.__strategy) == WHITEWASHING:
             t.append("self-sponsorship: " + self.__sponsorship + "\n");
             t.append("supporter       : " + self.__supporter   + "\n");

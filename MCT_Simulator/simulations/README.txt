@@ -15,10 +15,10 @@
 ##                                                                           ##
 ## 3) STRATEGY:                                                              ##
 ## -------------                                                             ##
-## 0 == aware                                                                ##
-## 1 == cheatting                                                            ##
-## 2 == whitewashing                                                         ##
-## 3 == coalition                                                            ##
+## 0 == aware:<parameters>                                                   ##
+## 1 == cheatting:<paramters>                                                ##
+## 2 == whitewashing:<parameters>                                            ##
+## 3 == coalition:<parameters>                                               ##
 ##                                                                           ##
 ## 4) CONDITIONS:                                                            ##
 ## -------------                                                             ##
