@@ -2,7 +2,7 @@
 
 This module performs a simulation of the behavior of agents in a production environment.
 
-<img src="simulator/simulator.png"  alt="250" width="520" height="200"  style="text-align: center">
+<img src="simulator/simulator.png"  alt="250" width="600" height="200"  style="text-align: center">
 
 # Sumary
 
