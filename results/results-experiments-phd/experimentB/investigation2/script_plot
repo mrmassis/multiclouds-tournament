@@ -1,0 +1,154 @@
+#!/bin/bash
+
+
+
+
+
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "REENTRADA FREE-RIDRES \nConsiderando o Custo de Entrada" font "sans, 17"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+
+JOGADORES = "#A9A9A9"
+
+set key off
+set style data histogram
+set style histogram columnstacked
+set style histogram cluster gap 1
+set style fill solid noborder
+
+set yrange [0:15]
+set xrange [0:10]
+set grid ytics mytics
+set mytics 2
+set tics font "2"
+set boxwidth 0.25
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "Número de Reentradas" font "sans, 20"
+set xlabel "Custo de Entrada em Termos de Requisições" font "sans, 20"
+set terminal pngcairo size 800,600
+set output "experimentB_investigation2_1.png"
+set border 3
+set pointintervalbox 3
+
+plot "data.dat" u 1:3:xticlabel(1) w boxes fc rgb JOGADORES
+EOFMarker
+
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "QUANTIDADE DE JOGADORES CONSCIENTES \nConsiderando o Custo de Entrada" font "sans, 17"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+
+JOGADORES = "#A9A9A9"
+
+set key off
+set style data histogram
+set style histogram columnstacked
+set style histogram cluster gap 1
+set style fill solid noborder
+
+set yrange [0:20]
+set xrange [0:10]
+set grid ytics mytics
+set mytics 2
+set tics font "2"
+set boxwidth 0.25
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "Número de Jogadores Conscientes" font "sans, 20" 
+set xlabel "Custo de Entrada em Termos de Requisições" font "sans, 20"
+set terminal pngcairo size 800,600
+set output "experimentB_investigation2_2.png"
+set border 3
+set pointintervalbox 3
+
+plot "data.dat" u 1:4:xticlabel(1) w boxes fc rgb JOGADORES
+EOFMarker
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "SGF \nConsiderando o Custo de Entrada" font "sans, 17"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0
+
+JOGADORES = "#A9A9A9"
+
+set key off
+set style data histogram
+set style histogram columnstacked
+set style histogram cluster gap 1
+set style fill solid noborder
+
+set yrange [0:1.0]
+set xrange [0:10]
+set grid ytics mytics
+set mytics 2
+set tics font "2"
+set boxwidth 0.25
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "SGF" font "sans, 20"
+set xlabel "Custo de Entrada em Termos de Quantidade de Requisições" font "sans, 20"
+set terminal pngcairo size 800,600
+set output "experimentB_investigation2_3.png"
+set border 3
+set pointintervalbox 3
+
+plot "data.dat" u 1:6:xticlabel(1) w boxes fc rgb JOGADORES
+EOFMarker
+
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "TORCIDA\nConsumo e Reentrada do Free-Rider no Ambiente" font "sans, 17"
+
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0
+
+set yrange [0:10]
+set xrange [1:20]
+set grid y
+set tics font "2"
+set boxwidth 0.95
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "Consumo e Reentradas do Free-Riders" font "sans, 20"
+set xlabel "Tamanho da Torcida (Número de Jogadores)" font "sans, 20"
+set terminal pngcairo size 800,600
+set output "experimentB_investigation2_4.png"
+set border 3
+set pointintervalbox 3
+
+plot "data_torcida.dat" u 1:2 t "Consumo" with linespoint ls 3 lw 4 ps 2, "" u 1:3 t "Reentradas" with linespoint ls 2 lw 4 ps 2
+EOFMarker
+
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "TORCIDA\nSI Média e SGF" font "sans, 17"
+set title "TORCIDA\nSI Média e SGF"
+
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0
+
+set yrange [0:1]
+set xrange [1:20]
+set grid y
+set tics font "2"
+set boxwidth 0.95
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "SI Média e SGF" font "sans, 20"
+set xlabel "Tamanho da Torcida (Número de Jogadores)" font "sans, 20"
+set terminal pngcairo size 800,600
+set output "experimentB_investigation2_5.png"
+set border 3
+set pointintervalbox 3
+plot "data_torcida.dat" u 1:4 t "SI Média" with linespoint ls 3 lw 4 ps 2, "" u 1:5 t "SGF" with linespoint ls 2 lw 4 ps 2
+EOFMarker
+

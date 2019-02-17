@@ -1,0 +1,199 @@
+#!/bin/bash
+
+
+
+
+
+
+
+
+
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "SATISFAÇÃO GLOBAL DA FEDERAÇÃO \n Variação do Índice quanto ao Número de Requisições"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+
+set yrange [0:2]
+set xrange [0:380]
+set grid y
+set tics font ", 7"
+set boxwidth 0.95
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "SGF"
+set xlabel "Número de Requisições na Federação"
+set term eps
+set output "simulation3_1_1.eps"
+set border 3
+set pointintervalbox 3
+plot "sgf.dat" u 5:8 t "SGF" with linespoint ls 3
+EOFMarker
+
+
+
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "SATISFAÇÃO GLOBAL DA FEDERAÇÃO \n Variação do Índice quanto ao Número de Jogadores"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+
+set yrange [0:2]
+set xrange [0:110]
+set grid y
+set tics font ", 7"
+set boxwidth 0.95
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "SGF"
+set xlabel "Número de Jogadores na Federação"
+set term eps
+set output "simulation3_1_2.eps"
+set border 3
+set pointintervalbox 3
+plot "sgf.dat" u 2:8 t "SGF" with linespoints ls 5
+EOFMarker
+
+
+
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "SATISFAÇÃO INDIVIDUAL NA FEDERAÇÃO \n Variação do Indíce quanto ao Número de Free-Riders"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+set key font ",10"
+
+set style histogram columnstacked
+set style histogram cluster gap 1
+set style fill solid noborder
+set yrange [0:1.1]
+set xrange [0:100]
+set grid ytics xtics mytics
+set mytics 2
+set grid
+set tics font ", 7"
+set boxwidth 0.95
+set xtic scale 0.5
+set ytic scale 0.5
+set xtic 10
+set xtic 10
+set xtics rotate by -90
+set ylabel "Satisfação Pessoal dos Jogadores Conscientes"
+set xlabel "Número de Free-Riders"
+set term eps
+set output "simulation3_1_4.eps"
+set border 3
+set pointintervalbox 3
+plot "playerVirtual0.dat" u 2:1 w p pt 1 lt 1 ps 0.25 t "CSP 0", "playerVirtual1.dat" u 2:1 w p pt 2 lt 2 ps 0.25 t "CSP 1", "playerVirtual2.dat" u 2:1 w p pt 3 lt 3 ps 0.25 t "CSP 2", "playerVirtual3.dat" u 2:1 w p pt 4 lt 4 ps 0.25 t "CSP 3", "playerVirtual4.dat" u 2:1 w p pt 5 lt 5 ps 0.25 t "CSP 4", "playerVirtual5.dat" u 2:1 w p pt 6 lt 6 ps 0.25 t "CSP 5", "playerVirtual6.dat" u 2:1 w p pt 7 lt 7 ps 0.25 t "CSP 6", "playerVirtual7.dat" u 2:1 w p pt 8 lt 8 ps 0.25 t "CSP 7", "playerVirtual8.dat" u 2:1 w p pt 9 lt 9 ps 0.25 t "CSP 8", "playerVirtual9.dat" u 2:1 w p pt 10 lt 10 ps 0.25 t "CSP 9"
+EOFMarker
+
+
+
+exit
+
+gnuplot -persist <<-EOFMarker
+set title "SATISFAÇÃO GLOBAL DA FEDERAÇÃO \n Requisições Realizadas e Aceitas"
+REALIZADAS = "#A9A9A9"; ACEITAS = "#2F4F4F"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+
+set yrange [0:380]
+set xrange [-1:80]
+set grid y
+set style data histogram
+set style histogram columnstacked
+set style histogram cluster gap 1
+set style fill solid noborder
+set tics font ", 7"
+set boxwidth 0.95
+set xtic scale 1
+set xtics rotate by -90
+set xlabel "Amostras por Unidades de Tempo"
+set ylabel "Quantidade de Requisições por VMs"
+set term eps
+set output "sgf.eps"
+set border 3
+plot "sgf.dat" u 5 with histogram t "Realizadas" fc rgb REALIZADAS , "" u 6 with histogram t "Aceitas" fc rgb ACEITAS
+EOFMarker
+
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "QUANTIDADE DE CSPS NO AMBIENTE \n Variação de CSPs Durante o Torneio"
+FREERIDER = "#2F4F4F"; AWARE = "#A9A9A9"
+
+set term eps
+set output "jogadores.eps"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+
+set yrange [0:110]
+set xrange [-1:80]
+set grid y
+set style data histograms
+set style histogram rowstacked
+set boxwidth 0.5
+set xlabel "Amostras por Unidades de Tempo"
+set ylabel "Número de CSPs no Torneio"
+set style fill solid 1.0 border -1
+set ytics 10
+plot 'sgf.dat' using 3 t "Consciente" fc rgb AWARE, '' using 4 t "Free-Rider" fc rgb FREERIDER
+EOFMarker
+
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "SATISFAÇÃO GLOBAL DA FEDERAÇÃO \n Variação do Indíce quanto ao Número de Free-Riders"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+set style histogram columnstacked
+set style histogram cluster gap 1
+set style fill solid noborder
+set yrange [0:1.5]
+set xrange [0:80]
+set grid ytics xtics mytics
+set mytics 2
+set grid
+set tics font ", 7"
+set boxwidth 0.95
+set xtic scale 0.5
+set ytic scale 0.5
+set xtic 10
+set xtics rotate by -90
+set ylabel "SGF"
+set xlabel "Número de Free-Riders no Torneio"
+set term eps
+set output "sgf_por_jogadores.eps"
+set border 3
+set pointintervalbox 3
+plot "sgf.dat" u 4:8 w p pt 1 lt 1 ps 0.25 t "SGF x Free-Riders"
+EOFMarker
+
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "SATISFAÇÃO GLOBAL DA FEDERAÇÃO \n Variação do Indíce quanto ao Número de Requisições"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+
+set yrange [0:1.5]
+set xrange [0:380]
+set grid ytics xtics mytics
+set mytics 2
+set tics font ", 7"
+set boxwidth 0.95
+set xtic scale 0.5
+set ytic scale 0.5
+set xtics rotate by -90
+set ylabel "SGF"
+set xlabel "Número de Requisições no Torneio"
+set term eps
+set output "sgf_por_requisicoes.eps"
+set border 3
+set style line 1 lc rgb '#0060ad' lt 1 lw 10 pt 7 pi -1 ps 0.5
+set pointintervalbox 3
+plot "sgf.dat" u 5:8 t "SGF" with linespoint ls 3
+EOFMarker

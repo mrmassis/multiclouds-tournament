@@ -1,0 +1,109 @@
+#!/bin/bash
+
+
+
+
+
+
+
+
+
+function g1 {
+gnuplot -persist <<-EOFMarker
+reset
+set title "SGF VERSUS SI MÉDIA DOS 10 JOGADORES CONSCIENTES  \n Free-Riders com ${1} Probabilidade de Executar a Trapaça"  font "sans, 17"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+
+set yrange [0:1.5]
+set xrange [1:30]
+set grid y
+set tics font "2"
+set boxwidth 0.95
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "Satisfações" font "sans, 20"
+set xlabel "Amostras por Unidades de Tempo" font "sans, 20"
+set terminal pngcairo size 800,600
+set output "experimentB_investigation1_SGF_${3}_${1}.png"
+set border 3
+set pointintervalbox 3
+plot "$2/sgf.dat" u 1:3 t "SGF" with linespoint ls 3 lw 4 ps 2, "$2/si_mean_file.dat" u 1:2 t "SI Média" with linespoint ls 4 lw 4 ps 2
+EOFMarker
+}
+
+
+function g2 {
+gnuplot -persist <<-EOFMarker
+reset
+set title "QUANTIDADE DE JOGADORES POR DIVISÂO \n Free-Riders com ${1} Probabilidade de Executar a Trapaça" font "sans, 17"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0
+
+set style fill solid 1.0 noborder
+set style histogram clustered
+set style data histogram
+
+lgray = "#DCDCDC"
+dgray = "#808080"
+
+set yrange [0:30]
+set xrange [-1:4.5]
+set grid y
+set tics font "2"
+set boxwidth 0.95
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "Quantidade de Jogadores" font "sans, 20"
+set xlabel "Divisões (divisão 4 refere-se a eliminação)" font "sans, 20"
+set terminal pngcairo size 800,600
+set output "experimentB_investigation1_divisions_${1}.png"
+set border 3
+set pointintervalbox 3
+
+plot 'without/$1/divisions.dat' using 2:xtic(1) title "Sem Proteção" linecolor rgb lgray, 'with/$1/divisions.dat' using 2:xtic(1) title "Com Proteção" linecolor rgb dgray
+EOFMarker
+}
+
+
+function g3 {
+gnuplot -persist <<-EOFMarker
+set title "REQUISIÇÕES \n Free-Riders com ${1} Probabilidade de Executar a Trapaça" font "sans, 17"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0
+
+set yrange [0:200]
+set xrange [1:30]
+set grid y
+set tics font "2"
+set boxwidth 0.95
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "Quantidade de Requisições"  font "sans, 20"
+set xlabel "Amostras por Unidades de Tempo"  font "sans, 20"
+set terminal pngcairo size 800,600
+set output "experimentB_investigation1_requests_${3}_${1}.png"
+set border 3
+set pointintervalbox 3
+plot "$2/instance.dat" u 1:2 t "Execução" with linespoint ls 3 lw 3 ps 2, "" u 1:3 t "Trapaça" with linespoint ls 4 lw 3 ps 2, "" u 1:4 t "Finalizadas" with linespoint ls 7 lw 3 ps 2
+EOFMarker
+}
+
+
+
+
+
+
+
+
+
+for BASE in with without; do
+    for DIR in $(ls $BASE); do
+        g1 "$DIR" "$BASE/$DIR" $BASE
+        g3 "$DIR" "$BASE/$DIR" $BASE
+    done
+done
+
+for DIR in 0.2 0.4 0.6 0.8 1.0; do
+    g2 "$DIR" 
+done

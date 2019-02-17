@@ -1,0 +1,103 @@
+#!/bin/bash
+
+
+
+
+
+
+
+function g1 {
+gnuplot -persist <<-EOFMarker
+reset
+set title "SATISFAÇÃO GLOBAL DA FEDERAÇÃO \n Variação do índice quanto ao número de requisições" font "sans, 20" 
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+
+set yrange [0:1.5]
+set xrange [0:380]
+set grid y 
+set tics font "2"
+set boxwidth 0.95
+set ytics 0.5
+set ylabel "SGF" font "sans, 20"
+set xlabel "Número de Requisições na Federação" font "sans, 20"
+set terminal pngcairo size 800,600
+set output 'simulation1_1_1.png'
+set border 3
+set pointintervalbox 3
+plot "sgf_federation.dat" u 2:4 t "SGF" with linespoint ls 3 lw 4 ps 3
+EOFMarker
+}
+
+
+function g2 {
+gnuplot -persist <<-EOFMarker
+reset
+set title "SATISFAÇÃO GLOBAL DA FEDERAÇÃO \n Variação do índice quanto ao número de CSPs" font "sans, 20" 
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+
+set yrange [0:1.5]
+set xrange [0:110]
+set grid y
+set tics font "2"
+set boxwidth 0.95
+set ytic 0.5
+set ylabel "SGF" font "sans, 20"
+set xlabel "Número de CSPs na Federação" font "sans, 20"
+set terminal pngcairo size 800,600
+set output 'simulation1_1_2.png'
+set border 3
+set pointintervalbox 3
+plot "sgf_federation.dat" u 5:4 t "SGF" with linespoints ls 3 lw 4 ps 3
+EOFMarker
+}
+
+function g3 {
+gnuplot -persist <<-EOFMarker
+reset
+set title "SATISFAÇÃO GLOBAL DA FEDERAÇÃO E DO TORNEIO\n Variação do índice quanto ao número de requisições" font "sans, 19"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0
+
+set yrange [0:1.5]
+set xrange [0:380]
+set grid y  
+set tics font "2"
+set boxwidth 0.95
+set ytics 0.5
+set ylabel "SGF" font "sans, 20"
+set xlabel "Número de Requisições na Federação" font "sans, 20"
+set terminal pngcairo size 800,600
+set output 'simulation1_1_complete.png'
+set border 3
+set pointintervalbox 3
+plot "sgf_federation.dat" u 2:4 t "Federação" with linespoint ls 3 lw 4 ps 2, "sgf_tournament.dat" u 3:6 t "Torneio" with linespoint ls 2 lw 4 ps 2
+EOFMarker
+}
+
+function g4 {
+gnuplot -persist <<-EOFMarker
+reset
+set title "SATISFAÇÃO GLOBAL DA FEDERAÇÃO E DO TORNEIO\n Variação do índice quanto ao número de CSPs" font "sans, 19"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0
+
+set yrange [0:1.5]
+set xrange [0:110]
+set grid y
+set tics font "2"
+set boxwidth 0.95
+set ytic 0.5
+set ylabel "SGF" font "sans, 20"
+set xlabel "Número de CSPs na Federação" font "sans, 20"
+set terminal pngcairo size 800,600
+set output 'simulation1_2_complete.png'
+set border 3
+set pointintervalbox 3
+plot "sgf_federation.dat" u 5:4 t "Federação" with linespoint ls 3 lw 4 ps 2, "sgf_tournament.dat" u 2:6 t "Torneio" with linespoint ls 2 lw 4 ps 2,
+EOFMarker
+}
+
+g3
+g4

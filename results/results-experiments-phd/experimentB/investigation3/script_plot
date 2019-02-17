@@ -1,0 +1,178 @@
+#!/bin/bash
+
+
+
+gnuplot -persist <<-EOFMarker
+set title "IMPACTO DA ESTRATÉGIA COALIZÃO NO MCT \n Tamanho da Coalizão versus Consumo Médio" font "sans, 15" 
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0
+
+set style fill solid 1.0 noborder
+set style histogram clustered
+set style data histogram
+
+lgray = "#DCDCDC"
+dgray = "#808080"
+
+set yrange [0:100]
+set grid y
+set tics font "2"
+set boxwidth 1.25
+set xtic scale 0.5
+set ytic scale 0.5
+set xlabel "Tamanho da Coalizão (Em Termos de Jogadores)" font "sans, 16"
+set ylabel "Escala Real \n (Média Multiplicado por 10)" font "sans, 16"
+set terminal pngcairo size 800,600
+set output "experimentB_investigation3_1.png"
+set border 3
+set pointintervalbox 3
+
+plot 'data_a.dat' using 5:xtic(1) t "Encontros" linecolor rgb lgray, '' using 7:xtic(1) t "Consumo" linecolor rgb dgray
+EOFMarker
+
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "IMPACTO DA ESTRATÉGIA COALIZÃO NO MCT \n Número de Requisições Negadas aos Membros da Coalizão" font "sans, 15"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+JOGADORES = "#A9A9A9"
+set key off
+set style data histogram
+set style histogram columnstacked
+set style histogram cluster gap 1
+set style fill solid noborder
+
+set yrange [0:40]
+set grid ytics mytics
+set mytics 2
+set tics font "5"
+set boxwidth 0.5
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "Número de Requisições Negadas" font "sans, 16"
+set xlabel "Tamanho da Coalizão (Em termos de Jogadores)" font "sans, 16"
+set terminal pngcairo size 800,600
+set output "experimentB_investigation3_2.png"
+set border 3
+
+set pointintervalbox 3
+plot "data_a.dat" u 6:xticlabel(2) w boxes t "Negações" fc rgb JOGADORES
+EOFMarker
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "IMPACTO DA ESTRATÉGIA COALIZÃO NO MCT \n Média de Encontro dos Jogadores da Coalizão e Conscientes" font "sans, 18"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0
+set key off
+JOGADORES = "#A9A9A9"
+
+set style data histogram
+set style histogram columnstacked
+set style histogram cluster gap 1
+set style fill solid noborder
+
+set yrange [0:10]
+set grid ytics mytics
+set mytics 2
+set tics font "2"
+set boxwidth 0.25
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "Média de Encontros dos Membros \n da Coalizão" font "sans, 16"
+set xlabel "Tipo de Jogadores" font "sans, 16"
+set terminal pngcairo size 800,600
+set output "experimentB_investigation3_3.png"
+set border 3
+set pointintervalbox 3
+plot "data_b.dat" u 2:xticlabel(1) w boxes t "Tipo de Jogadores" fc rgb JOGADORES
+EOFMarker
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "IMPACTO DA ESTRATÉGIA COALIZÃO NO MCT \n Média de Recursos Consumidos"  font "sans, 17"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0
+set key off
+JOGADORES = "#A9A9A9"
+
+set style data histogram
+set style histogram columnstacked
+set style histogram cluster gap 1
+set style fill solid noborder
+
+set yrange [0:10]
+set grid ytics mytics
+set mytics 2
+set tics font "2"
+set boxwidth 0.25
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "Média de Recursos Consumidos" font "sans, 16"
+set xlabel "Tipo de Jogadores" font "sans, 16"
+set terminal pngcairo size 800,600
+set output "experimentB_investigation3_4.png"
+set border 3
+set pointintervalbox 3
+plot "data_b.dat" u 3:xticlabel(1) w boxes t "Tipo de Jogadores" fc rgb JOGADORES
+EOFMarker
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "IMPACTO DA ESTRATÉGIA COALIZÃO NO MCT \n Média de Encontro dos Jogadores da Coalizão \n Com e Sem Mecanismo de Prevenção"  font "sans, 17"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0
+set key off
+JOGADORES = "#A9A9A9"
+
+set style data histogram
+set style histogram columnstacked
+set style histogram cluster gap 1
+set style fill solid noborder
+
+set yrange [0:10]
+set grid ytics mytics
+set mytics 2
+set tics font "2"
+set boxwidth 0.25
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "Média de Encontros dos Membros \n da Coalizão" font "sans, 16"
+set xlabel "Abordagem" font "sans, 16"
+set terminal pngcairo size 800,600
+set output "experimentB_investigation3_5.png"
+set border 3
+set pointintervalbox 3
+plot "data_c.dat" u 2:xticlabel(1) w boxes fc rgb JOGADORES
+EOFMarker
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "IMPACTO DA ESTRATÉGIA COALIZÃO NO MCT \n Média de Recursos Consumidos Pelos Jogadores da Coalizão \n Com e Sem Mecanismo de Prevenção" font "sans, 17"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+set key off
+JOGADORES = "#A9A9A9"
+
+set style data histogram
+set style histogram columnstacked
+set style histogram cluster gap 1
+set style fill solid noborder
+
+set yrange [0:10]
+set grid ytics mytics
+set mytics 2
+set tics font "2"
+set boxwidth 0.25
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "Média de Recursos Consumidos" font "sans, 16"
+set xlabel "Abordagem" font "sans, 16"
+set terminal pngcairo size 800,600
+set output "experimentB_investigation3_6.png"
+set border 3
+set pointintervalbox 3
+plot "data_c.dat" u 3:xticlabel(1) w boxes fc rgb JOGADORES
+EOFMarker
+

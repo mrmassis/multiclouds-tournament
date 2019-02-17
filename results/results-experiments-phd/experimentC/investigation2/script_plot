@@ -1,0 +1,120 @@
+#!/bin/bash
+
+
+
+
+
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "QUANTIDADE DE JOGADORES POR DIVISÂO \n Torneio sem Distribuição de Jogadores por Divisões" font "sans, 17"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+
+JOGADORES = "#A9A9A9"
+
+set key off
+set style data histogram
+set style histogram columnstacked
+set style histogram cluster gap 1
+set style fill solid noborder
+
+set yrange [0:10]
+set xrange [0:5]
+set grid ytics mytics
+set mytics 2
+set tics font "2"
+set boxwidth 0.25
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "Quantidade de Jogadores" font "sans, 20"
+set xlabel "Divisões (divisão 4 representa eliminação)" font "sans, 20"
+set terminal pngcairo size 800,600
+set output "experimentC_investigation2_1.png"
+set border 3
+set pointintervalbox 3
+
+plot "divisions.dat" u 1:2:xticlabel(1) w boxes fc rgb JOGADORES
+EOFMarker
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "QUANTIDADE DE JOGADORES POR DIVISÂO \n Torneio com Distribuição de Jogadores por Divisões" font "sans, 17"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0 
+
+JOGADORES = "#A9A9A9"
+
+set key off
+set style data histogram
+set style histogram columnstacked
+set style histogram cluster gap 1
+set style fill solid noborder
+
+set yrange [0:10]
+set xrange [0:5]
+set grid ytics mytics
+set mytics 2
+set tics font "2"
+set boxwidth 0.25
+set xtic scale 0.5
+set ytic scale 0.5
+set ylabel "Quantidade de Jogadores" font "sans, 20"
+set xlabel "Divisões (divisão 4 representa eliminação)" font "sans, 20"
+set terminal pngcairo size 800,600
+set output "experimentC_investigation2_2.png"
+set border 3
+set pointintervalbox 3
+
+plot "divisions.dat" u 1:3:xticlabel(1) w boxes fc rgb JOGADORES
+EOFMarker
+
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "SATISFAÇÃO GLOBAL DO TORNEIO\nTorneio sem Distribuição de Jogadores por Divisões" font "sans, 17"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0
+set key off
+set yrange [0:1.5]
+set xrange [0:50]
+set grid y
+set tics font "2"
+set boxwidth 0.95
+set xtic scale 0.5
+set ytic scale 0.5
+set ytics (1.5, 1.0, 0.5, 0.0)
+set ylabel "SGF" font "sans, 20"
+set xlabel "Amostras" font "sans, 20"
+set terminal pngcairo size 800,600
+set output "experimentC_investigation2_3.png"
+set border 3
+set pointintervalbox 3
+
+plot "data.dat" u 1:3 with linespoint ls 3 lw 3 ps 2
+EOFMarker
+
+gnuplot -persist <<-EOFMarker
+reset
+set title "SATISFAÇÃO GLOBAL DO TORNEIO\nTorneio com Distribuição de Jogadores por Divisões" font "sans, 17"
+set key outside right top vertical Left reverse noenhanced autotitle columnhead nobox
+set key invert samplen 4 spacing 1 width 0 height 0
+set key off
+set yrange [0:1.5]
+set xrange [0:50]
+set grid y
+set tics font "2"
+set boxwidth 0.95
+set xtic scale 0.5
+set ytic scale 0.5
+set ytics (1.5, 1.0, 0.5, 0.0)
+set ylabel "SGF" font "sans, 20"
+set xlabel "Amostras" font "sans, 20"
+set terminal pngcairo size 800,600
+set output "experimentC_investigation2_4.png"
+set border 3
+set pointintervalbox 3
+plot "data.dat" u 1:2 with linespoint ls 3 lw 3 ps 2
+EOFMarker
+
+

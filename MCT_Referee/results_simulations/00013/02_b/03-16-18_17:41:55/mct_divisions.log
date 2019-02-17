@@ -1,0 +1,2327 @@
+2018-03-16 13:25:54,658 MCT_Divisions INFO     INITIALIZE ALL DIVISIONS!
+2018-03-16 13:25:54,695 MCT_Divisions INFO     START A NEW DIVISION IN THE MCT
+2018-03-16 13:25:54,695 MCT_Divisions INFO     INITIALIZE DIVISION: 1
+2018-03-16 13:25:54,698 MCT_Divisions INFO     START A NEW DIVISION IN THE MCT
+2018-03-16 13:25:54,698 MCT_Divisions INFO     INITIALIZE DIVISION: 2
+2018-03-16 13:25:54,699 MCT_Divisions INFO     START A NEW DIVISION IN THE MCT
+2018-03-16 13:25:54,702 MCT_Divisions INFO     INITIALIZE DIVISION: 3
+2018-03-16 13:25:54,704 MCT_Divisions INFO     START THE THRESHOLD MONITOR
+2018-03-16 13:25:54,704 MCT_Divisions INFO     INITIALIZE THRESHOLD MONITOR
+2018-03-16 13:25:54,797 MCT_Divisions INFO     START THE MANAGER PROCESS
+2018-03-16 13:25:54,800 MCT_Divisions INFO     INITIALIZE MANAGER PROCESS
+2018-03-16 13:25:54,802 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 13:25:54,828 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.0
+2018-03-16 13:30:54,885 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:30:54,885 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:30:54,886 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 13:30:54,886 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 13:30:54,886 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 13:30:54,886 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 13:30:54,926 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 13:30:54,928 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:30:54,929 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 13:30:54,930 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 13:30:54,995 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 13:30:54,996 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:30:55,059 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 13:30:55,060 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:30:55,076 MCT_Divisions INFO     GLOBAL FAIRNESS: 1.0
+2018-03-16 13:30:55,089 MCT_Divisions INFO     playerVirtual1 NEW SCORE:1.33
+2018-03-16 13:30:55,095 MCT_Divisions INFO     playerVirtual1 NEW HIST:1
+2018-03-16 13:30:55,095 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.33, 'old': 3, 'name': 'playerVirtual1', 'fairness': 1.0, 'enabled': 1, 'history': 1}
+2018-03-16 13:30:55,096 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:30:55,096 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:30:55,110 MCT_Divisions INFO     playerVirtual2 NEW SCORE:0.0
+2018-03-16 13:30:55,129 MCT_Divisions INFO     playerVirtual2 NEW HIST:1
+2018-03-16 13:30:55,130 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.0, 'old': 3, 'name': 'playerVirtual2', 'fairness': 1.0, 'enabled': 1, 'history': 1}
+2018-03-16 13:30:55,131 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:30:55,132 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:30:55,144 MCT_Divisions INFO     playerVirtual0 NEW SCORE:0.0
+2018-03-16 13:30:55,176 MCT_Divisions INFO     playerVirtual0 NEW HIST:1
+2018-03-16 13:30:55,178 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.0, 'old': 3, 'name': 'playerVirtual0', 'fairness': 1.0, 'enabled': 1, 'history': 1}
+2018-03-16 13:30:55,180 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:30:55,182 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:30:55,183 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 13:30:55,185 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:35:55,165 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:35:55,166 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 13:35:55,167 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 13:35:55,173 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 13:35:55,195 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 13:35:55,196 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:35:55,251 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:35:55,251 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 13:35:55,251 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 13:35:55,273 MCT_Divisions INFO     GLOBAL FAIRNESS: 1.0
+2018-03-16 13:35:55,286 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 13:35:55,287 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:35:55,333 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:35:55,333 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 13:35:55,333 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 13:35:55,347 MCT_Divisions INFO     playerVirtual1 NEW SCORE:5.31
+2018-03-16 13:35:55,356 MCT_Divisions INFO     playerVirtual1 NEW HIST:2
+2018-03-16 13:35:55,356 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 5.3100000000000005, 'old': 3, 'name': 'playerVirtual1', 'fairness': 1.0, 'enabled': 1, 'history': 2}
+2018-03-16 13:35:55,356 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:35:55,356 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:35:55,369 MCT_Divisions INFO     playerVirtual2 NEW SCORE:1.33
+2018-03-16 13:35:55,383 MCT_Divisions INFO     playerVirtual2 NEW HIST:2
+2018-03-16 13:35:55,384 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.33, 'old': 3, 'name': 'playerVirtual2', 'fairness': 1.0, 'enabled': 1, 'history': 2}
+2018-03-16 13:35:55,384 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:35:55,385 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:35:55,389 MCT_Divisions INFO     playerVirtual0 NEW SCORE:0.0
+2018-03-16 13:35:55,409 MCT_Divisions INFO     playerVirtual0 NEW HIST:2
+2018-03-16 13:35:55,409 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.0, 'old': 3, 'name': 'playerVirtual0', 'fairness': 1.0, 'enabled': 1, 'history': 2}
+2018-03-16 13:35:55,409 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:35:55,410 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:35:55,451 MCT_Divisions INFO     playerVirtual3 NEW SCORE:5.31
+2018-03-16 13:35:55,457 MCT_Divisions INFO     playerVirtual3 NEW HIST:1
+2018-03-16 13:35:55,460 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 5.3100000000000005, 'old': 3, 'name': 'playerVirtual3', 'fairness': 1.0, 'enabled': 1, 'history': 1}
+2018-03-16 13:35:55,461 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:35:55,461 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:35:55,462 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 13:35:55,462 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:40:55,310 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 13:40:55,358 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.857142857143
+2018-03-16 13:40:55,376 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:40:55,377 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 13:40:55,378 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 13:40:55,403 MCT_Divisions INFO     playerVirtual1 NEW SCORE:7.3
+2018-03-16 13:40:55,412 MCT_Divisions INFO     playerVirtual1 NEW HIST:3
+2018-03-16 13:40:55,413 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 7.3, 'old': 2, 'name': 'playerVirtual1', 'fairness': 1.0, 'enabled': 1, 'history': 3}
+2018-03-16 13:40:55,413 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:40:55,414 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:40:55,421 MCT_Divisions INFO     playerVirtual3 NEW SCORE:8.63
+2018-03-16 13:40:55,435 MCT_Divisions INFO     playerVirtual3 NEW HIST:2
+2018-03-16 13:40:55,436 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 8.629999999999999, 'old': 2, 'name': 'playerVirtual3', 'fairness': 1.0, 'enabled': 1, 'history': 2}
+2018-03-16 13:40:55,436 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:40:55,437 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:40:55,437 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 13:40:55,437 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:40:55,534 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:40:55,535 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 13:40:55,536 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 13:40:55,545 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 13:40:55,546 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:40:55,657 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:40:55,658 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 13:40:55,658 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 13:40:55,674 MCT_Divisions INFO     playerVirtual2 NEW SCORE:0.33
+2018-03-16 13:40:55,679 MCT_Divisions INFO     playerVirtual2 NEW HIST:3
+2018-03-16 13:40:55,680 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.33000000000000007, 'old': 3, 'name': 'playerVirtual2', 'fairness': 0.8333333333333334, 'enabled': 1, 'history': 3}
+2018-03-16 13:40:55,681 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:40:55,682 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:40:55,690 MCT_Divisions INFO     playerVirtual0 NEW SCORE:-2.0
+2018-03-16 13:40:55,702 MCT_Divisions INFO     playerVirtual0 NEW HIST:2
+2018-03-16 13:40:55,702 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': -2.0, 'old': 3, 'name': 'playerVirtual0', 'fairness': 0.8, 'enabled': 1, 'history': 2}
+2018-03-16 13:40:55,702 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:40:55,703 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:40:55,711 MCT_Divisions INFO     playerVirtual4 NEW SCORE:0.0
+2018-03-16 13:40:55,728 MCT_Divisions INFO     playerVirtual4 NEW HIST:1
+2018-03-16 13:40:55,729 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.0, 'old': 3, 'name': 'playerVirtual4', 'fairness': 0.0, 'enabled': 1, 'history': 1}
+2018-03-16 13:40:55,730 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:40:55,730 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:40:55,731 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 13:40:55,732 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:45:55,410 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 13:45:55,515 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:45:55,515 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 13:45:55,516 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 13:45:55,556 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.857142857143
+2018-03-16 13:45:55,572 MCT_Divisions INFO     playerVirtual1 NEW SCORE:8.63
+2018-03-16 13:45:55,577 MCT_Divisions INFO     playerVirtual1 NEW HIST:4
+2018-03-16 13:45:55,578 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 8.629999999999999, 'old': 2, 'name': 'playerVirtual1', 'fairness': 1.0, 'enabled': 1, 'history': 4}
+2018-03-16 13:45:55,578 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:45:55,578 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:45:55,584 MCT_Divisions INFO     playerVirtual3 NEW SCORE:8.63
+2018-03-16 13:45:55,602 MCT_Divisions INFO     playerVirtual3 NEW HIST:3
+2018-03-16 13:45:55,603 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 8.629999999999999, 'old': 2, 'name': 'playerVirtual3', 'fairness': 1.0, 'enabled': 1, 'history': 3}
+2018-03-16 13:45:55,603 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:45:55,604 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:45:55,604 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 13:45:55,605 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:45:55,705 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:45:55,706 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 13:45:55,706 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 13:45:55,797 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 13:45:55,797 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:45:55,855 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:45:55,856 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 13:45:55,857 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 13:45:55,869 MCT_Divisions INFO     playerVirtual2 NEW SCORE:-0.67
+2018-03-16 13:45:55,876 MCT_Divisions INFO     playerVirtual2 NEW HIST:3
+2018-03-16 13:45:55,877 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': -0.6699999999999999, 'old': 3, 'name': 'playerVirtual2', 'fairness': 0.8571428571428571, 'enabled': 1, 'history': 3}
+2018-03-16 13:45:55,877 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:45:55,878 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:45:55,885 MCT_Divisions INFO     playerVirtual0 NEW SCORE:-2.0
+2018-03-16 13:45:55,893 MCT_Divisions INFO     playerVirtual0 NEW HIST:2
+2018-03-16 13:45:55,894 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -2.0, 'old': 3, 'name': 'playerVirtual0', 'fairness': 0.8571428571428571, 'enabled': 1, 'history': 2}
+2018-03-16 13:45:55,894 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:45:55,894 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 13:45:55,915 MCT_Divisions INFO     playerVirtual4 NEW SCORE:1.33
+2018-03-16 13:45:55,968 MCT_Divisions INFO     playerVirtual4 NEW HIST:2
+2018-03-16 13:45:55,969 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.33, 'old': 3, 'name': 'playerVirtual4', 'fairness': 0.0, 'enabled': 1, 'history': 2}
+2018-03-16 13:45:55,969 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:45:55,970 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:45:55,971 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 13:45:55,972 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:50:55,559 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 13:50:55,597 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.702702702703
+2018-03-16 13:50:55,737 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:50:55,737 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 13:50:55,737 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 13:50:55,754 MCT_Divisions INFO     playerVirtual1 NEW SCORE:7.63
+2018-03-16 13:50:55,764 MCT_Divisions INFO     playerVirtual1 NEW HIST:5
+2018-03-16 13:50:55,764 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 7.629999999999999, 'old': 2, 'name': 'playerVirtual1', 'fairness': 1.0, 'enabled': 1, 'history': 5}
+2018-03-16 13:50:55,764 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:50:55,764 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:50:55,778 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 13:50:55,790 MCT_Divisions INFO     playerVirtual3 NEW HIST:4
+2018-03-16 13:50:55,791 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 11.95, 'old': 2, 'name': 'playerVirtual3', 'fairness': 0.8333333333333334, 'enabled': 1, 'history': 4}
+2018-03-16 13:50:55,791 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:50:55,792 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:50:55,793 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 13:50:55,793 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:50:55,886 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:50:55,886 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 13:50:55,886 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 13:50:55,904 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 13:50:55,910 MCT_Divisions INFO     playerVirtual3 NEW HIST:5
+2018-03-16 13:50:55,910 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.8333333333333334, 'enabled': 1, 'history': 5}
+2018-03-16 13:50:55,911 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:50:55,911 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:50:55,914 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 13:50:55,914 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:50:56,187 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:50:56,187 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 13:50:56,188 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 13:50:56,206 MCT_Divisions INFO     playerVirtual2 NEW SCORE:-2.67
+2018-03-16 13:50:56,213 MCT_Divisions INFO     playerVirtual2 NEW HIST:3
+2018-03-16 13:50:56,213 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -2.67, 'old': 3, 'name': 'playerVirtual2', 'fairness': 0.6666666666666666, 'enabled': 1, 'history': 3}
+2018-03-16 13:50:56,214 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:50:56,214 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 13:50:56,237 MCT_Divisions INFO     playerVirtual0 NEW SCORE:-4.0
+2018-03-16 13:50:56,245 MCT_Divisions INFO     playerVirtual0 NEW HIST:1
+2018-03-16 13:50:56,245 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -4.0, 'old': 3, 'name': 'playerVirtual0', 'fairness': 0.6666666666666666, 'enabled': 1, 'history': 1}
+2018-03-16 13:50:56,246 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:50:56,246 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 13:50:56,258 MCT_Divisions INFO     playerVirtual4 NEW SCORE:-0.67
+2018-03-16 13:50:56,295 MCT_Divisions INFO     playerVirtual4 NEW HIST:2
+2018-03-16 13:50:56,296 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': -0.6699999999999999, 'old': 3, 'name': 'playerVirtual4', 'fairness': 0.0, 'enabled': 1, 'history': 2}
+2018-03-16 13:50:56,297 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:50:56,298 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:50:56,298 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 13:50:56,299 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:55:55,617 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 13:55:55,789 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.619047619048
+2018-03-16 13:55:55,976 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:55:55,977 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 13:55:55,977 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 13:55:56,000 MCT_Divisions INFO     playerVirtual1 NEW SCORE:6.63
+2018-03-16 13:55:56,006 MCT_Divisions INFO     playerVirtual1 NEW HIST:6
+2018-03-16 13:55:56,006 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 6.629999999999999, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.9, 'enabled': 1, 'history': 6}
+2018-03-16 13:55:56,007 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:55:56,007 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:55:56,008 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 13:55:56,008 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:55:56,134 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:55:56,135 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 13:55:56,136 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 13:55:56,160 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 13:55:56,166 MCT_Divisions INFO     playerVirtual3 NEW HIST:6
+2018-03-16 13:55:56,167 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.7142857142857143, 'enabled': 1, 'history': 6}
+2018-03-16 13:55:56,168 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:55:56,168 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 13:55:56,169 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 13:55:56,169 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 13:55:56,335 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 13:55:56,336 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 13:55:56,338 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 13:55:56,350 MCT_Divisions INFO     playerVirtual2 NEW SCORE:-3.67
+2018-03-16 13:55:56,355 MCT_Divisions INFO     playerVirtual2 NEW HIST:2
+2018-03-16 13:55:56,356 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -3.67, 'old': 3, 'name': 'playerVirtual2', 'fairness': 0.6, 'enabled': 1, 'history': 2}
+2018-03-16 13:55:56,356 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:55:56,357 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 13:55:56,363 MCT_Divisions INFO     playerVirtual0 NEW SCORE:-5.0
+2018-03-16 13:55:56,374 MCT_Divisions INFO     playerVirtual0 NEW HIST:0
+2018-03-16 13:55:56,375 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -5.0, 'old': 3, 'name': 'playerVirtual0', 'fairness': 0.6, 'enabled': 1, 'history': 0}
+2018-03-16 13:55:56,376 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:55:56,378 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 13:55:56,386 MCT_Divisions INFO     playerVirtual4 NEW SCORE:-2.67
+2018-03-16 13:55:56,397 MCT_Divisions INFO     playerVirtual4 NEW HIST:2
+2018-03-16 13:55:56,398 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -2.67, 'old': 3, 'name': 'playerVirtual4', 'fairness': 0.0, 'enabled': 1, 'history': 2}
+2018-03-16 13:55:56,399 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 13:55:56,400 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 13:55:56,400 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 13:55:56,401 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:00:55,796 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 14:00:55,839 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.530612244898
+2018-03-16 14:00:56,136 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:00:56,136 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 14:00:56,136 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 14:00:56,157 MCT_Divisions INFO     playerVirtual1 NEW SCORE:4.63
+2018-03-16 14:00:56,163 MCT_Divisions INFO     playerVirtual1 NEW HIST:7
+2018-03-16 14:00:56,164 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 4.629999999999999, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.8181818181818182, 'enabled': 1, 'history': 7}
+2018-03-16 14:00:56,164 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:00:56,165 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:00:56,165 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 14:00:56,166 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:00:56,338 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:00:56,338 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 14:00:56,339 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 14:00:56,350 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 14:00:56,354 MCT_Divisions INFO     playerVirtual3 NEW HIST:7
+2018-03-16 14:00:56,355 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.5555555555555556, 'enabled': 1, 'history': 7}
+2018-03-16 14:00:56,356 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:00:56,357 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:00:56,358 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 14:00:56,358 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:00:56,657 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:00:56,657 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 14:00:56,657 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 14:00:56,680 MCT_Divisions INFO     playerVirtual2 NEW SCORE:-6.67
+2018-03-16 14:00:56,686 MCT_Divisions INFO     playerVirtual2 NEW HIST:1
+2018-03-16 14:00:56,686 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -6.67, 'old': 3, 'name': 'playerVirtual2', 'fairness': 0.5, 'enabled': 1, 'history': 1}
+2018-03-16 14:00:56,687 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:00:56,687 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 14:00:56,705 MCT_Divisions INFO     playerVirtual4 NEW SCORE:-4.67
+2018-03-16 14:00:56,716 MCT_Divisions INFO     playerVirtual4 NEW HIST:1
+2018-03-16 14:00:56,716 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -4.67, 'old': 3, 'name': 'playerVirtual4', 'fairness': 0.0, 'enabled': 1, 'history': 1}
+2018-03-16 14:00:56,717 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:00:56,717 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 14:00:56,717 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 14:00:56,717 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:05:55,852 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 14:05:55,902 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.5
+2018-03-16 14:05:56,369 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:05:56,370 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 14:05:56,370 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 14:05:56,383 MCT_Divisions INFO     playerVirtual1 NEW SCORE:3.63
+2018-03-16 14:05:56,389 MCT_Divisions INFO     playerVirtual1 NEW HIST:7
+2018-03-16 14:05:56,390 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 3.629999999999999, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.75, 'enabled': 1, 'history': 7}
+2018-03-16 14:05:56,390 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:05:56,391 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:05:56,391 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 14:05:56,391 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:05:56,497 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:05:56,499 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 14:05:56,500 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 14:05:56,521 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 14:05:56,527 MCT_Divisions INFO     playerVirtual3 NEW HIST:8
+2018-03-16 14:05:56,529 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.5, 'enabled': 1, 'history': 8}
+2018-03-16 14:05:56,529 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:05:56,530 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:05:56,530 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 14:05:56,531 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:05:56,912 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:05:56,913 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 14:05:56,914 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 14:05:56,927 MCT_Divisions INFO     playerVirtual2 NEW SCORE:-7.67
+2018-03-16 14:05:56,935 MCT_Divisions INFO     playerVirtual2 NEW HIST:0
+2018-03-16 14:05:56,936 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -7.67, 'old': 3, 'name': 'playerVirtual2', 'fairness': 0.5, 'enabled': 1, 'history': 0}
+2018-03-16 14:05:56,937 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:05:56,938 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 14:05:56,946 MCT_Divisions INFO     playerVirtual4 NEW SCORE:-5.67
+2018-03-16 14:05:56,958 MCT_Divisions INFO     playerVirtual4 NEW HIST:0
+2018-03-16 14:05:56,958 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -5.67, 'old': 3, 'name': 'playerVirtual4', 'fairness': 0.0, 'enabled': 1, 'history': 0}
+2018-03-16 14:05:56,958 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:05:56,959 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 14:05:56,959 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 14:05:56,960 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:10:55,910 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 14:10:55,978 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.481481481481
+2018-03-16 14:10:56,586 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:10:56,587 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 14:10:56,587 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 14:10:56,606 MCT_Divisions INFO     playerVirtual1 NEW SCORE:2.63
+2018-03-16 14:10:56,613 MCT_Divisions INFO     playerVirtual1 NEW HIST:7
+2018-03-16 14:10:56,614 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': 2.629999999999999, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.6923076923076923, 'enabled': 1, 'history': 7}
+2018-03-16 14:10:56,614 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:10:56,615 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 14:10:56,616 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 14:10:56,617 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:10:56,726 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:10:56,726 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 14:10:56,727 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 14:10:56,743 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 14:10:56,748 MCT_Divisions INFO     playerVirtual3 NEW HIST:9
+2018-03-16 14:10:56,748 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.45454545454545453, 'enabled': 1, 'history': 9}
+2018-03-16 14:10:56,748 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:10:56,749 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:10:56,749 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 14:10:56,750 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:10:57,092 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:10:57,092 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 14:10:57,093 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 14:10:57,099 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 14:10:57,099 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:15:56,079 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 14:15:56,153 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.464285714286
+2018-03-16 14:15:56,894 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:15:56,895 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 14:15:56,895 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 14:15:56,913 MCT_Divisions INFO     playerVirtual1 NEW SCORE:1.63
+2018-03-16 14:15:56,919 MCT_Divisions INFO     playerVirtual1 NEW HIST:6
+2018-03-16 14:15:56,920 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': 1.629999999999999, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.6428571428571429, 'enabled': 1, 'history': 6}
+2018-03-16 14:15:56,920 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:15:56,920 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 14:15:56,921 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 14:15:56,921 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:15:56,946 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:15:56,946 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 14:15:56,947 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 14:15:56,965 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 14:15:56,972 MCT_Divisions INFO     playerVirtual3 NEW HIST:10
+2018-03-16 14:15:56,973 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.4166666666666667, 'enabled': 1, 'history': 10}
+2018-03-16 14:15:56,974 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:15:56,974 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:15:56,974 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 14:15:56,976 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:15:57,313 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:15:57,314 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 14:15:57,314 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 14:15:57,324 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 14:15:57,325 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:20:56,253 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 14:20:56,327 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.448275862069
+2018-03-16 14:20:57,109 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:20:57,110 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 14:20:57,111 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 14:20:57,127 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 14:20:57,132 MCT_Divisions INFO     playerVirtual3 NEW HIST:11
+2018-03-16 14:20:57,133 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.38461538461538464, 'enabled': 1, 'history': 11}
+2018-03-16 14:20:57,133 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:20:57,133 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:20:57,134 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 14:20:57,134 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:20:57,151 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:20:57,151 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 14:20:57,151 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 14:20:57,227 MCT_Divisions INFO     playerVirtual1 NEW SCORE:0.63
+2018-03-16 14:20:57,234 MCT_Divisions INFO     playerVirtual1 NEW HIST:5
+2018-03-16 14:20:57,235 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': 0.629999999999999, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.6, 'enabled': 1, 'history': 5}
+2018-03-16 14:20:57,235 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:20:57,235 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 14:20:57,236 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 14:20:57,237 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:20:57,511 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:20:57,511 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 14:20:57,512 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 14:20:57,520 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 14:20:57,521 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:25:56,362 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 14:25:56,423 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.440677966102
+2018-03-16 14:25:57,269 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:25:57,269 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 14:25:57,270 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 14:25:57,289 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 14:25:57,296 MCT_Divisions INFO     playerVirtual3 NEW HIST:12
+2018-03-16 14:25:57,297 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.35714285714285715, 'enabled': 1, 'history': 12}
+2018-03-16 14:25:57,297 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:25:57,297 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:25:57,298 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 14:25:57,299 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:25:57,418 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:25:57,419 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 14:25:57,419 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 14:25:57,445 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-0.37
+2018-03-16 14:25:57,450 MCT_Divisions INFO     playerVirtual1 NEW HIST:4
+2018-03-16 14:25:57,450 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -0.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.6, 'enabled': 1, 'history': 4}
+2018-03-16 14:25:57,451 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:25:57,451 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 14:25:57,453 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 14:25:57,453 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:25:57,717 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:25:57,718 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 14:25:57,718 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 14:25:57,725 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 14:25:57,725 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:30:56,489 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 14:30:56,565 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.426229508197
+2018-03-16 14:30:57,536 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:30:57,539 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 14:30:57,539 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 14:30:57,552 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 14:30:57,558 MCT_Divisions INFO     playerVirtual3 NEW HIST:13
+2018-03-16 14:30:57,558 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.3333333333333333, 'enabled': 1, 'history': 13}
+2018-03-16 14:30:57,559 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:30:57,559 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:30:57,560 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 14:30:57,561 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:30:57,609 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:30:57,609 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 14:30:57,611 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 14:30:57,688 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-1.37
+2018-03-16 14:30:57,696 MCT_Divisions INFO     playerVirtual1 NEW HIST:3
+2018-03-16 14:30:57,696 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -1.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5625, 'enabled': 1, 'history': 3}
+2018-03-16 14:30:57,696 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:30:57,696 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 14:30:57,700 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 14:30:57,700 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:30:57,918 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:30:57,918 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 14:30:57,918 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 14:30:57,927 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 14:30:57,928 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:35:56,571 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 14:35:56,642 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.426229508197
+2018-03-16 14:35:57,771 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:35:57,772 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 14:35:57,772 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 14:35:57,791 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 14:35:57,798 MCT_Divisions INFO     playerVirtual3 NEW HIST:14
+2018-03-16 14:35:57,799 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.3333333333333333, 'enabled': 1, 'history': 14}
+2018-03-16 14:35:57,800 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:35:57,800 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:35:57,801 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 14:35:57,801 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:35:57,836 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:35:57,837 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 14:35:57,837 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 14:35:57,857 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-1.37
+2018-03-16 14:35:57,864 MCT_Divisions INFO     playerVirtual1 NEW HIST:2
+2018-03-16 14:35:57,865 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -1.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5625, 'enabled': 1, 'history': 2}
+2018-03-16 14:35:57,866 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:35:57,866 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 14:35:57,867 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 14:35:57,868 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:35:58,059 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:35:58,059 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 14:35:58,059 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 14:35:58,069 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 14:35:58,070 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:40:56,742 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 14:40:56,793 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.412698412698
+2018-03-16 14:40:58,024 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:40:58,025 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 14:40:58,026 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 14:40:58,044 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 14:40:58,051 MCT_Divisions INFO     playerVirtual3 NEW HIST:15
+2018-03-16 14:40:58,052 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.3125, 'enabled': 1, 'history': 15}
+2018-03-16 14:40:58,052 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:40:58,053 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:40:58,053 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 14:40:58,054 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:40:58,068 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:40:58,069 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 14:40:58,069 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 14:40:58,102 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-2.37
+2018-03-16 14:40:58,110 MCT_Divisions INFO     playerVirtual1 NEW HIST:1
+2018-03-16 14:40:58,110 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -2.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5294117647058824, 'enabled': 1, 'history': 1}
+2018-03-16 14:40:58,110 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:40:58,110 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 14:40:58,110 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 14:40:58,112 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:40:58,260 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:40:58,260 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 14:40:58,261 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 14:40:58,268 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 14:40:58,269 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:45:56,820 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 14:45:56,897 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.40625
+2018-03-16 14:45:58,294 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:45:58,294 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 14:45:58,295 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 14:45:58,307 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:45:58,308 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 14:45:58,308 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 14:45:58,312 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 14:45:58,328 MCT_Divisions INFO     playerVirtual3 NEW HIST:16
+2018-03-16 14:45:58,328 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.3125, 'enabled': 1, 'history': 16}
+2018-03-16 14:45:58,329 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:45:58,329 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:45:58,329 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 14:45:58,330 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:45:58,346 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-2.37
+2018-03-16 14:45:58,361 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 14:45:58,362 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -2.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5, 'enabled': 1, 'history': 0}
+2018-03-16 14:45:58,364 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:45:58,366 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 14:45:58,368 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 14:45:58,370 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:45:58,468 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:45:58,469 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 14:45:58,469 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 14:45:58,490 MCT_Divisions INFO     playerVirtual5 NEW SCORE:0.0
+2018-03-16 14:45:58,495 MCT_Divisions INFO     playerVirtual5 NEW HIST:1
+2018-03-16 14:45:58,495 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.0, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.0, 'enabled': 1, 'history': 1}
+2018-03-16 14:45:58,495 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:45:58,496 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:45:58,500 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 14:45:58,500 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:50:56,995 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 14:50:57,068 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.415384615385
+2018-03-16 14:50:58,489 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:50:58,489 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:50:58,490 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 14:50:58,490 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 14:50:58,491 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 14:50:58,491 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 14:50:58,522 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-2.37
+2018-03-16 14:50:58,529 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 14:50:58,535 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 14:50:58,536 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -2.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5, 'enabled': 1, 'history': 0}
+2018-03-16 14:50:58,536 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:50:58,537 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 14:50:58,537 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 14:50:58,537 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:50:58,546 MCT_Divisions INFO     playerVirtual3 NEW HIST:17
+2018-03-16 14:50:58,547 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.35294117647058826, 'enabled': 1, 'history': 17}
+2018-03-16 14:50:58,549 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:50:58,550 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:50:58,552 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 14:50:58,552 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:50:58,607 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:50:58,607 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 14:50:58,608 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 14:50:58,622 MCT_Divisions INFO     playerVirtual5 NEW SCORE:0.0
+2018-03-16 14:50:58,628 MCT_Divisions INFO     playerVirtual5 NEW HIST:2
+2018-03-16 14:50:58,629 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.0, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.0, 'enabled': 1, 'history': 2}
+2018-03-16 14:50:58,630 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:50:58,630 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:50:58,631 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 14:50:58,632 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:55:57,155 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 14:55:57,208 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.420289855072
+2018-03-16 14:55:58,766 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:55:58,766 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 14:55:58,767 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 14:55:58,781 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:55:58,781 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 14:55:58,781 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 14:55:58,785 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 14:55:58,800 MCT_Divisions INFO     playerVirtual3 NEW HIST:18
+2018-03-16 14:55:58,801 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.3888888888888889, 'enabled': 1, 'history': 18}
+2018-03-16 14:55:58,801 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:55:58,802 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:55:58,802 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 14:55:58,803 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:55:58,804 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 14:55:58,805 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 14:55:58,805 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 14:55:58,829 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-2.37
+2018-03-16 14:55:58,851 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 14:55:58,852 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -2.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5263157894736842, 'enabled': 1, 'history': 0}
+2018-03-16 14:55:58,852 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:55:58,853 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 14:55:58,853 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 14:55:58,854 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 14:55:58,867 MCT_Divisions INFO     playerVirtual5 NEW SCORE:2.66
+2018-03-16 14:55:58,881 MCT_Divisions INFO     playerVirtual5 NEW HIST:3
+2018-03-16 14:55:58,882 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.66, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.0, 'enabled': 1, 'history': 3}
+2018-03-16 14:55:58,883 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 14:55:58,885 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 14:55:58,886 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 14:55:58,886 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:00:57,304 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 15:00:57,361 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.43661971831
+2018-03-16 15:00:58,949 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:00:58,949 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:00:58,949 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 15:00:58,949 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 15:00:58,950 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 15:00:58,950 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 15:00:58,975 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:00:58,976 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 15:00:58,976 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 15:00:58,987 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 15:00:59,000 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-2.37
+2018-03-16 15:00:59,010 MCT_Divisions INFO     playerVirtual3 NEW HIST:19
+2018-03-16 15:00:59,012 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.42105263157894735, 'enabled': 1, 'history': 19}
+2018-03-16 15:00:59,013 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:00:59,014 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:00:59,017 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 15:00:59,019 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:00:59,020 MCT_Divisions INFO     playerVirtual5 NEW SCORE:2.66
+2018-03-16 15:00:59,031 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 15:00:59,031 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -2.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.55, 'enabled': 1, 'history': 0}
+2018-03-16 15:00:59,031 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:00:59,031 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:00:59,032 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 15:00:59,032 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:00:59,039 MCT_Divisions INFO     playerVirtual5 NEW HIST:4
+2018-03-16 15:00:59,040 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.66, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.0, 'enabled': 1, 'history': 4}
+2018-03-16 15:00:59,042 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:00:59,043 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:00:59,044 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 15:00:59,046 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:05:57,460 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 15:05:57,597 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.44
+2018-03-16 15:05:59,226 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:05:59,226 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 15:05:59,227 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 15:05:59,251 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 15:05:59,259 MCT_Divisions INFO     playerVirtual3 NEW HIST:20
+2018-03-16 15:05:59,260 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.45, 'enabled': 1, 'history': 20}
+2018-03-16 15:05:59,260 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:05:59,261 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:05:59,261 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 15:05:59,261 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:05:59,281 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:05:59,282 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 15:05:59,283 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 15:05:59,313 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-2.37
+2018-03-16 15:05:59,317 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:05:59,318 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 15:05:59,319 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 15:05:59,324 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 15:05:59,325 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -2.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5714285714285714, 'enabled': 1, 'history': 0}
+2018-03-16 15:05:59,326 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:05:59,327 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:05:59,328 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 15:05:59,329 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:05:59,349 MCT_Divisions INFO     playerVirtual5 NEW SCORE:3.99
+2018-03-16 15:05:59,358 MCT_Divisions INFO     playerVirtual5 NEW HIST:5
+2018-03-16 15:05:59,358 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 3.99, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.0, 'enabled': 1, 'history': 5}
+2018-03-16 15:05:59,359 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:05:59,359 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:05:59,359 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 15:05:59,360 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:10:57,640 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 15:10:57,701 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.428571428571
+2018-03-16 15:10:59,487 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:10:59,487 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 15:10:59,487 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 15:10:59,504 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 15:10:59,514 MCT_Divisions INFO     playerVirtual3 NEW HIST:21
+2018-03-16 15:10:59,515 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.42857142857142855, 'enabled': 1, 'history': 21}
+2018-03-16 15:10:59,515 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:10:59,516 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:10:59,516 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 15:10:59,517 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:10:59,564 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:10:59,565 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 15:10:59,565 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 15:10:59,590 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-3.37
+2018-03-16 15:10:59,600 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 15:10:59,601 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -3.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5454545454545454, 'enabled': 1, 'history': 0}
+2018-03-16 15:10:59,602 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:10:59,602 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:10:59,603 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 15:10:59,605 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:10:59,639 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:10:59,639 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 15:10:59,640 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 15:10:59,659 MCT_Divisions INFO     playerVirtual5 NEW SCORE:2.99
+2018-03-16 15:10:59,663 MCT_Divisions INFO     playerVirtual5 NEW HIST:6
+2018-03-16 15:10:59,663 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.99, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.0, 'enabled': 1, 'history': 6}
+2018-03-16 15:10:59,664 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:10:59,664 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:10:59,664 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 15:10:59,665 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:15:57,705 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 15:15:57,730 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.423076923077
+2018-03-16 15:15:59,734 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:15:59,735 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 15:15:59,735 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 15:15:59,749 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 15:15:59,757 MCT_Divisions INFO     playerVirtual3 NEW HIST:22
+2018-03-16 15:15:59,758 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.42857142857142855, 'enabled': 1, 'history': 22}
+2018-03-16 15:15:59,758 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:15:59,758 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:15:59,761 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 15:15:59,762 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:15:59,811 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:15:59,812 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 15:15:59,812 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 15:15:59,835 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-3.37
+2018-03-16 15:15:59,849 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 15:15:59,850 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -3.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5454545454545454, 'enabled': 1, 'history': 0}
+2018-03-16 15:15:59,851 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:15:59,851 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:15:59,852 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 15:15:59,852 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:15:59,880 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:15:59,881 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 15:15:59,882 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 15:15:59,898 MCT_Divisions INFO     playerVirtual5 NEW SCORE:2.99
+2018-03-16 15:15:59,904 MCT_Divisions INFO     playerVirtual5 NEW HIST:7
+2018-03-16 15:15:59,905 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.99, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.0, 'enabled': 1, 'history': 7}
+2018-03-16 15:15:59,905 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:15:59,906 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:15:59,907 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 15:15:59,908 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:20:57,820 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 15:20:57,875 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.417721518987
+2018-03-16 15:20:59,900 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:20:59,902 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 15:20:59,902 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 15:20:59,923 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 15:20:59,933 MCT_Divisions INFO     playerVirtual3 NEW HIST:23
+2018-03-16 15:20:59,934 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.42857142857142855, 'enabled': 1, 'history': 23}
+2018-03-16 15:20:59,934 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:20:59,934 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:20:59,937 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 15:20:59,937 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:20:59,964 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:20:59,964 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 15:20:59,965 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 15:21:00,003 MCT_Divisions INFO     playerVirtual5 NEW SCORE:2.99
+2018-03-16 15:21:00,006 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:21:00,007 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 15:21:00,007 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 15:21:00,013 MCT_Divisions INFO     playerVirtual5 NEW HIST:8
+2018-03-16 15:21:00,013 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.99, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.0, 'enabled': 1, 'history': 8}
+2018-03-16 15:21:00,015 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:21:00,016 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:21:00,017 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 15:21:00,018 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:21:00,054 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-3.37
+2018-03-16 15:21:00,074 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 15:21:00,075 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -3.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5454545454545454, 'enabled': 1, 'history': 0}
+2018-03-16 15:21:00,075 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:21:00,076 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:21:00,077 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 15:21:00,078 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:25:57,973 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 15:25:58,026 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.407407407407
+2018-03-16 15:26:00,112 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:26:00,113 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 15:26:00,113 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 15:26:00,137 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 15:26:00,144 MCT_Divisions INFO     playerVirtual3 NEW HIST:24
+2018-03-16 15:26:00,145 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.4090909090909091, 'enabled': 1, 'history': 24}
+2018-03-16 15:26:00,146 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:26:00,146 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:26:00,146 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 15:26:00,147 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:26:00,217 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:26:00,217 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 15:26:00,218 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 15:26:00,232 MCT_Divisions INFO     playerVirtual5 NEW SCORE:1.99
+2018-03-16 15:26:00,239 MCT_Divisions INFO     playerVirtual5 NEW HIST:9
+2018-03-16 15:26:00,239 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.9900000000000002, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.0, 'enabled': 1, 'history': 9}
+2018-03-16 15:26:00,240 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:26:00,240 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:26:00,248 MCT_Divisions INFO     playerVirtual6 NEW SCORE:0.0
+2018-03-16 15:26:00,261 MCT_Divisions INFO     playerVirtual6 NEW HIST:1
+2018-03-16 15:26:00,262 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.0, 'old': 3, 'name': 'playerVirtual6', 'fairness': 0.0, 'enabled': 1, 'history': 1}
+2018-03-16 15:26:00,263 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:26:00,264 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:26:00,265 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 15:26:00,266 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:26:00,270 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:26:00,271 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 15:26:00,271 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 15:26:00,304 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-4.37
+2018-03-16 15:26:00,321 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 15:26:00,322 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -4.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5217391304347826, 'enabled': 1, 'history': 0}
+2018-03-16 15:26:00,323 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:26:00,324 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:26:00,325 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 15:26:00,326 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:30:58,040 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 15:30:58,101 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.404761904762
+2018-03-16 15:31:00,324 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:31:00,325 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 15:31:00,325 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 15:31:00,349 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 15:31:00,356 MCT_Divisions INFO     playerVirtual3 NEW HIST:25
+2018-03-16 15:31:00,357 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.391304347826087, 'enabled': 1, 'history': 25}
+2018-03-16 15:31:00,357 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:31:00,358 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:31:00,358 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 15:31:00,358 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:31:00,467 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:31:00,468 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 15:31:00,468 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 15:31:00,480 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 15:31:00,486 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 15:31:00,486 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5, 'enabled': 1, 'history': 0}
+2018-03-16 15:31:00,486 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:31:00,486 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:31:00,487 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 15:31:00,487 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:31:00,490 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:31:00,490 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 15:31:00,491 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 15:31:00,524 MCT_Divisions INFO     playerVirtual5 NEW SCORE:0.99
+2018-03-16 15:31:00,527 MCT_Divisions INFO     playerVirtual5 NEW HIST:10
+2018-03-16 15:31:00,527 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.9900000000000002, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.14285714285714285, 'enabled': 1, 'history': 10}
+2018-03-16 15:31:00,528 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:31:00,528 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:31:00,532 MCT_Divisions INFO     playerVirtual6 NEW SCORE:1.33
+2018-03-16 15:31:00,545 MCT_Divisions INFO     playerVirtual6 NEW HIST:2
+2018-03-16 15:31:00,546 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.33, 'old': 3, 'name': 'playerVirtual6', 'fairness': 0.0, 'enabled': 1, 'history': 2}
+2018-03-16 15:31:00,547 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:31:00,548 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:31:00,549 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 15:31:00,550 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:35:58,202 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 15:35:58,254 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.390804597701
+2018-03-16 15:36:00,395 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:36:00,395 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 15:36:00,396 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 15:36:00,414 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 15:36:00,422 MCT_Divisions INFO     playerVirtual3 NEW HIST:26
+2018-03-16 15:36:00,422 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.391304347826087, 'enabled': 1, 'history': 26}
+2018-03-16 15:36:00,423 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:36:00,423 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:36:00,424 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 15:36:00,425 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:36:00,653 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:36:00,654 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 15:36:00,654 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 15:36:00,678 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-0.01
+2018-03-16 15:36:00,683 MCT_Divisions INFO     playerVirtual5 NEW HIST:10
+2018-03-16 15:36:00,684 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': -0.009999999999999787, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.125, 'enabled': 1, 'history': 10}
+2018-03-16 15:36:00,684 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:36:00,684 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:36:00,689 MCT_Divisions INFO     playerVirtual6 NEW SCORE:-0.67
+2018-03-16 15:36:00,699 MCT_Divisions INFO     playerVirtual6 NEW HIST:2
+2018-03-16 15:36:00,699 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': -0.6699999999999999, 'old': 3, 'name': 'playerVirtual6', 'fairness': 0.0, 'enabled': 1, 'history': 2}
+2018-03-16 15:36:00,700 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:36:00,700 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:36:00,701 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 15:36:00,702 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:36:00,737 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:36:00,737 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 15:36:00,737 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 15:36:00,763 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 15:36:00,772 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 15:36:00,772 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.48, 'enabled': 1, 'history': 0}
+2018-03-16 15:36:00,773 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:36:00,773 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:36:00,773 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 15:36:00,775 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:40:58,306 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 15:40:58,386 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.386363636364
+2018-03-16 15:41:00,692 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:41:00,693 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 15:41:00,694 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 15:41:00,717 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 15:41:00,726 MCT_Divisions INFO     playerVirtual3 NEW HIST:27
+2018-03-16 15:41:00,726 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.391304347826087, 'enabled': 1, 'history': 27}
+2018-03-16 15:41:00,727 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:41:00,728 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:41:00,728 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 15:41:00,729 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:41:00,848 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:41:00,849 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 15:41:00,850 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 15:41:00,874 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-1.01
+2018-03-16 15:41:00,880 MCT_Divisions INFO     playerVirtual5 NEW HIST:10
+2018-03-16 15:41:00,881 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -1.0099999999999998, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.125, 'enabled': 1, 'history': 10}
+2018-03-16 15:41:00,881 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:41:00,882 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:41:00,887 MCT_Divisions INFO     playerVirtual6 NEW SCORE:-0.67
+2018-03-16 15:41:00,897 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:41:00,897 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 15:41:00,898 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 15:41:00,898 MCT_Divisions INFO     playerVirtual6 NEW HIST:2
+2018-03-16 15:41:00,899 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -0.6699999999999999, 'old': 3, 'name': 'playerVirtual6', 'fairness': 0.0, 'enabled': 1, 'history': 2}
+2018-03-16 15:41:00,900 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:41:00,902 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:41:00,903 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 15:41:00,905 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:41:00,945 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 15:41:00,965 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 15:41:00,965 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.48, 'enabled': 1, 'history': 0}
+2018-03-16 15:41:00,966 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:41:00,966 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:41:00,967 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 15:41:00,968 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:45:58,459 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 15:45:58,515 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.393258426966
+2018-03-16 15:46:00,996 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:46:00,996 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 15:46:00,996 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 15:46:01,010 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 15:46:01,018 MCT_Divisions INFO     playerVirtual3 NEW HIST:28
+2018-03-16 15:46:01,019 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.391304347826087, 'enabled': 1, 'history': 28}
+2018-03-16 15:46:01,019 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:46:01,020 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:46:01,020 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 15:46:01,021 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:46:01,146 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:46:01,146 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 15:46:01,146 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 15:46:01,169 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-1.01
+2018-03-16 15:46:01,176 MCT_Divisions INFO     playerVirtual5 NEW HIST:9
+2018-03-16 15:46:01,176 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -1.0099999999999998, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.125, 'enabled': 1, 'history': 9}
+2018-03-16 15:46:01,177 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:46:01,177 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:46:01,182 MCT_Divisions INFO     playerVirtual6 NEW SCORE:-0.67
+2018-03-16 15:46:01,192 MCT_Divisions INFO     playerVirtual6 NEW HIST:1
+2018-03-16 15:46:01,193 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -0.6699999999999999, 'old': 3, 'name': 'playerVirtual6', 'fairness': 0.0, 'enabled': 1, 'history': 1}
+2018-03-16 15:46:01,194 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:46:01,196 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:46:01,208 MCT_Divisions INFO     playerVirtual7 NEW SCORE:1.33
+2018-03-16 15:46:01,226 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:46:01,227 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 15:46:01,227 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 15:46:01,245 MCT_Divisions INFO     playerVirtual7 NEW HIST:1
+2018-03-16 15:46:01,246 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.33, 'old': 3, 'name': 'playerVirtual7', 'fairness': 0.0, 'enabled': 1, 'history': 1}
+2018-03-16 15:46:01,246 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:46:01,247 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:46:01,247 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 15:46:01,247 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:46:01,285 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 15:46:01,306 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 15:46:01,306 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5, 'enabled': 1, 'history': 0}
+2018-03-16 15:46:01,306 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:46:01,307 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:46:01,307 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 15:46:01,307 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:50:58,599 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 15:50:58,669 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.4
+2018-03-16 15:51:01,170 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:51:01,171 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 15:51:01,172 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 15:51:01,190 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 15:51:01,199 MCT_Divisions INFO     playerVirtual3 NEW HIST:29
+2018-03-16 15:51:01,199 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.391304347826087, 'enabled': 1, 'history': 29}
+2018-03-16 15:51:01,200 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:51:01,200 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:51:01,201 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 15:51:01,201 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:51:01,374 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:51:01,375 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 15:51:01,375 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 15:51:01,392 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-1.01
+2018-03-16 15:51:01,396 MCT_Divisions INFO     playerVirtual5 NEW HIST:8
+2018-03-16 15:51:01,396 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -1.0099999999999998, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.2222222222222222, 'enabled': 1, 'history': 8}
+2018-03-16 15:51:01,396 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:51:01,397 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:51:01,401 MCT_Divisions INFO     playerVirtual6 NEW SCORE:-0.67
+2018-03-16 15:51:01,413 MCT_Divisions INFO     playerVirtual6 NEW HIST:0
+2018-03-16 15:51:01,414 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -0.6699999999999999, 'old': 3, 'name': 'playerVirtual6', 'fairness': 0.0, 'enabled': 1, 'history': 0}
+2018-03-16 15:51:01,414 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:51:01,415 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:51:01,432 MCT_Divisions INFO     playerVirtual7 NEW SCORE:1.33
+2018-03-16 15:51:01,437 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:51:01,437 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 15:51:01,438 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 15:51:01,452 MCT_Divisions INFO     playerVirtual7 NEW HIST:2
+2018-03-16 15:51:01,453 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.33, 'old': 3, 'name': 'playerVirtual7', 'fairness': 0.0, 'enabled': 1, 'history': 2}
+2018-03-16 15:51:01,453 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:51:01,454 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:51:01,474 MCT_Divisions INFO     playerVirtual8 NEW SCORE:1.33
+2018-03-16 15:51:01,491 MCT_Divisions INFO     playerVirtual8 NEW HIST:1
+2018-03-16 15:51:01,492 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.33, 'old': 3, 'name': 'playerVirtual8', 'fairness': 0.0, 'enabled': 1, 'history': 1}
+2018-03-16 15:51:01,493 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:51:01,494 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:51:01,495 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 15:51:01,497 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:51:01,500 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 15:51:01,513 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 15:51:01,514 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5, 'enabled': 1, 'history': 0}
+2018-03-16 15:51:01,514 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:51:01,515 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:51:01,516 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 15:51:01,516 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:55:58,738 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 15:55:58,800 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.4
+2018-03-16 15:56:01,363 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:56:01,363 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 15:56:01,364 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 15:56:01,385 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 15:56:01,392 MCT_Divisions INFO     playerVirtual3 NEW HIST:30
+2018-03-16 15:56:01,393 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.391304347826087, 'enabled': 1, 'history': 30}
+2018-03-16 15:56:01,393 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:56:01,393 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:56:01,394 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 15:56:01,394 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:56:01,702 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:56:01,702 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 15:56:01,702 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 15:56:01,720 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-1.01
+2018-03-16 15:56:01,725 MCT_Divisions INFO     playerVirtual5 NEW HIST:7
+2018-03-16 15:56:01,726 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -1.0099999999999998, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.2222222222222222, 'enabled': 1, 'history': 7}
+2018-03-16 15:56:01,726 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:56:01,726 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:56:01,734 MCT_Divisions INFO     playerVirtual7 NEW SCORE:1.33
+2018-03-16 15:56:01,746 MCT_Divisions INFO     playerVirtual7 NEW HIST:3
+2018-03-16 15:56:01,747 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.33, 'old': 3, 'name': 'playerVirtual7', 'fairness': 0.0, 'enabled': 1, 'history': 3}
+2018-03-16 15:56:01,748 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:56:01,749 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:56:01,758 MCT_Divisions INFO     playerVirtual8 NEW SCORE:1.33
+2018-03-16 15:56:01,771 MCT_Divisions INFO     playerVirtual8 NEW HIST:2
+2018-03-16 15:56:01,772 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.33, 'old': 3, 'name': 'playerVirtual8', 'fairness': 0.0, 'enabled': 1, 'history': 2}
+2018-03-16 15:56:01,773 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:56:01,774 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 15:56:01,775 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 15:56:01,776 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 15:56:01,809 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 15:56:01,810 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 15:56:01,811 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 15:56:01,859 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 15:56:01,867 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 15:56:01,867 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5, 'enabled': 1, 'history': 0}
+2018-03-16 15:56:01,867 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 15:56:01,868 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 15:56:01,868 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 15:56:01,868 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:00:58,803 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 16:00:58,875 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.41935483871
+2018-03-16 16:01:01,597 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:01:01,597 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 16:01:01,598 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 16:01:01,618 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 16:01:01,626 MCT_Divisions INFO     playerVirtual3 NEW HIST:31
+2018-03-16 16:01:01,626 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.4166666666666667, 'enabled': 1, 'history': 31}
+2018-03-16 16:01:01,627 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:01:01,627 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:01:01,628 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 16:01:01,629 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:01:02,048 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:01:02,049 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 16:01:02,049 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 16:01:02,056 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:01:02,057 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 16:01:02,057 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 16:01:02,076 MCT_Divisions INFO     playerVirtual5 NEW SCORE:0.32
+2018-03-16 16:01:02,086 MCT_Divisions INFO     playerVirtual5 NEW HIST:6
+2018-03-16 16:01:02,087 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': 0.3200000000000003, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.3, 'enabled': 1, 'history': 6}
+2018-03-16 16:01:02,087 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:01:02,087 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:01:02,099 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 16:01:02,108 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 16:01:02,109 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5, 'enabled': 1, 'history': 0}
+2018-03-16 16:01:02,110 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:01:02,111 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:01:02,112 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 16:01:02,113 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:01:02,121 MCT_Divisions INFO     playerVirtual7 NEW SCORE:2.66
+2018-03-16 16:01:02,134 MCT_Divisions INFO     playerVirtual7 NEW HIST:4
+2018-03-16 16:01:02,135 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.66, 'old': 3, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 4}
+2018-03-16 16:01:02,136 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:01:02,137 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:01:02,146 MCT_Divisions INFO     playerVirtual8 NEW SCORE:1.33
+2018-03-16 16:01:02,160 MCT_Divisions INFO     playerVirtual8 NEW HIST:3
+2018-03-16 16:01:02,161 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.33, 'old': 3, 'name': 'playerVirtual8', 'fairness': 0.0, 'enabled': 1, 'history': 3}
+2018-03-16 16:01:02,161 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:01:02,161 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:01:02,162 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 16:01:02,162 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:05:58,971 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 16:05:59,051 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.425531914894
+2018-03-16 16:06:01,885 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:06:01,885 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 16:06:01,886 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 16:06:01,910 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 16:06:01,920 MCT_Divisions INFO     playerVirtual3 NEW HIST:32
+2018-03-16 16:06:01,921 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.4166666666666667, 'enabled': 1, 'history': 32}
+2018-03-16 16:06:01,921 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:06:01,922 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:06:01,922 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 16:06:01,923 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:06:02,380 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:06:02,381 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 16:06:02,381 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 16:06:02,396 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:06:02,397 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 16:06:02,398 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 16:06:02,418 MCT_Divisions INFO     playerVirtual5 NEW SCORE:0.32
+2018-03-16 16:06:02,430 MCT_Divisions INFO     playerVirtual5 NEW HIST:7
+2018-03-16 16:06:02,431 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.3200000000000003, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.3, 'enabled': 1, 'history': 7}
+2018-03-16 16:06:02,431 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:06:02,432 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:06:02,441 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 16:06:02,452 MCT_Divisions INFO     playerVirtual7 NEW SCORE:2.66
+2018-03-16 16:06:02,461 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 16:06:02,462 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5, 'enabled': 1, 'history': 0}
+2018-03-16 16:06:02,462 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:06:02,463 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:06:02,463 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 16:06:02,464 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:06:02,477 MCT_Divisions INFO     playerVirtual7 NEW HIST:5
+2018-03-16 16:06:02,478 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.66, 'old': 3, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 5}
+2018-03-16 16:06:02,478 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:06:02,479 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:06:02,493 MCT_Divisions INFO     playerVirtual8 NEW SCORE:1.33
+2018-03-16 16:06:02,509 MCT_Divisions INFO     playerVirtual8 NEW HIST:4
+2018-03-16 16:06:02,510 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.33, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 4}
+2018-03-16 16:06:02,510 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:06:02,511 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:06:02,513 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 16:06:02,513 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:10:59,123 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 16:10:59,155 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.443298969072
+2018-03-16 16:11:02,130 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:11:02,131 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 16:11:02,131 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 16:11:02,154 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 16:11:02,163 MCT_Divisions INFO     playerVirtual3 NEW HIST:33
+2018-03-16 16:11:02,163 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.44, 'enabled': 1, 'history': 33}
+2018-03-16 16:11:02,163 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:11:02,164 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:11:02,164 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 16:11:02,164 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:11:02,669 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:11:02,670 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 16:11:02,670 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 16:11:02,697 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 16:11:02,709 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 16:11:02,709 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5185185185185185, 'enabled': 1, 'history': 0}
+2018-03-16 16:11:02,710 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:11:02,710 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:11:02,711 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 16:11:02,711 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:11:02,743 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:11:02,743 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 16:11:02,743 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 16:11:02,757 MCT_Divisions INFO     playerVirtual5 NEW SCORE:0.32
+2018-03-16 16:11:02,766 MCT_Divisions INFO     playerVirtual5 NEW HIST:8
+2018-03-16 16:11:02,767 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.3200000000000003, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.3, 'enabled': 1, 'history': 8}
+2018-03-16 16:11:02,768 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:11:02,769 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:11:02,775 MCT_Divisions INFO     playerVirtual7 NEW SCORE:3.99
+2018-03-16 16:11:02,784 MCT_Divisions INFO     playerVirtual7 NEW HIST:6
+2018-03-16 16:11:02,785 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 3.99, 'old': 3, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 6}
+2018-03-16 16:11:02,786 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:11:02,786 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:11:02,798 MCT_Divisions INFO     playerVirtual8 NEW SCORE:2.66
+2018-03-16 16:11:02,812 MCT_Divisions INFO     playerVirtual8 NEW HIST:5
+2018-03-16 16:11:02,813 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.66, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 5}
+2018-03-16 16:11:02,813 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:11:02,814 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:11:02,828 MCT_Divisions INFO     playerVirtual9 NEW SCORE:0.0
+2018-03-16 16:11:02,840 MCT_Divisions INFO     playerVirtual9 NEW HIST:1
+2018-03-16 16:11:02,841 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.0, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.0, 'enabled': 1, 'history': 1}
+2018-03-16 16:11:02,842 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:11:02,843 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:11:02,843 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 16:11:02,844 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:15:59,255 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 16:15:59,296 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.443298969072
+2018-03-16 16:16:02,216 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:16:02,217 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 16:16:02,217 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 16:16:02,240 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 16:16:02,247 MCT_Divisions INFO     playerVirtual3 NEW HIST:34
+2018-03-16 16:16:02,247 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.44, 'enabled': 1, 'history': 34}
+2018-03-16 16:16:02,248 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:16:02,248 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:16:02,249 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 16:16:02,249 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:16:03,013 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:16:03,013 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 16:16:03,014 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 16:16:03,039 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 16:16:03,052 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 16:16:03,052 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5185185185185185, 'enabled': 1, 'history': 0}
+2018-03-16 16:16:03,053 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:16:03,053 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:16:03,054 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 16:16:03,054 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:16:03,064 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:16:03,065 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 16:16:03,065 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 16:16:03,101 MCT_Divisions INFO     playerVirtual5 NEW SCORE:0.32
+2018-03-16 16:16:03,109 MCT_Divisions INFO     playerVirtual5 NEW HIST:9
+2018-03-16 16:16:03,110 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.3200000000000003, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.3, 'enabled': 1, 'history': 9}
+2018-03-16 16:16:03,110 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:16:03,111 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:16:03,119 MCT_Divisions INFO     playerVirtual7 NEW SCORE:3.99
+2018-03-16 16:16:03,130 MCT_Divisions INFO     playerVirtual7 NEW HIST:7
+2018-03-16 16:16:03,131 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 3.99, 'old': 3, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 7}
+2018-03-16 16:16:03,132 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:16:03,133 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:16:03,147 MCT_Divisions INFO     playerVirtual8 NEW SCORE:2.66
+2018-03-16 16:16:03,165 MCT_Divisions INFO     playerVirtual8 NEW HIST:6
+2018-03-16 16:16:03,166 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.66, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 6}
+2018-03-16 16:16:03,167 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:16:03,168 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:16:03,198 MCT_Divisions INFO     playerVirtual9 NEW SCORE:0.0
+2018-03-16 16:16:03,215 MCT_Divisions INFO     playerVirtual9 NEW HIST:2
+2018-03-16 16:16:03,216 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.0, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.0, 'enabled': 1, 'history': 2}
+2018-03-16 16:16:03,216 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:16:03,217 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:16:03,218 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 16:16:03,219 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:20:59,389 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 16:20:59,454 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.454545454545
+2018-03-16 16:21:02,516 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:21:02,517 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 16:21:02,518 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 16:21:02,542 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 16:21:02,550 MCT_Divisions INFO     playerVirtual3 NEW HIST:35
+2018-03-16 16:21:02,551 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.44, 'enabled': 1, 'history': 35}
+2018-03-16 16:21:02,551 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:21:02,551 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:21:02,554 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 16:21:02,554 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:21:03,249 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:21:03,250 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 16:21:03,250 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 16:21:03,269 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 16:21:03,278 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 16:21:03,279 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5185185185185185, 'enabled': 1, 'history': 0}
+2018-03-16 16:21:03,279 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:21:03,280 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:21:03,283 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 16:21:03,284 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:21:03,480 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:21:03,481 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 16:21:03,482 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 16:21:03,498 MCT_Divisions INFO     playerVirtual5 NEW SCORE:0.32
+2018-03-16 16:21:03,504 MCT_Divisions INFO     playerVirtual5 NEW HIST:10
+2018-03-16 16:21:03,504 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.3200000000000003, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.36363636363636365, 'enabled': 1, 'history': 10}
+2018-03-16 16:21:03,505 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:21:03,505 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:21:03,510 MCT_Divisions INFO     playerVirtual7 NEW SCORE:3.99
+2018-03-16 16:21:03,525 MCT_Divisions INFO     playerVirtual7 NEW HIST:8
+2018-03-16 16:21:03,526 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 3.99, 'old': 3, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 8}
+2018-03-16 16:21:03,526 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:21:03,527 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:21:03,539 MCT_Divisions INFO     playerVirtual8 NEW SCORE:2.66
+2018-03-16 16:21:03,555 MCT_Divisions INFO     playerVirtual8 NEW HIST:7
+2018-03-16 16:21:03,556 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.66, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 7}
+2018-03-16 16:21:03,557 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:21:03,558 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:21:03,571 MCT_Divisions INFO     playerVirtual9 NEW SCORE:1.33
+2018-03-16 16:21:03,582 MCT_Divisions INFO     playerVirtual9 NEW HIST:3
+2018-03-16 16:21:03,584 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.33, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.0, 'enabled': 1, 'history': 3}
+2018-03-16 16:21:03,584 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:21:03,585 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:21:03,586 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 16:21:03,587 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:25:59,458 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 16:25:59,507 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.470588235294
+2018-03-16 16:26:02,736 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:26:02,736 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 16:26:02,736 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 16:26:02,752 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 16:26:02,761 MCT_Divisions INFO     playerVirtual3 NEW HIST:36
+2018-03-16 16:26:02,761 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.44, 'enabled': 1, 'history': 36}
+2018-03-16 16:26:02,762 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:26:02,762 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:26:02,763 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 16:26:02,763 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:26:03,436 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:26:03,438 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 16:26:03,438 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 16:26:03,454 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 16:26:03,463 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 16:26:03,464 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5357142857142857, 'enabled': 1, 'history': 0}
+2018-03-16 16:26:03,464 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:26:03,465 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:26:03,465 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 16:26:03,465 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:26:03,755 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:26:03,756 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 16:26:03,756 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 16:26:03,781 MCT_Divisions INFO     playerVirtual5 NEW SCORE:0.32
+2018-03-16 16:26:03,785 MCT_Divisions INFO     playerVirtual5 NEW HIST:11
+2018-03-16 16:26:03,785 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.3200000000000003, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.36363636363636365, 'enabled': 1, 'history': 11}
+2018-03-16 16:26:03,786 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:26:03,786 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:26:03,791 MCT_Divisions INFO     playerVirtual7 NEW SCORE:5.98
+2018-03-16 16:26:03,804 MCT_Divisions INFO     playerVirtual7 NEW HIST:9
+2018-03-16 16:26:03,804 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 5.98, 'old': 3, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 9}
+2018-03-16 16:26:03,805 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:26:03,805 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:26:03,824 MCT_Divisions INFO     playerVirtual8 NEW SCORE:2.66
+2018-03-16 16:26:03,830 MCT_Divisions INFO     playerVirtual8 NEW HIST:8
+2018-03-16 16:26:03,831 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.66, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 8}
+2018-03-16 16:26:03,831 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:26:03,831 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:26:03,837 MCT_Divisions INFO     playerVirtual9 NEW SCORE:1.33
+2018-03-16 16:26:03,843 MCT_Divisions INFO     playerVirtual9 NEW HIST:4
+2018-03-16 16:26:03,843 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.33, 'old': 3, 'name': 'playerVirtual9', 'fairness': 1.0, 'enabled': 1, 'history': 4}
+2018-03-16 16:26:03,843 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:26:03,843 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:26:03,844 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 16:26:03,844 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:30:59,607 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 16:30:59,695 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.47619047619
+2018-03-16 16:31:02,898 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:31:02,899 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 16:31:02,899 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 16:31:02,918 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 16:31:02,927 MCT_Divisions INFO     playerVirtual3 NEW HIST:37
+2018-03-16 16:31:02,927 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.46153846153846156, 'enabled': 1, 'history': 37}
+2018-03-16 16:31:02,928 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:31:02,928 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:31:02,929 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 16:31:02,929 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:31:03,746 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:31:03,746 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 16:31:03,747 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 16:31:03,770 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 16:31:03,782 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 16:31:03,782 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5357142857142857, 'enabled': 1, 'history': 0}
+2018-03-16 16:31:03,783 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:31:03,784 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:31:03,794 MCT_Divisions INFO     playerVirtual7 NEW SCORE:7.97
+2018-03-16 16:31:03,809 MCT_Divisions INFO     playerVirtual7 NEW HIST:10
+2018-03-16 16:31:03,810 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 7.970000000000001, 'old': 2, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 10}
+2018-03-16 16:31:03,811 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:31:03,811 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:31:03,813 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 16:31:03,813 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:31:03,998 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:31:03,998 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 16:31:03,999 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 16:31:04,021 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-0.68
+2018-03-16 16:31:04,026 MCT_Divisions INFO     playerVirtual5 NEW HIST:11
+2018-03-16 16:31:04,026 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': -0.6799999999999997, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.4166666666666667, 'enabled': 1, 'history': 11}
+2018-03-16 16:31:04,026 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:31:04,026 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:31:04,031 MCT_Divisions INFO     playerVirtual8 NEW SCORE:2.66
+2018-03-16 16:31:04,046 MCT_Divisions INFO     playerVirtual8 NEW HIST:9
+2018-03-16 16:31:04,047 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.66, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 9}
+2018-03-16 16:31:04,048 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:31:04,049 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:31:04,061 MCT_Divisions INFO     playerVirtual9 NEW SCORE:3.32
+2018-03-16 16:31:04,079 MCT_Divisions INFO     playerVirtual9 NEW HIST:5
+2018-03-16 16:31:04,079 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 3.3200000000000003, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.5, 'enabled': 1, 'history': 5}
+2018-03-16 16:31:04,080 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:31:04,080 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:31:04,080 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 16:31:04,081 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:35:59,721 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 16:35:59,791 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.481132075472
+2018-03-16 16:36:03,129 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:36:03,130 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 16:36:03,130 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 16:36:03,142 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 16:36:03,148 MCT_Divisions INFO     playerVirtual3 NEW HIST:38
+2018-03-16 16:36:03,149 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.46153846153846156, 'enabled': 1, 'history': 38}
+2018-03-16 16:36:03,149 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:36:03,150 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:36:03,150 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 16:36:03,151 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:36:03,999 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:36:04,000 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 16:36:04,001 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 16:36:04,021 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 16:36:04,030 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 16:36:04,031 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5517241379310345, 'enabled': 1, 'history': 0}
+2018-03-16 16:36:04,031 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:36:04,031 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:36:04,038 MCT_Divisions INFO     playerVirtual7 NEW SCORE:7.97
+2018-03-16 16:36:04,054 MCT_Divisions INFO     playerVirtual7 NEW HIST:11
+2018-03-16 16:36:04,054 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 7.970000000000001, 'old': 2, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 11}
+2018-03-16 16:36:04,055 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:36:04,055 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:36:04,056 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 16:36:04,056 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:36:04,168 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:36:04,169 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 16:36:04,169 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 16:36:04,189 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-0.68
+2018-03-16 16:36:04,203 MCT_Divisions INFO     playerVirtual5 NEW HIST:11
+2018-03-16 16:36:04,203 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -0.6799999999999997, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.4166666666666667, 'enabled': 1, 'history': 11}
+2018-03-16 16:36:04,203 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:36:04,203 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:36:04,209 MCT_Divisions INFO     playerVirtual8 NEW SCORE:2.66
+2018-03-16 16:36:04,220 MCT_Divisions INFO     playerVirtual8 NEW HIST:10
+2018-03-16 16:36:04,221 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.66, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 10}
+2018-03-16 16:36:04,221 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:36:04,221 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:36:04,234 MCT_Divisions INFO     playerVirtual9 NEW SCORE:4.65
+2018-03-16 16:36:04,247 MCT_Divisions INFO     playerVirtual9 NEW HIST:6
+2018-03-16 16:36:04,247 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 4.65, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.5, 'enabled': 1, 'history': 6}
+2018-03-16 16:36:04,247 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:36:04,247 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:36:04,248 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 16:36:04,248 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:40:59,797 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 16:40:59,829 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.485981308411
+2018-03-16 16:41:03,244 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:41:03,244 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 16:41:03,245 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 16:41:03,260 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 16:41:03,267 MCT_Divisions INFO     playerVirtual3 NEW HIST:39
+2018-03-16 16:41:03,268 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.46153846153846156, 'enabled': 1, 'history': 39}
+2018-03-16 16:41:03,269 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:41:03,269 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:41:03,270 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 16:41:03,270 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:41:04,177 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:41:04,177 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 16:41:04,178 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 16:41:04,207 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 16:41:04,217 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 16:41:04,217 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5517241379310345, 'enabled': 1, 'history': 0}
+2018-03-16 16:41:04,218 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:41:04,218 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:41:04,224 MCT_Divisions INFO     playerVirtual7 NEW SCORE:7.97
+2018-03-16 16:41:04,236 MCT_Divisions INFO     playerVirtual7 NEW HIST:12
+2018-03-16 16:41:04,237 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 7.970000000000001, 'old': 2, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 12}
+2018-03-16 16:41:04,237 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:41:04,238 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:41:04,239 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 16:41:04,239 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:41:04,507 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:41:04,507 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 16:41:04,508 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 16:41:04,522 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-0.68
+2018-03-16 16:41:04,528 MCT_Divisions INFO     playerVirtual5 NEW HIST:10
+2018-03-16 16:41:04,528 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -0.6799999999999997, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.4166666666666667, 'enabled': 1, 'history': 10}
+2018-03-16 16:41:04,528 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:41:04,529 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:41:04,537 MCT_Divisions INFO     playerVirtual8 NEW SCORE:2.66
+2018-03-16 16:41:04,549 MCT_Divisions INFO     playerVirtual8 NEW HIST:11
+2018-03-16 16:41:04,550 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.66, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 11}
+2018-03-16 16:41:04,551 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:41:04,552 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:41:04,566 MCT_Divisions INFO     playerVirtual9 NEW SCORE:6.64
+2018-03-16 16:41:04,580 MCT_Divisions INFO     playerVirtual9 NEW HIST:6
+2018-03-16 16:41:04,581 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 6.640000000000001, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.5, 'enabled': 1, 'history': 6}
+2018-03-16 16:41:04,582 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:41:04,582 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:41:04,583 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 16:41:04,584 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:45:59,930 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 16:46:00,045 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.485981308411
+2018-03-16 16:46:03,358 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:46:03,358 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 16:46:03,359 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 16:46:03,372 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 16:46:03,383 MCT_Divisions INFO     playerVirtual3 NEW HIST:40
+2018-03-16 16:46:03,385 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.46153846153846156, 'enabled': 1, 'history': 40}
+2018-03-16 16:46:03,385 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:46:03,386 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:46:03,387 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 16:46:03,387 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:46:04,399 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:46:04,400 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 16:46:04,400 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 16:46:04,417 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 16:46:04,423 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 16:46:04,424 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5517241379310345, 'enabled': 1, 'history': 0}
+2018-03-16 16:46:04,424 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:46:04,425 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:46:04,432 MCT_Divisions INFO     playerVirtual7 NEW SCORE:7.97
+2018-03-16 16:46:04,453 MCT_Divisions INFO     playerVirtual7 NEW HIST:13
+2018-03-16 16:46:04,453 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 7.970000000000001, 'old': 2, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 13}
+2018-03-16 16:46:04,454 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:46:04,454 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:46:04,455 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 16:46:04,456 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:46:04,777 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:46:04,778 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 16:46:04,778 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 16:46:04,799 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-0.68
+2018-03-16 16:46:04,804 MCT_Divisions INFO     playerVirtual5 NEW HIST:9
+2018-03-16 16:46:04,804 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -0.6799999999999997, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.4166666666666667, 'enabled': 1, 'history': 9}
+2018-03-16 16:46:04,804 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:46:04,804 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:46:04,812 MCT_Divisions INFO     playerVirtual8 NEW SCORE:2.66
+2018-03-16 16:46:04,824 MCT_Divisions INFO     playerVirtual8 NEW HIST:12
+2018-03-16 16:46:04,825 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.66, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 12}
+2018-03-16 16:46:04,826 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:46:04,826 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:46:04,866 MCT_Divisions INFO     playerVirtual9 NEW SCORE:6.64
+2018-03-16 16:46:04,881 MCT_Divisions INFO     playerVirtual9 NEW HIST:6
+2018-03-16 16:46:04,882 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 6.640000000000001, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.5, 'enabled': 1, 'history': 6}
+2018-03-16 16:46:04,882 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:46:04,883 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:46:04,883 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 16:46:04,884 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:51:00,116 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 16:51:00,174 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.495412844037
+2018-03-16 16:51:03,625 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:51:03,626 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 16:51:03,626 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 16:51:03,646 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 16:51:03,655 MCT_Divisions INFO     playerVirtual3 NEW HIST:41
+2018-03-16 16:51:03,655 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.46153846153846156, 'enabled': 1, 'history': 41}
+2018-03-16 16:51:03,655 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:51:03,656 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:51:03,656 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 16:51:03,657 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:51:04,721 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:51:04,721 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 16:51:04,722 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 16:51:04,745 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 16:51:04,755 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 16:51:04,756 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5666666666666667, 'enabled': 1, 'history': 0}
+2018-03-16 16:51:04,756 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:51:04,757 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:51:04,764 MCT_Divisions INFO     playerVirtual7 NEW SCORE:9.3
+2018-03-16 16:51:04,774 MCT_Divisions INFO     playerVirtual7 NEW HIST:14
+2018-03-16 16:51:04,775 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 9.3, 'old': 2, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 14}
+2018-03-16 16:51:04,775 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:51:04,776 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:51:04,777 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 16:51:04,777 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:51:05,155 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:51:05,156 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 16:51:05,156 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 16:51:05,171 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-0.68
+2018-03-16 16:51:05,179 MCT_Divisions INFO     playerVirtual5 NEW HIST:8
+2018-03-16 16:51:05,179 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -0.6799999999999997, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.46153846153846156, 'enabled': 1, 'history': 8}
+2018-03-16 16:51:05,179 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:51:05,180 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:51:05,188 MCT_Divisions INFO     playerVirtual8 NEW SCORE:2.66
+2018-03-16 16:51:05,197 MCT_Divisions INFO     playerVirtual8 NEW HIST:13
+2018-03-16 16:51:05,197 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 2.66, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 13}
+2018-03-16 16:51:05,197 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:51:05,197 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:51:05,214 MCT_Divisions INFO     playerVirtual9 NEW SCORE:10.62
+2018-03-16 16:51:05,311 MCT_Divisions INFO     playerVirtual9 NEW HIST:6
+2018-03-16 16:51:05,312 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 10.620000000000001, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.5, 'enabled': 1, 'history': 6}
+2018-03-16 16:51:05,312 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:51:05,312 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:51:05,312 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 16:51:05,312 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:56:00,194 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 16:56:00,269 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.5
+2018-03-16 16:56:03,817 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:56:03,818 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 16:56:03,818 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 16:56:03,837 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 16:56:03,843 MCT_Divisions INFO     playerVirtual3 NEW HIST:42
+2018-03-16 16:56:03,844 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.48148148148148145, 'enabled': 1, 'history': 42}
+2018-03-16 16:56:03,845 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:56:03,845 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:56:03,846 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 16:56:03,847 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:56:04,948 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:56:04,948 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 16:56:04,949 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 16:56:04,970 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 16:56:04,978 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 16:56:04,979 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5666666666666667, 'enabled': 1, 'history': 0}
+2018-03-16 16:56:04,979 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:56:04,981 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:56:04,996 MCT_Divisions INFO     playerVirtual7 NEW SCORE:10.63
+2018-03-16 16:56:05,009 MCT_Divisions INFO     playerVirtual7 NEW HIST:14
+2018-03-16 16:56:05,012 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 10.63, 'old': 2, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 14}
+2018-03-16 16:56:05,013 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:56:05,016 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:56:05,017 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 16:56:05,018 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 16:56:05,511 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 16:56:05,511 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 16:56:05,512 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 16:56:05,536 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-0.68
+2018-03-16 16:56:05,544 MCT_Divisions INFO     playerVirtual5 NEW HIST:7
+2018-03-16 16:56:05,545 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -0.6799999999999997, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.46153846153846156, 'enabled': 1, 'history': 7}
+2018-03-16 16:56:05,545 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:56:05,546 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 16:56:05,557 MCT_Divisions INFO     playerVirtual8 NEW SCORE:1.66
+2018-03-16 16:56:05,573 MCT_Divisions INFO     playerVirtual8 NEW HIST:14
+2018-03-16 16:56:05,573 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.6600000000000001, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 14}
+2018-03-16 16:56:05,574 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:56:05,574 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:56:05,589 MCT_Divisions INFO     playerVirtual9 NEW SCORE:10.62
+2018-03-16 16:56:05,602 MCT_Divisions INFO     playerVirtual9 NEW HIST:6
+2018-03-16 16:56:05,603 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 10.620000000000001, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.3333333333333333, 'enabled': 1, 'history': 6}
+2018-03-16 16:56:05,603 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 16:56:05,604 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 16:56:05,604 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 16:56:05,606 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:01:00,354 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 17:01:00,401 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.504424778761
+2018-03-16 17:01:04,007 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:01:04,008 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 17:01:04,008 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 17:01:04,032 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 17:01:04,041 MCT_Divisions INFO     playerVirtual3 NEW HIST:43
+2018-03-16 17:01:04,041 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.48148148148148145, 'enabled': 1, 'history': 43}
+2018-03-16 17:01:04,041 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:01:04,042 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:01:04,046 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 17:01:04,046 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:01:05,198 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:01:05,199 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 17:01:05,200 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 17:01:05,222 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 17:01:05,230 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 17:01:05,230 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5806451612903226, 'enabled': 1, 'history': 0}
+2018-03-16 17:01:05,231 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:01:05,231 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:01:05,238 MCT_Divisions INFO     playerVirtual7 NEW SCORE:10.63
+2018-03-16 17:01:05,251 MCT_Divisions INFO     playerVirtual7 NEW HIST:14
+2018-03-16 17:01:05,252 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 10.63, 'old': 2, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 14}
+2018-03-16 17:01:05,252 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:01:05,254 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:01:05,255 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 17:01:05,256 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:01:05,828 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:01:05,829 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 17:01:05,830 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 17:01:05,849 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-0.68
+2018-03-16 17:01:05,858 MCT_Divisions INFO     playerVirtual5 NEW HIST:6
+2018-03-16 17:01:05,858 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -0.6799999999999997, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.46153846153846156, 'enabled': 1, 'history': 6}
+2018-03-16 17:01:05,859 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:01:05,859 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:01:05,870 MCT_Divisions INFO     playerVirtual8 NEW SCORE:1.66
+2018-03-16 17:01:05,881 MCT_Divisions INFO     playerVirtual8 NEW HIST:15
+2018-03-16 17:01:05,881 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.6600000000000001, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 15}
+2018-03-16 17:01:05,882 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:01:05,882 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:01:05,901 MCT_Divisions INFO     playerVirtual9 NEW SCORE:10.62
+2018-03-16 17:01:05,933 MCT_Divisions INFO     playerVirtual9 NEW HIST:6
+2018-03-16 17:01:05,934 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 10.620000000000001, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.3333333333333333, 'enabled': 1, 'history': 6}
+2018-03-16 17:01:05,934 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:01:05,934 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:01:05,934 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 17:01:05,934 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:06:00,465 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 17:06:00,542 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.51724137931
+2018-03-16 17:06:04,227 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:06:04,228 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 17:06:04,228 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 17:06:04,247 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 17:06:04,258 MCT_Divisions INFO     playerVirtual3 NEW HIST:44
+2018-03-16 17:06:04,259 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.5, 'enabled': 1, 'history': 44}
+2018-03-16 17:06:04,260 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:06:04,260 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:06:04,264 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 17:06:04,264 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:06:05,338 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:06:05,339 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 17:06:05,339 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 17:06:05,369 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 17:06:05,376 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 17:06:05,377 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5806451612903226, 'enabled': 1, 'history': 0}
+2018-03-16 17:06:05,378 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:06:05,378 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:06:05,394 MCT_Divisions INFO     playerVirtual7 NEW SCORE:12.62
+2018-03-16 17:06:05,404 MCT_Divisions INFO     playerVirtual7 NEW HIST:14
+2018-03-16 17:06:05,405 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 12.620000000000001, 'old': 2, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 14}
+2018-03-16 17:06:05,407 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:06:05,408 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:06:05,410 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 17:06:05,411 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:06:06,195 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:06:06,196 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 17:06:06,196 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 17:06:06,221 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-0.68
+2018-03-16 17:06:06,229 MCT_Divisions INFO     playerVirtual5 NEW HIST:5
+2018-03-16 17:06:06,229 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -0.6799999999999997, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.46153846153846156, 'enabled': 1, 'history': 5}
+2018-03-16 17:06:06,230 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:06:06,230 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:06:06,237 MCT_Divisions INFO     playerVirtual8 NEW SCORE:1.66
+2018-03-16 17:06:06,250 MCT_Divisions INFO     playerVirtual8 NEW HIST:16
+2018-03-16 17:06:06,251 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.6600000000000001, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 16}
+2018-03-16 17:06:06,252 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:06:06,252 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:06:06,271 MCT_Divisions INFO     playerVirtual9 NEW SCORE:12.61
+2018-03-16 17:06:06,287 MCT_Divisions INFO     playerVirtual9 NEW HIST:6
+2018-03-16 17:06:06,288 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 12.61, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.3333333333333333, 'enabled': 1, 'history': 6}
+2018-03-16 17:06:06,289 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:06:06,290 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:06:06,291 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 17:06:06,292 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:11:00,639 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 17:11:00,667 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.521367521368
+2018-03-16 17:11:04,456 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:11:04,456 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 17:11:04,456 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 17:11:04,474 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 17:11:04,481 MCT_Divisions INFO     playerVirtual3 NEW HIST:45
+2018-03-16 17:11:04,482 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.5, 'enabled': 1, 'history': 45}
+2018-03-16 17:11:04,482 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:11:04,483 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:11:04,484 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 17:11:04,484 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:11:05,592 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:11:05,593 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 17:11:05,593 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 17:11:05,615 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 17:11:05,624 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 17:11:05,625 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5806451612903226, 'enabled': 1, 'history': 0}
+2018-03-16 17:11:05,625 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:11:05,626 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:11:05,633 MCT_Divisions INFO     playerVirtual7 NEW SCORE:12.62
+2018-03-16 17:11:05,646 MCT_Divisions INFO     playerVirtual7 NEW HIST:14
+2018-03-16 17:11:05,647 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 12.620000000000001, 'old': 2, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 14}
+2018-03-16 17:11:05,648 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:11:05,649 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:11:05,651 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 17:11:05,651 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:11:06,530 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:11:06,530 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 17:11:06,530 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 17:11:06,545 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-0.68
+2018-03-16 17:11:06,551 MCT_Divisions INFO     playerVirtual5 NEW HIST:4
+2018-03-16 17:11:06,552 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -0.6799999999999997, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.46153846153846156, 'enabled': 1, 'history': 4}
+2018-03-16 17:11:06,553 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:11:06,553 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:11:06,559 MCT_Divisions INFO     playerVirtual8 NEW SCORE:1.66
+2018-03-16 17:11:06,567 MCT_Divisions INFO     playerVirtual8 NEW HIST:17
+2018-03-16 17:11:06,568 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.6600000000000001, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 17}
+2018-03-16 17:11:06,569 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:11:06,570 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:11:06,582 MCT_Divisions INFO     playerVirtual9 NEW SCORE:14.6
+2018-03-16 17:11:06,596 MCT_Divisions INFO     playerVirtual9 NEW HIST:6
+2018-03-16 17:11:06,597 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 14.6, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.3333333333333333, 'enabled': 1, 'history': 6}
+2018-03-16 17:11:06,597 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:11:06,598 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:11:06,598 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 17:11:06,599 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:16:00,716 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 17:16:00,782 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.525423728814
+2018-03-16 17:16:04,717 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:16:04,718 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 17:16:04,718 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 17:16:04,739 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 17:16:04,749 MCT_Divisions INFO     playerVirtual3 NEW HIST:46
+2018-03-16 17:16:04,750 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.5, 'enabled': 1, 'history': 46}
+2018-03-16 17:16:04,750 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:16:04,750 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:16:04,754 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 17:16:04,754 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:16:05,857 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:16:05,858 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 17:16:05,859 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 17:16:05,877 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 17:16:05,883 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 17:16:05,883 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5806451612903226, 'enabled': 1, 'history': 0}
+2018-03-16 17:16:05,884 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:16:05,884 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:16:05,897 MCT_Divisions INFO     playerVirtual7 NEW SCORE:12.62
+2018-03-16 17:16:05,911 MCT_Divisions INFO     playerVirtual7 NEW HIST:14
+2018-03-16 17:16:05,912 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 12.620000000000001, 'old': 2, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 14}
+2018-03-16 17:16:05,913 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:16:05,914 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:16:05,915 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 17:16:05,916 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:16:06,735 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:16:06,736 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 17:16:06,736 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 17:16:06,755 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-0.68
+2018-03-16 17:16:06,762 MCT_Divisions INFO     playerVirtual5 NEW HIST:3
+2018-03-16 17:16:06,762 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -0.6799999999999997, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.5, 'enabled': 1, 'history': 3}
+2018-03-16 17:16:06,762 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:16:06,762 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:16:06,771 MCT_Divisions INFO     playerVirtual8 NEW SCORE:1.66
+2018-03-16 17:16:06,787 MCT_Divisions INFO     playerVirtual8 NEW HIST:18
+2018-03-16 17:16:06,788 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.6600000000000001, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 18}
+2018-03-16 17:16:06,788 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:16:06,790 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:16:06,803 MCT_Divisions INFO     playerVirtual9 NEW SCORE:16.59
+2018-03-16 17:16:06,818 MCT_Divisions INFO     playerVirtual9 NEW HIST:6
+2018-03-16 17:16:06,819 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 16.59, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.3333333333333333, 'enabled': 1, 'history': 6}
+2018-03-16 17:16:06,820 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:16:06,821 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:16:06,822 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 17:16:06,823 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:21:00,804 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 17:21:00,880 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.521008403361
+2018-03-16 17:21:04,921 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:21:04,922 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 17:21:04,922 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 17:21:04,935 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 17:21:04,941 MCT_Divisions INFO     playerVirtual3 NEW HIST:47
+2018-03-16 17:21:04,941 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.5, 'enabled': 1, 'history': 47}
+2018-03-16 17:21:04,942 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:21:04,942 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:21:04,942 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 17:21:04,942 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:21:06,157 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:21:06,158 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 17:21:06,159 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 17:21:06,207 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 17:21:06,213 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 17:21:06,214 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.5806451612903226, 'enabled': 1, 'history': 0}
+2018-03-16 17:21:06,214 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:21:06,214 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:21:06,219 MCT_Divisions INFO     playerVirtual7 NEW SCORE:12.62
+2018-03-16 17:21:06,231 MCT_Divisions INFO     playerVirtual7 NEW HIST:14
+2018-03-16 17:21:06,232 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 12.620000000000001, 'old': 2, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 14}
+2018-03-16 17:21:06,233 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:21:06,233 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:21:06,234 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 17:21:06,235 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:21:07,042 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:21:07,043 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 17:21:07,044 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 17:21:07,059 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-1.68
+2018-03-16 17:21:07,070 MCT_Divisions INFO     playerVirtual5 NEW HIST:2
+2018-03-16 17:21:07,070 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -1.6799999999999997, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.5, 'enabled': 1, 'history': 2}
+2018-03-16 17:21:07,071 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:21:07,071 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:21:07,078 MCT_Divisions INFO     playerVirtual8 NEW SCORE:1.66
+2018-03-16 17:21:07,094 MCT_Divisions INFO     playerVirtual8 NEW HIST:19
+2018-03-16 17:21:07,095 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.6600000000000001, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 19}
+2018-03-16 17:21:07,096 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:21:07,097 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:21:07,169 MCT_Divisions INFO     playerVirtual9 NEW SCORE:16.59
+2018-03-16 17:21:07,183 MCT_Divisions INFO     playerVirtual9 NEW HIST:6
+2018-03-16 17:21:07,184 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 16.59, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.25, 'enabled': 1, 'history': 6}
+2018-03-16 17:21:07,185 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:21:07,187 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:21:07,189 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 17:21:07,191 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:26:00,900 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 17:26:00,941 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.525
+2018-03-16 17:26:05,065 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:26:05,066 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 17:26:05,066 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 17:26:05,078 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 17:26:05,087 MCT_Divisions INFO     playerVirtual3 NEW HIST:48
+2018-03-16 17:26:05,087 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.5, 'enabled': 1, 'history': 48}
+2018-03-16 17:26:05,088 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:26:05,089 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:26:05,090 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 17:26:05,090 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:26:06,412 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:26:06,413 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 17:26:06,415 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 17:26:06,436 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 17:26:06,446 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 17:26:06,447 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.59375, 'enabled': 1, 'history': 0}
+2018-03-16 17:26:06,448 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:26:06,448 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:26:06,458 MCT_Divisions INFO     playerVirtual7 NEW SCORE:13.95
+2018-03-16 17:26:06,469 MCT_Divisions INFO     playerVirtual7 NEW HIST:14
+2018-03-16 17:26:06,470 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 13.95, 'old': 2, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 14}
+2018-03-16 17:26:06,472 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:26:06,473 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:26:06,474 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 17:26:06,476 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:26:07,324 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:26:07,325 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 17:26:07,325 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 17:26:07,347 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-1.68
+2018-03-16 17:26:07,356 MCT_Divisions INFO     playerVirtual5 NEW HIST:1
+2018-03-16 17:26:07,356 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -1.6799999999999997, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.5, 'enabled': 1, 'history': 1}
+2018-03-16 17:26:07,357 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:26:07,358 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:26:07,364 MCT_Divisions INFO     playerVirtual8 NEW SCORE:1.66
+2018-03-16 17:26:07,375 MCT_Divisions INFO     playerVirtual8 NEW HIST:20
+2018-03-16 17:26:07,375 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.6600000000000001, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 20}
+2018-03-16 17:26:07,375 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:26:07,376 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:26:07,396 MCT_Divisions INFO     playerVirtual9 NEW SCORE:16.59
+2018-03-16 17:26:07,413 MCT_Divisions INFO     playerVirtual9 NEW HIST:6
+2018-03-16 17:26:07,413 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 16.59, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.25, 'enabled': 1, 'history': 6}
+2018-03-16 17:26:07,413 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:26:07,414 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:26:07,414 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 17:26:07,414 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:31:01,040 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 17:31:01,106 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.528925619835
+2018-03-16 17:31:05,129 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:31:05,129 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 17:31:05,130 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 17:31:05,153 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 17:31:05,162 MCT_Divisions INFO     playerVirtual3 NEW HIST:49
+2018-03-16 17:31:05,163 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.5, 'enabled': 1, 'history': 49}
+2018-03-16 17:31:05,163 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:31:05,164 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:31:05,164 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 17:31:05,165 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:31:06,593 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:31:06,593 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 17:31:06,594 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 17:31:06,607 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 17:31:06,615 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 17:31:06,615 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.59375, 'enabled': 1, 'history': 0}
+2018-03-16 17:31:06,616 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:31:06,616 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:31:06,623 MCT_Divisions INFO     playerVirtual7 NEW SCORE:13.95
+2018-03-16 17:31:06,632 MCT_Divisions INFO     playerVirtual7 NEW HIST:14
+2018-03-16 17:31:06,632 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 13.95, 'old': 2, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 14}
+2018-03-16 17:31:06,633 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:31:06,633 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:31:06,634 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 17:31:06,634 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:31:07,570 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:31:07,570 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 17:31:07,570 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 17:31:07,590 MCT_Divisions INFO     playerVirtual5 NEW SCORE:-1.68
+2018-03-16 17:31:07,597 MCT_Divisions INFO     playerVirtual5 NEW HIST:0
+2018-03-16 17:31:07,598 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 1, 'score': -1.6799999999999997, 'old': 3, 'name': 'playerVirtual5', 'fairness': 0.5, 'enabled': 1, 'history': 0}
+2018-03-16 17:31:07,598 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:31:07,599 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:31:07,606 MCT_Divisions INFO     playerVirtual8 NEW SCORE:1.66
+2018-03-16 17:31:07,623 MCT_Divisions INFO     playerVirtual8 NEW HIST:21
+2018-03-16 17:31:07,624 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 1.6600000000000001, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 21}
+2018-03-16 17:31:07,625 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:31:07,626 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:31:07,638 MCT_Divisions INFO     playerVirtual9 NEW SCORE:18.58
+2018-03-16 17:31:07,654 MCT_Divisions INFO     playerVirtual9 NEW HIST:6
+2018-03-16 17:31:07,655 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 18.58, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.25, 'enabled': 1, 'history': 6}
+2018-03-16 17:31:07,656 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:31:07,657 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:31:07,659 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 17:31:07,659 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:36:01,207 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 17:36:01,234 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.532258064516
+2018-03-16 17:36:05,370 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:36:05,371 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 17:36:05,371 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 17:36:05,390 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 17:36:05,403 MCT_Divisions INFO     playerVirtual3 NEW HIST:50
+2018-03-16 17:36:05,404 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.5, 'enabled': 1, 'history': 50}
+2018-03-16 17:36:05,405 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:36:05,405 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:36:05,406 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 17:36:05,406 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:36:06,875 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:36:06,876 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 17:36:06,876 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 17:36:06,893 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 17:36:06,903 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 17:36:06,903 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.6060606060606061, 'enabled': 1, 'history': 0}
+2018-03-16 17:36:06,904 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:36:06,904 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:36:06,914 MCT_Divisions INFO     playerVirtual7 NEW SCORE:15.94
+2018-03-16 17:36:06,931 MCT_Divisions INFO     playerVirtual7 NEW HIST:14
+2018-03-16 17:36:06,932 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 15.940000000000001, 'old': 2, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 14}
+2018-03-16 17:36:06,933 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:36:06,935 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:36:06,936 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 17:36:06,938 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:36:07,836 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:36:07,836 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 17:36:07,836 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 17:36:07,852 MCT_Divisions INFO     playerVirtual8 NEW SCORE:0.66
+2018-03-16 17:36:07,860 MCT_Divisions INFO     playerVirtual8 NEW HIST:22
+2018-03-16 17:36:07,861 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.6600000000000001, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 22}
+2018-03-16 17:36:07,861 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:36:07,862 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:36:07,871 MCT_Divisions INFO     playerVirtual9 NEW SCORE:20.57
+2018-03-16 17:36:07,888 MCT_Divisions INFO     playerVirtual9 NEW HIST:6
+2018-03-16 17:36:07,889 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 20.57, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.2, 'enabled': 1, 'history': 6}
+2018-03-16 17:36:07,889 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:36:07,889 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:36:07,890 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 17:36:07,890 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:41:01,301 MCT_Divisions INFO     CALCULATE THE GLOBAL FAIRNESS
+2018-03-16 17:41:01,912 MCT_Divisions INFO     GLOBAL FAIRNESS: 0.536
+2018-03-16 17:41:05,637 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:41:05,637 MCT_Divisions INFO     ROUND ENDED DIV: 1
+2018-03-16 17:41:05,637 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 1
+2018-03-16 17:41:05,662 MCT_Divisions INFO     playerVirtual3 NEW SCORE:11.95
+2018-03-16 17:41:05,676 MCT_Divisions INFO     playerVirtual3 NEW HIST:51
+2018-03-16 17:41:05,677 MCT_Divisions INFO     NEW DATA : {'division': 1, 'playoff': 0, 'score': 11.95, 'old': 1, 'name': 'playerVirtual3', 'fairness': 0.5172413793103449, 'enabled': 1, 'history': 51}
+2018-03-16 17:41:05,678 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:41:05,679 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:41:05,680 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 1
+2018-03-16 17:41:05,681 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:41:07,104 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:41:07,105 MCT_Divisions INFO     ROUND ENDED DIV: 2
+2018-03-16 17:41:07,105 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 2
+2018-03-16 17:41:07,137 MCT_Divisions INFO     playerVirtual1 NEW SCORE:-5.37
+2018-03-16 17:41:07,146 MCT_Divisions INFO     playerVirtual1 NEW HIST:0
+2018-03-16 17:41:07,146 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 1, 'score': -5.370000000000001, 'old': 2, 'name': 'playerVirtual1', 'fairness': 0.6060606060606061, 'enabled': 1, 'history': 0}
+2018-03-16 17:41:07,147 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:41:07,147 MCT_Divisions INFO     PLAYOFF MODE...
+2018-03-16 17:41:07,156 MCT_Divisions INFO     playerVirtual7 NEW SCORE:15.94
+2018-03-16 17:41:07,172 MCT_Divisions INFO     playerVirtual7 NEW HIST:14
+2018-03-16 17:41:07,172 MCT_Divisions INFO     NEW DATA : {'division': 2, 'playoff': 0, 'score': 15.940000000000001, 'old': 2, 'name': 'playerVirtual7', 'fairness': 1.0, 'enabled': 1, 'history': 14}
+2018-03-16 17:41:07,173 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:41:07,174 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:41:07,175 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 2
+2018-03-16 17:41:07,175 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:41:08,181 MCT_Divisions INFO     
+-------------------------------
+2018-03-16 17:41:08,181 MCT_Divisions INFO     ROUND ENDED DIV: 3
+2018-03-16 17:41:08,181 MCT_Divisions INFO     CALC PLAYER ATTR FROM DIV: 3
+2018-03-16 17:41:08,202 MCT_Divisions INFO     playerVirtual8 NEW SCORE:0.66
+2018-03-16 17:41:08,207 MCT_Divisions INFO     playerVirtual8 NEW HIST:23
+2018-03-16 17:41:08,208 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 0.6600000000000001, 'old': 3, 'name': 'playerVirtual8', 'fairness': 1.0, 'enabled': 1, 'history': 23}
+2018-03-16 17:41:08,208 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:41:08,208 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:41:08,216 MCT_Divisions INFO     playerVirtual9 NEW SCORE:22.56
+2018-03-16 17:41:08,223 MCT_Divisions INFO     playerVirtual9 NEW HIST:6
+2018-03-16 17:41:08,223 MCT_Divisions INFO     NEW DATA : {'division': 3, 'playoff': 0, 'score': 22.56, 'old': 3, 'name': 'playerVirtual9', 'fairness': 0.2, 'enabled': 1, 'history': 6}
+2018-03-16 17:41:08,223 MCT_Divisions INFO     START TH REALLOC PROCESS...
+2018-03-16 17:41:08,224 MCT_Divisions INFO     NORMAL MODE...
+2018-03-16 17:41:08,224 MCT_Divisions INFO     NEWS ATTRS CALCULATED TO DIV: 3
+2018-03-16 17:41:08,225 MCT_Divisions INFO     -------------------------------
+
+2018-03-16 17:41:35,157 MCT_Divisions INFO     GRACEFULL STOP
